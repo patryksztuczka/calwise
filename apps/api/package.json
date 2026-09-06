@@ -1,0 +1,33 @@
+{
+  "name": "@calwise/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./trpc": "./src/trpc-router.ts"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=../../.env src/index.ts",
+    "start": "node --env-file-if-exists=../../.env src/index.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@calwise/database": "workspace:*",
+    "@calwise/shared": "workspace:*",
+    "@hono/node-server": "catalog:",
+    "@hono/trpc-server": "catalog:",
+    "@trpc/server": "catalog:",
+    "drizzle-orm": "catalog:",
+    "effect": "catalog:",
+    "hono": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "@testcontainers/postgresql": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "pg": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}
