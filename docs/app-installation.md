@@ -1,6 +1,6 @@
 # Installing Calwise
 
-Calwise supports browser installation and home-screen shortcuts. It still requires an internet connection. There is no service worker, offline cache, or background sync.
+Calwise supports browser installation and home-screen shortcuts. It still requires an internet connection. `vite-plugin-pwa` generates and links the manifest. Service-worker registration is disabled, and the generated worker has no precached assets, runtime caching, or offline fallback. There is no background sync or automatic reload.
 
 ## Names and icons
 

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vite-plus/test";
-import { installIdentity } from "./install-identity";
+import { pwaBranding, pwaOptions } from "./pwa";
 
-describe("install identity", () => {
+describe("PWA branding", () => {
   for (const [variant, name] of [
     ["dev", "Calwise Dev"],
     ["production", "Calwise"],
   ]) {
     it(`uses the ${variant} name and icons consistently`, () => {
-      const identity = installIdentity(variant);
+      const identity = pwaBranding(variant);
       expect(identity.manifest.name).toBe(name);
       expect(identity.manifest.short_name).toBe(name);
       expect(identity.manifest.icons).toEqual(
@@ -30,6 +30,18 @@ describe("install identity", () => {
   }
 
   it("rejects unknown variants instead of silently using production branding", () => {
-    expect(() => installIdentity("staging")).toThrow("VITE_APP_VARIANT must be dev or production");
+    expect(() => pwaBranding("staging")).toThrow("VITE_APP_VARIANT must be dev or production");
+  });
+});
+
+it("does not register a worker, cache assets, or provide an offline fallback", () => {
+  expect(pwaOptions("dev")).toMatchObject({
+    injectRegister: false,
+    includeManifestIcons: false,
+    devOptions: { enabled: true },
+    strategies: "injectManifest",
+    srcDir: "src",
+    filename: "sw.js",
+    injectManifest: { injectionPoint: "" },
   });
 });

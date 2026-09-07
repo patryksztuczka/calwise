@@ -1,10 +1,10 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite-plus";
-import { installIdentityPlugin } from "./install-identity";
+import { pwaPlugins } from "./pwa";
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), installIdentityPlugin()],
+  plugins: [react(), tailwindcss(), ...pwaPlugins()],
   server: {
     port: 5173,
     proxy: {
