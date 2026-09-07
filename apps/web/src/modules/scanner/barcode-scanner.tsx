@@ -76,12 +76,14 @@ function ScannerCamera({ onScan, onRetry }: ScannerCameraProps) {
         )}
         <span className="absolute inset-x-2.5 top-1/2 h-px bg-lime/65" />
       </div>
-      {state.kind === "starting" && (
+      {(state.kind === "starting" || state.kind === "scanning") && (
         <p
           role="status"
           className="absolute inset-x-3 top-[67%] rounded-8 bg-bg/70 px-2 py-2 text-center text-11 text-white"
         >
-          Starting camera. Allow access when prompted.
+          {state.kind === "starting"
+            ? "Starting camera. Allow access when prompted."
+            : "Keep the barcode inside the frame."}
         </p>
       )}
       {state.kind === "scanning" && (
@@ -106,30 +108,22 @@ function ScanningOverlay({ state: { torch }, onToggleTorch }: ScanningOverlayPro
   let torchLabel = "Torch unavailable";
   if (torch.available) torchLabel = torch.on ? "Torch on" : "Torch off";
   return (
-    <>
-      <p
-        role="status"
-        className="absolute inset-x-3 top-[67%] rounded-8 bg-bg/70 px-2 py-2 text-center text-11 text-white"
+    <div className="absolute inset-x-0 bottom-[5.5%] flex flex-col items-center gap-2.5">
+      <IconButton
+        aria-label="Toggle torch"
+        aria-pressed={torch.on}
+        disabled={!torch.available || torch.busy}
+        onClick={onToggleTorch}
+        className="bg-surface"
       >
-        Keep the barcode inside the frame.
-      </p>
-      <div className="absolute inset-x-0 bottom-[5.5%] flex flex-col items-center gap-2.5">
-        <IconButton
-          aria-label="Toggle torch"
-          aria-pressed={torch.on}
-          disabled={!torch.available || torch.busy}
-          onClick={onToggleTorch}
-          className="bg-surface"
-        >
-          {torch.on ? (
-            <FlashlightOff size={21} aria-hidden="true" />
-          ) : (
-            <Flashlight size={21} aria-hidden="true" />
-          )}
-        </IconButton>
-        <span className="rounded-8 bg-bg/70 px-2 py-1 text-10 text-white">{torchLabel}</span>
-      </div>
-    </>
+        {torch.on ? (
+          <FlashlightOff size={21} aria-hidden="true" />
+        ) : (
+          <Flashlight size={21} aria-hidden="true" />
+        )}
+      </IconButton>
+      <span className="rounded-8 bg-bg/70 px-2 py-1 text-10 text-white">{torchLabel}</span>
+    </div>
   );
 }
 
@@ -139,19 +133,16 @@ interface InterruptedOverlayProps {
 }
 
 function InterruptedOverlay({ state, onRetry }: InterruptedOverlayProps) {
+  const { role, message, label } =
+    state.kind === "error"
+      ? { role: "alert", message: errorMessages[state.reason], label: "TRY AGAIN" }
+      : { role: "status", message: "Camera paused while you were away.", label: "RESUME SCANNING" };
   return (
     <div className="absolute inset-0 flex flex-col justify-center gap-5 bg-bg/95 px-7">
-      <p
-        role={state.kind === "error" ? "alert" : "status"}
-        className="text-center text-14 leading-relaxed"
-      >
-        {state.kind === "error"
-          ? errorMessages[state.reason]
-          : "Camera paused while you were away."}
+      <p role={role} className="text-center text-14 leading-relaxed">
+        {message}
       </p>
-      <PrimaryAction onClick={onRetry}>
-        {state.kind === "paused" ? "RESUME SCANNING" : "TRY AGAIN"}
-      </PrimaryAction>
+      <PrimaryAction onClick={onRetry}>{label}</PrimaryAction>
     </div>
   );
 }

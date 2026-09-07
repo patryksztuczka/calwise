@@ -29,6 +29,8 @@ async function nativeDecoder(): Promise<Decoder | undefined> {
     const supported = await Detector.getSupportedFormats();
     if (!formats.every((format) => supported.includes(format))) return;
     const detector = new Detector({ formats });
+    // A missing platform service only reveals itself on detect, not getSupportedFormats.
+    await detector.detect(new ImageData(1, 1));
     return {
       async detect(image) {
         return (await detector.detect(image)).find((result) => result.rawValue.length > 0)
@@ -64,45 +66,18 @@ function workerDecoder(signal: AbortSignal): Decoder {
           () => reject(new Error("Barcode decoder could not load")),
           { once: true, signal: request.signal },
         );
-        deadline.addEventListener(
-          "abort",
-          () => reject(new DOMException("Barcode decode aborted or timed out", "AbortError")),
-          { once: true, signal: request.signal },
-        );
+        deadline.addEventListener("abort", () => reject(deadline.reason), {
+          once: true,
+          signal: request.signal,
+        });
         worker.postMessage(image, [image.data.buffer]);
-      })
-        .catch((error) => {
-          // A late reply from a failed request must never satisfy a later detect call.
-          worker.terminate();
-          throw error;
-        })
-        .finally(() => request.abort());
+      }).finally(() => request.abort());
     },
   };
 }
 
-/** Owns the single-flight invariant and switches from native to WASM at most once. */
 export async function createBarcodeDecoder(signal: AbortSignal): Promise<Decoder> {
   const native = await nativeDecoder();
   signal.throwIfAborted();
-  let decoder = native ?? workerDecoder(signal);
-  let detecting = false;
-  return {
-    async detect(image) {
-      signal.throwIfAborted();
-      if (detecting) throw new Error("A barcode decode is already in progress");
-      detecting = true;
-      return decoder
-        .detect(image)
-        .catch((error) => {
-          signal.throwIfAborted();
-          if (decoder !== native) throw error;
-          decoder = workerDecoder(signal);
-          return decoder.detect(image);
-        })
-        .finally(() => {
-          detecting = false;
-        });
-    },
-  };
+  return native ?? workerDecoder(signal);
 }

@@ -61,16 +61,10 @@ export function startCameraScanner(
     video.srcObject = null;
   }
 
-  function pause() {
+  function end(state: ScannerState) {
     if (signal.aborted) return;
     stop();
-    onState({ kind: "paused" });
-  }
-
-  function fail(reason: ScannerFailureReason) {
-    if (signal.aborted) return;
-    stop();
-    onState({ kind: "error", reason });
+    onState(state);
   }
 
   function publishScanning() {
@@ -94,34 +88,13 @@ export function startCameraScanner(
     }
   }
 
-  async function scan(context: CanvasRenderingContext2D, decoder: Decoder) {
+  async function scan(readGuideFrame: () => ImageData | undefined, decoder: Decoder) {
     if (signal.aborted) return;
     const started = performance.now();
     try {
-      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0) {
-        const crop = guideCropRect(
-          {
-            width: video.videoWidth,
-            height: video.videoHeight,
-            viewport: video.getBoundingClientRect(),
-          },
-          guide.getBoundingClientRect(),
-        );
-        const canvas = context.canvas;
-        canvas.width = Math.max(1, Math.min(960, Math.round(crop.width)));
-        canvas.height = Math.max(1, Math.round((crop.height * canvas.width) / crop.width));
-        context.drawImage(
-          video,
-          crop.x,
-          crop.y,
-          crop.width,
-          crop.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height,
-        );
-        const code = await decoder.detect(context.getImageData(0, 0, canvas.width, canvas.height));
+      const frame = readGuideFrame();
+      if (frame) {
+        const code = await decoder.detect(frame);
         if (signal.aborted) return;
         if (code) {
           stop();
@@ -131,20 +104,21 @@ export function startCameraScanner(
       }
       // At most ten scans per second, with only one decode in flight.
       timer = setTimeout(
-        () => void scan(context, decoder),
+        () => void scan(readGuideFrame, decoder),
         Math.max(0, 100 - (performance.now() - started)),
       );
     } catch {
-      fail("scan-interrupted");
+      end({ kind: "error", reason: "scan-interrupted" });
     }
   }
 
   async function start() {
     onState({ kind: "starting" });
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-      fail("unsupported");
+      end({ kind: "error", reason: "unsupported" });
       return;
     }
+    const pause = () => end({ kind: "paused" });
     document.addEventListener(
       "visibilitychange",
       () => {
@@ -186,10 +160,37 @@ export function startCameraScanner(
         .createElement("canvas")
         .getContext("2d", { willReadFrequently: true });
       if (!context) throw new Error("Camera frames are unavailable");
+      const readGuideFrame = (): ImageData | undefined => {
+        if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth <= 0) return;
+        const crop = guideCropRect(
+          {
+            width: video.videoWidth,
+            height: video.videoHeight,
+            viewport: video.getBoundingClientRect(),
+          },
+          guide.getBoundingClientRect(),
+        );
+        const canvas = context.canvas;
+        canvas.width = Math.max(1, Math.min(960, Math.round(crop.width)));
+        canvas.height = Math.max(1, Math.round((crop.height * canvas.width) / crop.width));
+        context.drawImage(
+          video,
+          crop.x,
+          crop.y,
+          crop.width,
+          crop.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        );
+        return context.getImageData(0, 0, canvas.width, canvas.height);
+      };
+
       publishScanning();
-      void scan(context, decoder);
+      void scan(readGuideFrame, decoder);
     } catch (error) {
-      fail(cameraError(error instanceof Error ? error : new Error()));
+      end({ kind: "error", reason: cameraError(error instanceof Error ? error : new Error()) });
     }
   }
 
