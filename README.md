@@ -28,6 +28,7 @@ apps/
 packages/
   database/       # @calwise/database — drizzle schema, generated migrations, Effect Database service
     migrations/   # drizzle-kit output, applied by wrangler d1 migrations
+    migrations-food/ # catalog migrations, bound as FOOD_DB on the API Worker
 infra/            # Terraform: D1, Pages project + domain, DNS; bootstrap/ creates the R2 state bucket
 .github/workflows # ci, infra (manual), checks/deploy-api/deploy-web (reusable)
 docs/adr/         # architecture decision records
@@ -47,6 +48,8 @@ pnpm db:migrate:local  # create + seed the local D1 (stored under apps/api/.wran
 pnpm dev               # web (http://localhost:5173) + api (http://localhost:8787) in parallel
 ```
 
+The [food catalog](tools/open-food-facts/README.md) uses a separate D1 database in the same API Worker. Its public `food.search` and `food.barcode` tRPC queries need no session. Local migrations create the catalog tables; follow the catalog guide to import products or serve the synthetic fixture.
+
 The app opens on the sign-in screen; create an account on the sign-up screen (email and password, no verification email) to reach Today. `/greeting` stays public and shows the message seeded by the first migration, with loading and error states. The api also answers `GET /health`, `GET /trpc/greeting.current`, and the Better Auth routes under `/api/auth/*`.
 
 ## Commands
@@ -63,7 +66,7 @@ The app opens on the sign-in screen; create an account on the sign-up screen (em
 | `pnpm fmt`              | Oxfmt (`vp fmt`)                                                          |
 | `pnpm db:migrate:local` | apply pending migrations to the emulated D1                               |
 
-Inside `packages/database`: `pnpm db:generate` diffs `src/schema.ts` and writes a new migration folder; `pnpm db:generate --custom --name <x>` creates an empty one for hand-written SQL (such as seeds).
+Inside `packages/database`: `pnpm db:generate` diffs `src/schema.ts` and writes to `migrations/`; `pnpm db:generate:food` diffs `src/food-schema.ts` and writes to `migrations-food/`. Add `--custom --name <x>` to either command to create an empty migration for hand-written SQL.
 
 Inside `apps/api`: `pnpm db:migrate:remote` and `pnpm deploy` are what CD runs; they need `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
 
@@ -73,7 +76,7 @@ Infrastructure must exist before the first application deployment. See [infra/RE
 
 After that, `CI` runs `checks.yml` once per pull request update or push to `master`: formatting, lint, typecheck, unit tests, builds, and the Playwright end-to-end test against emulated Cloudflare services. Pull requests never deploy. On pushes to `master`, both check jobs must pass before CI calls the applicable deployment workflows:
 
-- **Deploy API** (`.github/workflows/deploy-api.yml`): changes under `apps/api` or `packages/database` trigger remote D1 migrations, a push of the `BETTER_AUTH_SECRET` repository secret to the Worker, then a Worker deploy. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
+- **Deploy API** (`.github/workflows/deploy-api.yml`): changes under `apps/api` or `packages/database` trigger remote migrations for both D1 databases, a push of the `BETTER_AUTH_SECRET` repository secret to the Worker, then a Worker deploy. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
 - **Deploy Web** (`.github/workflows/deploy-web.yml`): changes under `apps/web` or the api's router types trigger a build with `VITE_API_URL=https://calwise-api.lastlab.win`, then publish `dist` to the `calwise` Pages project.
 
 Shared package configuration, the lockfile, root TypeScript configuration, and the CI/checks workflows trigger both deployments. Each deployment workflow also triggers its own deployment when changed. Path matching covers all commits in the push.
@@ -101,6 +104,7 @@ TypeScript server.
 
 - **Effect v4**: the api uses the v4 RC (`Context.Service` class keys, `Layer.effect`). `effect`, `@effect/sql-d1`, `effect-cf`, and `drizzle-orm` are pinned together in the pnpm catalog; prerelease APIs shift between builds, so upgrade them as a unit. effect-cf's manifest requires `effect ^4.0.0-rc.112`, which the current pin satisfies.
 - **API architecture**: `@calwise/database` (drizzle schema + a `Database` Effect service; `@calwise/database/d1` provides it from the `DB` binding through effect-cf) → `modules/greeting/greeting-service.ts` (Effect service, with an in-memory `testLayer` next to it) → `trpc-router.ts` (tRPC v11 router, mounted on Hono at `/trpc` in `app.ts`) → `worker.ts` (effect-cf `Worker.make` owns the runtime and hands Hono a `run` function and the `auth` instance per request). `app.ts` never imports Cloudflare modules, so unit tests run it under Node with the test layer. The web app consumes the router type-only via `@calwise/api/trpc` (a devDependency).
+- **Missing records**: lookup services return `undefined`; tRPC routers translate that to `NOT_FOUND`. Database failures remain internal errors.
 - **Auth**: `modules/auth/auth-service.ts` builds the Better Auth instance (email + password, no verification, Drizzle adapter with plural table names); `auth-live.ts` provides it as the `AuthService` layer from the `DB` binding and the `BETTER_AUTH_SECRET` secret. Hono forwards `/api/auth/*` to it, and the tRPC context carries the caller's `session` so procedures can use `protectedProcedure`. Unit tests build the instance without a database, which keeps users in memory. The `dev` script passes a fixed development secret to `wrangler dev`; production reads the secret the Deploy API workflow pushes. The web app talks to it through `better-auth/react` (`src/lib/auth-client.ts`); `RequireAuth` guards the routes under the app shell.
 - **Worker env types**: `apps/api/worker-configuration.d.ts` is generated by `wrangler types` (Env only; runtime types come from `@cloudflare/workers-types`). `pnpm typecheck` regenerates it; commit the result when `wrangler.jsonc` bindings change.
 - **CORS**: the Worker allows `https://calwise.lastlab.win` and any `localhost` origin (for `vp preview` and Playwright), with credentials so the session cookie set by the api origin travels with `/trpc` and `/api/auth` calls. Local `vp dev` proxies both paths instead, so no CORS is involved.

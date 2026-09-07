@@ -5,11 +5,13 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema.ts",
+    "./food-schema": "./src/food-schema.ts",
     "./d1": "./src/d1.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "db:generate:food": "drizzle-kit generate --config=drizzle-food.config.ts"
   },
   "dependencies": {
     "@effect/sql-d1": "catalog:",

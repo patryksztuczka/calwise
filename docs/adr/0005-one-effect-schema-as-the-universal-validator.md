@@ -1,5 +1,5 @@
 # One Effect Schema as the universal validator
 
-Domain input schemas are Effect Schema wrapped with `Schema.toStandardSchemaV1`, and the exact same object serves as the tRPC procedure input on the server and the form resolver on the client. We deliberately do not add Zod or Valibot: Effect Schema is already in the stack, and Standard Schema makes one definition validate both sides.
+Domain input schemas use Effect Schema wrapped with `Schema.toStandardSchemaV1`. Standard Schema lets the same definition validate tRPC inputs and client forms without adding Zod or Valibot.
 
-The foundation currently has no procedure that takes input, so the `@calwise/shared` package that held these schemas was removed with the prototypes. Recreate it (rather than defining inputs inside the api) when the first input schema arrives.
+Keep schemas in the API module while only the server uses them. Food inputs live next to `searchExpression` so validation and tokenization can be reviewed together. The web currently consumes only the router type from `@calwise/api/trpc`. Extract a shared package when a client needs runtime validation, giving it a second consumer.

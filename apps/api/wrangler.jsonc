@@ -6,8 +6,13 @@
   "workers_dev": false,
   "routes": [{ "pattern": "calwise-api.lastlab.win", "custom_domain": true }],
   "observability": { "enabled": true },
-  "services": [{ "binding": "FOOD_API", "service": "calwise-food-api" }],
   "d1_databases": [
+    {
+      "binding": "FOOD_DB",
+      "database_name": "calwise-food",
+      "migrations_dir": "../../packages/database/migrations-food",
+      "migrations_pattern": "../../packages/database/migrations-food/*/migration.sql",
+    },
     {
       "binding": "DB",
       // Created by Terraform (infra/). wrangler resolves the id from the name at deploy time.

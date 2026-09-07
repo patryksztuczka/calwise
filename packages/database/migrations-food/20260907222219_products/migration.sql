@@ -3,8 +3,6 @@ CREATE TABLE `products` (
 	`barcode` text NOT NULL UNIQUE,
 	`name` text NOT NULL,
 	`brands` text,
-	`search_name` text NOT NULL,
-	`search_brands` text NOT NULL,
 	`package_quantity` text,
 	`serving_size` text,
 	`energy_kcal_100g` real NOT NULL,

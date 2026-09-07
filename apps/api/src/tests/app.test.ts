@@ -1,25 +1,9 @@
-import { Effect, ManagedRuntime } from "effect";
 import { describe, expect, it } from "vitest";
 import { app } from "../app.ts";
-import { AuthService } from "../modules/auth/auth-service.ts";
 import { GreetingService } from "../modules/greeting/greeting-service.ts";
+import { testEnv } from "./test-env.ts";
 
-const runtime = ManagedRuntime.make(
-  GreetingService.testLayer({ id: 1, message: "Hello from the test layer" }),
-);
-const env = {
-  foodApi: {
-    fetch: async (request: Request) =>
-      Response.json({
-        path: new URL(request.url).pathname,
-        query: new URL(request.url).search,
-        cookie: request.headers.get("cookie"),
-      }),
-  },
-  run: <A, E>(effect: Effect.Effect<A, E, GreetingService>) => runtime.runPromise(effect),
-  // No database: Better Auth keeps users in memory for the lifetime of this instance.
-  auth: AuthService.make({ secret: "test-secret-that-is-long-enough-for-better-auth" }),
-};
+const env = testEnv(GreetingService.testLayer({ id: 1, message: "Hello from the test layer" }));
 
 interface Credentials {
   readonly email: string;
@@ -39,19 +23,6 @@ const json = (path: string, body: Credentials, headers: Record<string, string> =
   );
 
 describe("api", () => {
-  it("forwards food requests without session credentials", async () => {
-    const response = await app.request(
-      "/foods/search?q=ser&limit=5",
-      { headers: { Cookie: "secret" } },
-      env,
-    );
-    expect(await response.json()).toEqual({
-      path: "/foods/search",
-      query: "?q=ser&limit=5",
-      cookie: null,
-    });
-  });
-
   it("responds on /health", async () => {
     const res = await app.request("/health", undefined, env);
     expect(res.status).toBe(200);
@@ -63,6 +34,18 @@ describe("api", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
       result: { data: { id: 1, message: "Hello from the test layer" } },
+    });
+  });
+
+  it("returns 404 when no greeting exists", async () => {
+    const res = await app.request(
+      "/trpc/greeting.current",
+      undefined,
+      testEnv(GreetingService.testLayer(undefined)),
+    );
+    expect(res.status).toBe(404);
+    expect(await res.json()).toMatchObject({
+      error: { message: "greeting not found", data: { code: "NOT_FOUND" } },
     });
   });
 

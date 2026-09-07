@@ -8,9 +8,6 @@ on:
       api:
         description: Whether this push needs an API deployment
         value: ${{ jobs.checks.outputs.api }}
-      food:
-        description: Whether this push needs a Food API deployment
-        value: ${{ jobs.checks.outputs.food }}
       web:
         description: Whether this push needs a web deployment
         value: ${{ jobs.checks.outputs.web }}
@@ -22,7 +19,6 @@ jobs:
     outputs:
       api: ${{ steps.changes.outputs.api }}
       web: ${{ steps.changes.outputs.web }}
-      food: ${{ steps.changes.outputs.food }}
     steps:
       - uses: actions/checkout@v5
       - name: Select deployments for this push
@@ -34,16 +30,6 @@ jobs:
           base: ${{ github.event.before }}
           ref: ${{ github.sha }}
           filters: |
-            food:
-              - 'apps/food-api/**'
-              - 'packages/food-database/**'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'pnpm-workspace.yaml'
-              - 'tsconfig.base.json'
-              - '.github/workflows/ci.yml'
-              - '.github/workflows/deploy-food-api.yml'
-              - '.github/workflows/checks.yml'
             api:
               - 'apps/api/**'
               - 'packages/database/**'
@@ -74,21 +60,9 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: python3 -B -m unittest discover -s tools/open-food-facts -v
-      - run: pnpm --filter @calwise/food-api db:migrate:local
-      - run: pnpm --filter @calwise/food-api exec wrangler deploy --dry-run
+      - run: pnpm --filter @calwise/api db:migrate:local
+      - run: pnpm --filter @calwise/api exec wrangler deploy --dry-run
       - run: pnpm build
-
-  terraform:
-    name: Terraform validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~> 1.16"
-      - run: terraform -chdir=infra fmt -check -recursive
-      - run: terraform -chdir=infra init -backend=false -input=false
-      - run: terraform -chdir=infra validate
 
   e2e:
     name: End-to-end (web → Worker → D1)

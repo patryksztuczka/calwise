@@ -9,7 +9,7 @@ Terraform (Cloudflare provider 5.x) owns the long-lived platform resources; wran
 | Pages project `calwise` + `calwise.lastlab.win`  | Terraform | `main.tf`                            |
 | Worker `calwise-api` + `calwise-api.lastlab.win` | wrangler  | `apps/api/wrangler.jsonc` on deploy  |
 
-The food catalog adds a separate Terraform-managed D1 database, `calwise-food`, and a Wrangler-managed private Worker, `calwise-food-api`. The existing API binds that Worker as `FOOD_API`; it has no public hostname. See [Food API rollout](../apps/food-api/README.md#production-rollout) for the required infrastructure apply before the first deployment and the one-time product import.
+The food catalog adds a separate Terraform-managed D1 database, `calwise-food`. The existing API Worker binds it as `FOOD_DB` alongside the user database. See [food catalog rollout](../tools/open-food-facts/README.md#production-rollout) for the required infrastructure apply before the first deployment and the one-time product import.
 
 ## One-time bootstrap
 

@@ -11,37 +11,9 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
+from fields import NUMBER_FIELDS, TAG_FIELDS, TEXT_FIELDS
+
 SOURCE_URL = "https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz"
-TEXT_FIELDS = {
-    "code": "barcode",
-    "product_name": "name",
-    "brands": "brands",
-    "quantity": "package_quantity",
-    "serving_size": "serving_size",
-    "url": "source_url",
-    "image_url": "image_url",
-    "image_small_url": "thumbnail_url",
-}
-NUMBER_FIELDS = {
-    "energy-kcal_100g": "energy_kcal_100g",
-    "energy-kj_100g": "energy_kj_100g",
-    "fat_100g": "fat_100g",
-    "saturated-fat_100g": "saturated_fat_100g",
-    "carbohydrates_100g": "carbohydrates_100g",
-    "sugars_100g": "sugars_100g",
-    "fiber_100g": "fiber_100g",
-    "proteins_100g": "protein_100g",
-    "salt_100g": "salt_100g",
-    "sodium_100g": "sodium_100g",
-    "last_modified_t": "source_modified_at",
-}
-TAG_FIELDS = {
-    "countries_tags": "countries",
-    "categories_tags": "categories",
-    "allergens": "allergens",
-    "traces_tags": "traces",
-    "data_quality_errors_tags": "data_quality_errors",
-}
 
 
 def tags(value):

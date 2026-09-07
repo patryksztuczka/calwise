@@ -1,18 +1,13 @@
 import { Database, type Greeting, greetings } from "@calwise/database";
 import { asc } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
-import { Context, Effect, Layer, Schema } from "effect";
-
-export class GreetingNotFound extends Schema.TaggedError<GreetingNotFound>()(
-  "GreetingNotFound",
-  {},
-) {}
+import { Context, Effect, Layer } from "effect";
 
 export class GreetingService extends Context.Service<
   GreetingService,
   {
     /** The seeded greeting: the first row of `greetings`. */
-    readonly current: Effect.Effect<Greeting, GreetingNotFound | EffectDrizzleQueryError>;
+    readonly current: Effect.Effect<Greeting | undefined, EffectDrizzleQueryError>;
   }
 >()("@calwise/GreetingService") {
   static readonly current = Effect.flatMap(GreetingService, (service) => service.current);
@@ -28,9 +23,7 @@ export class GreetingService extends Context.Service<
         .orderBy(asc(greetings.id))
         .limit(1)
         .pipe(
-          Effect.flatMap((rows) =>
-            rows[0] === undefined ? Effect.fail(new GreetingNotFound()) : Effect.succeed(rows[0]),
-          ),
+          Effect.map((rows) => rows[0]),
           Effect.withSpan("GreetingService.current"),
         );
 
@@ -39,6 +32,6 @@ export class GreetingService extends Context.Service<
   );
 
   /** In-memory implementation for tests — no D1 required. */
-  static readonly testLayer = (greeting: Greeting) =>
+  static readonly testLayer = (greeting: Greeting | undefined) =>
     Layer.succeed(GreetingService, { current: Effect.succeed(greeting) });
 }

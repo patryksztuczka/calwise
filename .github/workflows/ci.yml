@@ -14,18 +14,9 @@ jobs:
   checks:
     uses: ./.github/workflows/checks.yml
 
-  deploy-food-api:
-    needs: checks
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.checks.outputs.food == 'true'
-    uses: ./.github/workflows/deploy-food-api.yml
-    secrets: inherit
-
   deploy-api:
-    needs: [checks, deploy-food-api]
-    if: >-
-      always() && !cancelled() && needs.checks.result == 'success' &&
-      (needs.deploy-food-api.result == 'success' || needs.deploy-food-api.result == 'skipped') &&
-      github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.checks.outputs.api == 'true'
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.checks.outputs.api == 'true'
     uses: ./.github/workflows/deploy-api.yml
     secrets: inherit
 

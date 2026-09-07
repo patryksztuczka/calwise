@@ -7,11 +7,7 @@ import type { Auth } from "./modules/auth/auth-service.ts";
 import { appRouter } from "./trpc-router.ts";
 
 export interface AppEnv {
-  Bindings: {
-    readonly run: RunEffect;
-    readonly auth: Auth;
-    readonly foodApi: { readonly fetch: (request: Request) => Promise<Response> };
-  };
+  Bindings: { readonly run: RunEffect; readonly auth: Auth };
 }
 
 /** The HTTP surface. Platform-agnostic: the Worker entrypoint passes `run` and `auth` as the Hono env. */
@@ -25,11 +21,6 @@ const credentialedCors = cors({
 });
 app.use("/api/auth/*", credentialedCors);
 app.use("/trpc/*", credentialedCors);
-app.use("/foods/*", credentialedCors);
-
-// Forward read-only catalog requests without cookies or authorization headers.
-app.get("/foods/search", (c) => c.env.foodApi.fetch(new Request(c.req.url)));
-app.get("/foods/barcode/:barcode", (c) => c.env.foodApi.fetch(new Request(c.req.url)));
 
 app.on(["GET", "POST"], "/api/auth/*", (c) => c.env.auth.handler(c.req.raw));
 

@@ -4,18 +4,15 @@
 import argparse
 import json
 import math
-import unicodedata
 from pathlib import Path
 
-TEXT = ["barcode", "name", "brands", "package_quantity", "serving_size", "source_url", "image_url", "thumbnail_url"]
-NUMBERS = ["energy_kcal_100g", "energy_kj_100g", "fat_100g", "saturated_fat_100g", "carbohydrates_100g", "sugars_100g", "fiber_100g", "protein_100g", "salt_100g", "sodium_100g", "source_modified_at"]
-TAGS = ["countries", "categories", "allergens", "traces", "data_quality_errors"]
+from fields import NUMBER_FIELDS, TAG_FIELDS, TEXT_FIELDS
+
+TEXT = list(TEXT_FIELDS.values())
+NUMBERS = list(NUMBER_FIELDS.values())
+TAGS = list(TAG_FIELDS.values())
 REQUIRED = ["name", "energy_kcal_100g", "fat_100g", "carbohydrates_100g", "protein_100g"]
-COLUMNS = TEXT + NUMBERS + TAGS + ["search_name", "search_brands"]
-
-
-def normalize(value):
-    return "".join(c for c in unicodedata.normalize("NFD", value or "") if unicodedata.category(c) != "Mn").lower().replace("ł", "l")
+COLUMNS = TEXT + NUMBERS + TAGS
 
 
 def literal(value):
@@ -31,7 +28,8 @@ def literal(value):
 
 
 def statement(product):
-    if "en:poland" not in product["countries"] or any(product.get(key) is None for key in REQUIRED):
+    # Input is the Poland JSONL selected by extract_poland.py.
+    if any(product.get(key) is None for key in REQUIRED):
         return None
     if not product["name"].strip():
         return None
@@ -43,7 +41,6 @@ def statement(product):
             raise ValueError(f"Invalid nutrient or timestamp: {key}")
     values = [product.get(key) for key in TEXT + NUMBERS]
     values += [json.dumps(product[key], ensure_ascii=False) for key in TAGS]
-    values += [normalize(product["name"]), normalize(product.get("brands"))]
     updates = ", ".join(f"{column}=excluded.{column}" for column in COLUMNS if column != "barcode")
     sql = f"INSERT INTO products ({', '.join(COLUMNS)}) VALUES ({', '.join(literal(value) for value in values)}) ON CONFLICT(barcode) DO UPDATE SET {updates};\n"
     if len(sql.encode()) > 95_000:

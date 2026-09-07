@@ -1,9 +1,10 @@
 import { defineConfig } from "@playwright/test";
 
-// End-to-end check of browser → Worker → D1, all emulated locally:
-// wrangler dev serves the Worker with a migrated local D1, and the web
-// build points at it through VITE_API_URL so the CORS path is exercised too.
-const apiUrl = "http://localhost:8787";
+import { apiUrl } from "./e2e/urls.ts";
+
+// This suite covers browser flows and direct API integration against local D1.
+// wrangler serves the Worker with migrated, seeded databases; the web build
+// uses VITE_API_URL to exercise CORS on browser requests.
 const webUrl = "http://localhost:4173";
 
 export default defineConfig({
@@ -15,18 +16,11 @@ export default defineConfig({
   use: { baseURL: webUrl, trace: "retain-on-failure" },
   webServer: [
     {
-      command:
-        "pnpm exec wrangler d1 migrations apply calwise-food --local --persist-to=.wrangler/e2e-state && python3 ../../tools/open-food-facts/prepare_import.py ../../tools/open-food-facts/fixtures/poland.jsonl .wrangler/food-fixture.sql && pnpm exec wrangler d1 execute calwise-food --local --persist-to=.wrangler/e2e-state --file=.wrangler/food-fixture.sql && pnpm dev --persist-to=.wrangler/e2e-state",
-      cwd: "../food-api",
-      url: "http://localhost:8788/health",
-      reuseExistingServer: false,
-      timeout: 120_000,
-    },
-    {
-      command: "pnpm db:migrate:local && pnpm dev",
+      command: "pnpm e2e:serve",
       cwd: "../api",
       url: `${apiUrl}/health`,
-      reuseExistingServer: !process.env.CI,
+      // A dev server may use different D1 state. Require our seeded e2e instance.
+      reuseExistingServer: false,
       timeout: 120_000,
     },
     {

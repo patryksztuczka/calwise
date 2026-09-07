@@ -1,3 +1,4 @@
+import { getTableColumns } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const products = sqliteTable("products", {
@@ -5,8 +6,6 @@ export const products = sqliteTable("products", {
   barcode: text("barcode").notNull().unique(),
   name: text("name").notNull(),
   brands: text("brands"),
-  searchName: text("search_name").notNull(),
-  searchBrands: text("search_brands").notNull(),
   packageQuantity: text("package_quantity"),
   servingSize: text("serving_size"),
   energyKcal100g: real("energy_kcal_100g").notNull(),
@@ -30,4 +29,8 @@ export const products = sqliteTable("products", {
   sourceModifiedAt: integer("source_modified_at").notNull(),
 });
 
-export type Product = typeof products.$inferSelect;
+// Public catalog queries omit the internal row ID.
+const { id: _id, ...publicProductColumns } = getTableColumns(products);
+export { publicProductColumns };
+
+export type Product = Pick<typeof products.$inferSelect, keyof typeof publicProductColumns>;

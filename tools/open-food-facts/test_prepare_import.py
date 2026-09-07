@@ -12,7 +12,7 @@ class ImportTests(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(":memory:")
         self.addCleanup(self.db.close)
-        for migration in sorted((ROOT / "packages/food-database/migrations").glob("*/migration.sql")):
+        for migration in sorted((ROOT / "packages/database/migrations-food").glob("*/migration.sql")):
             self.db.executescript(migration.read_text())
         self.product = json.loads((Path(__file__).parent / "fixtures/poland.jsonl").read_text())
 
@@ -30,11 +30,37 @@ class ImportTests(unittest.TestCase):
         self.db.execute("DELETE FROM products")
         self.assertEqual(self.db.execute("SELECT count(*) FROM products_fts WHERE products_fts MATCH 'mleko' ").fetchone()[0], 0)
 
-    def test_incomplete_and_non_polish_products_are_excluded(self):
+    def test_tokenizer_matches_the_typescript_query_contract(self):
+        fixture = json.loads((Path(__file__).parent / "fixtures/search.json").read_text())
+        self.product["name"] = fixture["name"]
+        self.db.executescript(statement(self.product))
+        for case in fixture["queries"]:
+            with self.subTest(query=case["query"]):
+                count = self.db.execute(
+                    "SELECT count(*) FROM products_fts WHERE products_fts MATCH ?",
+                    (case["expression"],),
+                ).fetchone()[0]
+                self.assertEqual(count, 1)
+
+    def test_brand_folding_and_null_brand_updates(self):
+        self.product["brands"] = "Łąka"
+        self.db.executescript(statement(self.product))
+        self.assertEqual(self.db.execute("SELECT count(*) FROM products_fts WHERE products_fts MATCH 'laka*'").fetchone()[0], 1)
+        self.product["brands"] = None
+        self.db.executescript(statement(self.product))
+        self.assertEqual(self.db.execute("SELECT count(*) FROM products_fts WHERE products_fts MATCH 'laka*'").fetchone()[0], 0)
+        self.assertEqual(self.db.execute("SELECT count(*) FROM products_fts WHERE products_fts MATCH 'zolty*'").fetchone()[0], 1)
+
+    def test_search_migration_indexes_existing_products(self):
+        with sqlite3.connect(":memory:") as db:
+            migrations = sorted((ROOT / "packages/database/migrations-food").glob("*/migration.sql"))
+            db.executescript(migrations[0].read_text())
+            db.executescript(statement(self.product))
+            db.executescript(migrations[1].read_text())
+            self.assertEqual(db.execute("SELECT count(*) FROM products_fts WHERE products_fts MATCH 'zolty*'").fetchone()[0], 1)
+
+    def test_incomplete_products_are_excluded(self):
         self.product["protein_100g"] = None
-        self.assertIsNone(statement(self.product))
-        self.product["protein_100g"] = 25
-        self.product["countries"] = ["en:germany"]
         self.assertIsNone(statement(self.product))
 
     def test_sql_injection_remains_literal_text(self):
