@@ -61,10 +61,7 @@ export function pwaPlugins() {
     },
     transformIndexHtml(html) {
       return {
-        html: html.replace(
-          /<title>.*?<\/title>/,
-          `<title>${branding.name} · Wyszukiwarka produktów</title>`,
-        ),
+        html: html.replace(/<title>.*?<\/title>/, `<title>${branding.name}</title>`),
         tags: [
           {
             tag: "link",
