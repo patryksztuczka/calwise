@@ -23,6 +23,7 @@ export default function App() {
         <Route element={<RequireAuth />}>
           <Route element={<AppShell showNavigation={false} />}>
             <Route path="scan" element={<ScanBarcodePage />} />
+            <Route path="log-food" element={<LogFoodPage />} />
           </Route>
         </Route>
         <Route element={<AppShell />}>
@@ -30,7 +31,6 @@ export default function App() {
           <Route path="greeting" element={<GreetingPage />} />
           <Route element={<RequireAuth />}>
             <Route index element={<TodayPage />} />
-            <Route path="log-food" element={<LogFoodPage />} />
             <Route path="*" element={<ComingSoonPage />} />
           </Route>
         </Route>
