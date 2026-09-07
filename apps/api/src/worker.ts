@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { Worker } from "effect-cf";
+import { Worker, WorkerEnvironment } from "effect-cf";
 import { app } from "./app.ts";
 import type { RunEffect } from "./http/trpc.ts";
 import { AppLayer, type AppServices } from "./layers.ts";
@@ -11,9 +11,12 @@ export default Worker.make(
   AppLayer,
   Effect.gen(function* () {
     const request = yield* Worker.NativeRequest;
+    const env = yield* WorkerEnvironment;
     const auth = yield* AuthService;
     const services = yield* Effect.context<AppServices>();
     const run: RunEffect = Effect.runPromiseWith(services);
-    return yield* Effect.promise(() => Promise.resolve(app.fetch(request, { run, auth })));
+    return yield* Effect.promise(() =>
+      Promise.resolve(app.fetch(request, { run, auth, foodApi: env.FOOD_API })),
+    );
   }),
 );

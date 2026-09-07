@@ -8,7 +8,9 @@
   "trailingComma": "all",
   "ignorePatterns": [
     "packages/database/migrations/",
+    "packages/food-database/migrations/",
     "apps/api/worker-configuration.d.ts",
+    "apps/food-api/worker-configuration.d.ts",
     ".wrangler/",
     ".agent-sources/",
     ".agent/**",

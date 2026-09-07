@@ -1,0 +1,25 @@
+{
+  "name": "@calwise/food-database",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./d1": "./src/d1.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@effect/sql-d1": "catalog:",
+    "drizzle-orm": "catalog:",
+    "effect": "catalog:",
+    "effect-cf": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "drizzle-kit": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  }
+}

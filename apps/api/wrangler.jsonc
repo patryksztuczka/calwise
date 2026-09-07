@@ -6,6 +6,7 @@
   "workers_dev": false,
   "routes": [{ "pattern": "calwise-api.lastlab.win", "custom_domain": true }],
   "observability": { "enabled": true },
+  "services": [{ "binding": "FOOD_API", "service": "calwise-food-api" }],
   "d1_databases": [
     {
       "binding": "DB",

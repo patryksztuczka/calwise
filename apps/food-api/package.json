@@ -1,0 +1,26 @@
+{
+  "name": "@calwise/food-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8788",
+    "db:migrate:local": "wrangler d1 migrations apply calwise-food --local",
+    "db:migrate:remote": "wrangler d1 migrations apply calwise-food --remote",
+    "deploy": "wrangler deploy",
+    "typecheck": "wrangler types --include-runtime=false && tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@calwise/food-database": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "effect": "catalog:",
+    "effect-cf": "catalog:",
+    "hono": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

@@ -15,6 +15,14 @@ export default defineConfig({
   use: { baseURL: webUrl, trace: "retain-on-failure" },
   webServer: [
     {
+      command:
+        "pnpm exec wrangler d1 migrations apply calwise-food --local --persist-to=.wrangler/e2e-state && python3 ../../tools/open-food-facts/prepare_import.py ../../tools/open-food-facts/fixtures/poland.jsonl .wrangler/food-fixture.sql && pnpm exec wrangler d1 execute calwise-food --local --persist-to=.wrangler/e2e-state --file=.wrangler/food-fixture.sql && pnpm dev --persist-to=.wrangler/e2e-state",
+      cwd: "../food-api",
+      url: "http://localhost:8788/health",
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+    {
       command: "pnpm db:migrate:local && pnpm dev",
       cwd: "../api",
       url: `${apiUrl}/health`,

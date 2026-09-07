@@ -8,6 +8,14 @@ const runtime = ManagedRuntime.make(
   GreetingService.testLayer({ id: 1, message: "Hello from the test layer" }),
 );
 const env = {
+  foodApi: {
+    fetch: async (request: Request) =>
+      Response.json({
+        path: new URL(request.url).pathname,
+        query: new URL(request.url).search,
+        cookie: request.headers.get("cookie"),
+      }),
+  },
   run: <A, E>(effect: Effect.Effect<A, E, GreetingService>) => runtime.runPromise(effect),
   // No database: Better Auth keeps users in memory for the lifetime of this instance.
   auth: AuthService.make({ secret: "test-secret-that-is-long-enough-for-better-auth" }),
@@ -31,6 +39,19 @@ const json = (path: string, body: Credentials, headers: Record<string, string> =
   );
 
 describe("api", () => {
+  it("forwards food requests without session credentials", async () => {
+    const response = await app.request(
+      "/foods/search?q=ser&limit=5",
+      { headers: { Cookie: "secret" } },
+      env,
+    );
+    expect(await response.json()).toEqual({
+      path: "/foods/search",
+      query: "?q=ser&limit=5",
+      cookie: null,
+    });
+  });
+
   it("responds on /health", async () => {
     const res = await app.request("/health", undefined, env);
     expect(res.status).toBe(200);

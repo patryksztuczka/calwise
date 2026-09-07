@@ -9,6 +9,8 @@ Terraform (Cloudflare provider 5.x) owns the long-lived platform resources; wran
 | Pages project `calwise` + `calwise.lastlab.win`  | Terraform | `main.tf`                            |
 | Worker `calwise-api` + `calwise-api.lastlab.win` | wrangler  | `apps/api/wrangler.jsonc` on deploy  |
 
+The food catalog adds a separate Terraform-managed D1 database, `calwise-food`, and a Wrangler-managed private Worker, `calwise-food-api`. The existing API binds that Worker as `FOOD_API`; it has no public hostname. See [Food API rollout](../apps/food-api/README.md#production-rollout) for the required infrastructure apply before the first deployment and the one-time product import.
+
 ## One-time bootstrap
 
 1. Create a Cloudflare API token with: Account → D1 Edit, Workers Scripts Edit, Workers R2 Storage Edit, Cloudflare Pages Edit; Zone (`lastlab.win`) → Zone Read, DNS Edit, Workers Routes Edit, SSL and Certificates Edit.
