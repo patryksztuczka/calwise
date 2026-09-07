@@ -7,8 +7,21 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Never interrupt a production migration or deployment with a newer push.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
+
+  deploy-api:
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.checks.outputs.api == 'true'
+    uses: ./.github/workflows/deploy-api.yml
+    secrets: inherit
+
+  deploy-web:
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.checks.outputs.web == 'true'
+    uses: ./.github/workflows/deploy-web.yml
+    secrets: inherit

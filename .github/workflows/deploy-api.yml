@@ -1,31 +1,22 @@
 name: Deploy API
 
-# Applies pending D1 migrations, then deploys the Worker. Independent of the
-# frontend workflow; a failed run is the only signal (no rollback).
+# Called by CI after shared checks pass. Applies pending D1 migrations,
+# then deploys the Worker, independently of the frontend deployment.
 on:
-  push:
-    branches: [master]
-    paths:
-      - apps/api/**
-      - packages/database/**
-      - package.json
-      - pnpm-lock.yaml
-      - pnpm-workspace.yaml
-      - tsconfig.base.json
-      - .github/workflows/deploy-api.yml
-      - .github/workflows/checks.yml
+  workflow_call:
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
 
 concurrency:
   group: deploy-api
   cancel-in-progress: false
 
 jobs:
-  checks:
-    uses: ./.github/workflows/checks.yml
-
   deploy:
     name: Migrate D1 and deploy Worker
-    needs: checks
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

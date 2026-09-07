@@ -28,7 +28,7 @@ packages/
   database/       # @calwise/database — drizzle schema, generated migrations, Effect Database service
     migrations/   # drizzle-kit output, applied by wrangler d1 migrations
 infra/            # Terraform: D1, Pages project + domain, DNS; bootstrap/ creates the R2 state bucket
-.github/workflows # ci, deploy-api, deploy-web, infra (manual), checks (reusable)
+.github/workflows # ci, infra (manual), checks/deploy-api/deploy-web (reusable)
 docs/adr/         # architecture decision records
 CONTEXT-MAP.md    # domain contexts and where each module's CONTEXT.md lives
 vite.config.ts    # root Vite+ config; imports .oxfmtrc.json / .oxlintrc.json
@@ -70,12 +70,14 @@ Inside `apps/api`: `pnpm db:migrate:remote` and `pnpm deploy` are what CD runs; 
 
 Infrastructure must exist before the first application deployment. See [infra/README.md](./infra/README.md) for the one-time bootstrap (state bucket, API tokens, repository secrets) and the manual **Infrastructure** workflow.
 
-After that, pushes to `master` deploy automatically:
+After that, `CI` runs `checks.yml` once per pull request update or push to `master`: formatting, lint, typecheck, unit tests, builds, and the Playwright end-to-end test against emulated Cloudflare services. Pull requests never deploy. On pushes to `master`, both check jobs must pass before CI calls the applicable deployment workflows:
 
-- **Deploy API** (`.github/workflows/deploy-api.yml`): on changes under `apps/api` or `packages/database`, runs the checks, applies D1 migrations remotely, then deploys the Worker. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
-- **Deploy Web** (`.github/workflows/deploy-web.yml`): on changes under `apps/web` (or the api's router types), runs the checks, builds with `VITE_API_URL=https://calwise-api.lastlab.win`, and publishes `dist` to the `calwise` Pages project.
+- **Deploy API** (`.github/workflows/deploy-api.yml`): changes under `apps/api` or `packages/database` trigger remote D1 migrations, then a Worker deploy. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
+- **Deploy Web** (`.github/workflows/deploy-web.yml`): changes under `apps/web` or the api's router types trigger a build with `VITE_API_URL=https://calwise-api.lastlab.win`, then publish `dist` to the `calwise` Pages project.
 
-Neither workflow waits for the other. Every workflow, including `CI` on pull requests, runs the same reusable `checks.yml`: formatting, lint, typecheck, unit tests, builds, and the Playwright end-to-end test against emulated Cloudflare services. A failed run is a normal failed GitHub Actions run; there is no automatic rollback.
+Shared package configuration, the lockfile, root TypeScript configuration, and the CI/checks workflows trigger both deployments. Each deployment workflow also triggers its own deployment when changed. Path matching covers all commits in the push.
+
+Neither deployment waits for the other, and neither reruns the checks. A push affecting both apps runs four jobs total: two check jobs and two deployment jobs. New pull request updates cancel outdated CI runs; master runs do not cancel in-progress migrations or deployments. A failed deployment is a normal failed GitHub Actions run; there is no automatic rollback.
 
 ## Effect typechecking
 
