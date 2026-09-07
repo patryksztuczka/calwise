@@ -1,0 +1,41 @@
+name: Checks
+on:
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm exec vp fmt --check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+        env:
+          VITE_API_URL: https://calwise-api.lastlab.win
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: apps/web/dist
+          if-no-files-found: error
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.0
+      - run: terraform fmt -check -recursive infra
+      - run: terraform -chdir=infra init -backend=false -lockfile=readonly
+      - run: terraform -chdir=infra validate
+      - run: terraform -chdir=infra/bootstrap init -backend=false -lockfile=readonly
+      - run: terraform -chdir=infra/bootstrap validate

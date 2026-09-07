@@ -1,3 +1,5 @@
-# One Effect Schema as the universal validator
+# Effect Schema as the shared validator
 
-Domain input schemas live in `@calwise/shared` as Effect Schema wrapped with `Schema.toStandardSchemaV1`, and the exact same object serves as the tRPC procedure input on the server and the react-hook-form resolver on the client. We deliberately did not add Zod or Valibot: Effect Schema is already in the stack, and Standard Schema makes one definition validate both sides.
+Shared API schemas live in `@calwise/shared`. tRPC uses `Schema.toStandardSchemaV1` to validate the greeting response, so we don't need another validation library.
+
+The Hello World foundation has no user inputs or forms. Future inputs should use shared schemas rather than duplicating validation between applications.

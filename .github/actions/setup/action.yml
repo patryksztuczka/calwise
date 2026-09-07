@@ -1,0 +1,11 @@
+name: Set up workspace
+description: Install the pinned Node and pnpm toolchain and workspace dependencies.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+    - uses: pnpm/action-setup@v4
+    - shell: bash
+      run: pnpm install --frozen-lockfile

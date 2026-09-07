@@ -6,3 +6,16 @@ dist/
 .vite/
 .vp/
 coverage/
+.wrangler/
+.wrangler-test/
+.dev.vars*
+wrangler.production.json
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+*.tfvars
+*.tfbackend
+test-results/
+playwright-report/

@@ -1,8 +1,5 @@
 # Packages ship raw TypeScript source
 
-Workspace packages export their `src/*.ts(x)` files directly through `exports` maps — no build step, no `dist`, no declaration emit anywhere except the web bundle. The api runs on Node 26 native type stripping (`node src/index.ts`), and cross-package types resolve through pnpm workspace symlinks. This removes a whole class of build orchestration (project references, watch pipelines, stale-dist bugs) at the cost of requiring every consumer to compile our source itself — acceptable because all packages are private to this workspace.
+Private workspace packages export their source files directly, without separate package builds or declaration output. Wrangler bundles backend dependencies and Vite+ bundles frontend dependencies, avoiding stale package build artifacts and extra watch pipelines.
 
-## Consequences
-
-- Type-level syntax must be erasable (`erasableSyntaxOnly`), and Node-resolved imports use explicit `.ts`/`.tsx` extensions.
-- Tailwind scans `packages/ui` source directly (`@source` in `apps/web/src/index.css`), since no built CSS exists.
+Type syntax remains erasable, and backend imports use explicit `.ts` extensions. Node 26 runs repository scripts, not the production API.

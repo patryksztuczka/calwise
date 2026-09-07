@@ -8,20 +8,18 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:generate": "drizzle-kit generate && node ../../tools/sync-migrations.ts"
   },
   "dependencies": {
-    "@effect/sql-pg": "catalog:",
+    "@effect/sql-d1": "catalog:",
+    "@effect/sql-sqlite-do": "catalog:",
     "drizzle-orm": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "effect-cf": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
+    "@cloudflare/workers-types": "catalog:",
     "drizzle-kit": "catalog:",
-    "pg": "catalog:",
     "typescript": "catalog:"
   }
 }

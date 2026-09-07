@@ -1,8 +1,5 @@
-# Vite+ as the single toolchain
+# Vite+ as the workspace toolchain
 
-We use Vite+ (`vp`) for everything the workspace needs — dev server, build, test runner (Vitest), linter (Oxlint), formatter (Oxfmt), and cached task orchestration — instead of the usual stack of Turbo/Nx plus standalone ESLint, Prettier, and Vitest. One tool and one config surface beat five tools with overlapping responsibilities; the trade-off is betting on a young toolchain (`vite-plus` 0.x) over battle-tested incumbents.
+We use Vite+ for frontend development and builds, Oxlint, Oxfmt, and workspace task orchestration instead of adding Turbo or Nx. Wrangler handles the Workers runtime and deployment, and Playwright verifies the browser-to-D1 connection against that runtime.
 
-## Consequences
-
-- `vp` only reads configuration from `vite.config.ts`, so the root config imports `.oxlintrc.json` / `.oxfmtrc.json` (kept as dotfiles for editor integration) and passes them through. The dotfiles remain the single source of truth.
-- The `vitest`, `oxlint`, and `oxfmt` catalog versions must track the versions bundled by `vite-plus`.
+The root `vite.config.ts` imports `.oxlintrc.json` and `.oxfmtrc.json`, which remain the shared configuration for editors and commands. Catalog versions for bundled tools must track Vite+.

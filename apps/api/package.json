@@ -6,28 +6,26 @@
     "./trpc": "./src/trpc-router.ts"
   },
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=../../.env src/index.ts",
-    "start": "node --env-file-if-exists=../../.env src/index.ts",
-    "typecheck": "tsc -p tsconfig.json"
+    "dev": "wrangler dev --local --port 8787",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "typecheck": "tsc -p tsconfig.json",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote --config wrangler.production.json",
+    "deploy": "wrangler deploy --config wrangler.production.json"
   },
   "dependencies": {
     "@calwise/database": "workspace:*",
     "@calwise/shared": "workspace:*",
-    "@hono/node-server": "catalog:",
     "@hono/trpc-server": "catalog:",
     "@trpc/server": "catalog:",
-    "drizzle-orm": "catalog:",
     "effect": "catalog:",
+    "effect-cf": "catalog:",
     "hono": "catalog:"
   },
   "devDependencies": {
-    "@effect/vitest": "catalog:",
-    "@testcontainers/postgresql": "catalog:",
-    "@types/node": "catalog:",
-    "@types/pg": "catalog:",
-    "pg": "catalog:",
+    "@cloudflare/workers-types": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "wrangler": "catalog:"
   }
 }

@@ -1,16 +1,33 @@
-import { serve } from "@hono/node-server";
-import { Config } from "effect";
-import { app } from "./app.ts";
-import { runtime } from "./runtime.ts";
+import { Database } from "@calwise/database";
+import { TRPCError } from "@trpc/server";
+import { Effect } from "effect";
+import { Worker } from "effect-cf";
+import { createApp } from "./app.ts";
 
-const port = await runtime.runPromise(Config.port("PORT").pipe(Config.withDefault(3000)));
-const server = serve({ fetch: app.fetch, port }, (info) => {
-  console.info(`api listening on http://localhost:${info.port}`);
+export default Worker.makeFetchHandler(Database.layer, {
+  fetch: Effect.gen(function* () {
+    const request = yield* Worker.NativeRequest;
+    const context = yield* Effect.context<Database>();
+    const runPromise = Effect.runPromiseWith(context);
+    const app = createApp({
+      greeting: () =>
+        runPromise(
+          Effect.gen(function* () {
+            const db = yield* Database;
+            const message = yield* db.greeting;
+            return { message, database: "D1" as const };
+          }).pipe(
+            Effect.tapError((error) => Effect.logError(error)),
+            Effect.mapError(
+              () =>
+                new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message: "Database unavailable",
+                }),
+            ),
+          ),
+        ),
+    });
+    return yield* Effect.promise(() => Promise.resolve(app.fetch(request)));
+  }),
 });
-
-const shutdown = () => {
-  server.close();
-  void runtime.dispose().finally(() => process.exit(0));
-};
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);

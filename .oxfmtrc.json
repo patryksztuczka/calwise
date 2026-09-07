@@ -7,6 +7,12 @@
   "singleQuote": false,
   "trailingComma": "all",
   "ignorePatterns": [
+    "**/.wrangler/**",
+    "**/.wrangler-test/**",
+    "**/.terraform/**",
+    "**/wrangler.production.json",
+    "test-results/",
+    "playwright-report/",
     "packages/database/drizzle/",
     ".agent-sources/",
     ".agent/**",

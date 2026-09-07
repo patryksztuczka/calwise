@@ -3,11 +3,9 @@ packages:
   - packages/*
 
 allowBuilds:
-  cpu-features: true
+  workerd: true
   esbuild: true
   msgpackr-extract: true
-  protobufjs: true
-  ssh2: true
 
 catalog:
   # toolchain
@@ -33,19 +31,26 @@ catalog:
   "@trpc/client": ^11.18.0
   "@trpc/tanstack-react-query": ^11.18.0
   "@tanstack/react-query": ^5.102.8
-  react-hook-form: ^7.86.0
-  "@hookform/resolvers": ^5.9.1
-  "@hono/node-server": ^2.1.1
   effect: 4.0.0-rc.112
-  "@effect/sql-pg": 4.0.0-rc.112
-  "@effect/vitest": 4.0.0-rc.112
-  "@testcontainers/postgresql": ^12.1.0
+  "@effect/sql-d1": 4.0.0-rc.112
+  "@effect/sql-sqlite-do": 4.0.0-rc.112
+  effect-cf: 0.40.0
+  wrangler: 4.129.1
+  "@cloudflare/workers-types": 5.20260907.1
+  "@playwright/test": 1.63.0
   drizzle-orm: 1.0.0-rc.5-169397b
   drizzle-kit: 1.0.0-rc.4
-  pg: ^8.23.0
-  "@types/pg": ^8.23.1
 
 minimumReleaseAgeExclude:
   - hono@4.13.5
   - "@tanstack/query-core@5.102.8"
   - "@tanstack/react-query@5.102.8"
+  - "@cloudflare/workerd-darwin-64@1.20260907.1"
+  - "@cloudflare/workerd-darwin-arm64@1.20260907.1"
+  - "@cloudflare/workerd-linux-64@1.20260907.1"
+  - "@cloudflare/workerd-linux-arm64@1.20260907.1"
+  - "@cloudflare/workerd-windows-64@1.20260907.1"
+  - "@cloudflare/workers-types@5.20260907.1"
+  - miniflare@5.20260907.0-alpha
+  - workerd@1.20260907.1
+  - wrangler@4.129.1

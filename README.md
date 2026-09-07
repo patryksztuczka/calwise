@@ -1,101 +1,62 @@
-# calwise
+# Calwise
 
-pnpm workspace monorepo built on the [Vite+](https://viteplus.dev) toolchain (`vp`).
+A public Hello World foundation on Cloudflare. React calls a Hono/tRPC Worker, which reads a seeded greeting from D1 through Drizzle and Effect.
 
-## Stack
+## Local development
 
-- **Toolchain**: Vite+ (`vp` — dev server, build, Vitest 4, Oxlint, Oxfmt, task runner with caching)
-- **Package manager**: pnpm (workspace + catalog for version pinning)
-- **Runtime**: Node 26 (runs TypeScript directly via native type stripping — no build step for the API)
-- **TypeScript**: 7.x (native compiler)
-- **`apps/web`**: React 19 + Tailwind CSS 4 + tRPC client + TanStack Query + react-hook-form
-- **`apps/api`**: Hono + tRPC v11 + Effect 4 + Drizzle ORM + node-postgres
-- **Database**: PostgreSQL 18 via Docker Compose
+Use Node 26 and pnpm 11.17.0.
+
+```sh
+pnpm install
+pnpm dev
+```
+
+Open http://localhost:5173. The Worker runs at http://localhost:8787. Startup applies local migrations before starting both apps. No Cloudflare credentials, Docker, or environment file is needed.
+
+Local D1 data lives under `apps/api/.wrangler/`. Tests use a separate, freshly initialized `apps/api/.wrangler-test/` directory and never touch production.
+
+## Checks
+
+```sh
+pnpm exec playwright install chromium
+pnpm exec vp fmt --check
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test
+```
+
+The browser tests exercise the frontend, tRPC, the actual Workers runtime, and local D1. They also cover loading, network errors, database failures, API health, CORS, and rejection of writes. Tests reserve ports 4173, 8787, and 8788, so stop local development first.
+
+`pnpm build` bundles the Worker without deploying and builds the static frontend. For a production frontend build, set `VITE_API_URL=https://calwise-api.lastlab.win`. GitHub Actions does this automatically. Local development uses Vite's `/trpc` proxy instead.
 
 ## Layout
 
-```
-apps/
-  web/            # React + Tailwind, served by vp dev (port 5173, proxies /api and /trpc → :3000)
-  api/            # Hono + tRPC + Effect (port 3000)
-packages/
-  database/       # @calwise/database — drizzle schema, migrations, Effect Database service
-  shared/         # @calwise/shared — domain input schemas (Effect Schema via Standard Schema)
-  ui/             # @calwise/ui — shared React components (raw .tsx source)
-docs/adr/         # architecture decision records
-CONTEXT-MAP.md    # domain contexts and where each module's CONTEXT.md lives
-vite.config.ts    # root Vite+ config; imports .oxfmtrc.json / .oxlintrc.json
-.oxfmtrc.json     # formatting (single source of truth, also used by editors)
-.oxlintrc.json    # linting (single source of truth, also used by editors)
-docker-compose.yml
-```
+- `apps/web`: React, Tailwind, TanStack Query, and the tRPC client.
+- `apps/api`: Hono, tRPC, Effect 4, and the `effect-cf` Worker entry point.
+- `packages/database`: D1 binding, Drizzle SQLite schema, migrations, and the Effect database service.
+- `packages/shared`: shared Effect schemas.
+- `packages/ui`: reusable React components.
+- `infra`: Terraform resources and a separate state-bucket bootstrap.
+- `.github/workflows`: checks, independent frontend/backend releases, and manual infrastructure operations.
 
-## Getting started
+## Database changes
 
 ```sh
-cp .env.example .env   # database url, ports
-pnpm install
-pnpm db:up             # start postgres (docker)
-pnpm db:migrate        # apply drizzle migrations
-pnpm dev               # start web + api in parallel
+pnpm db:generate
+pnpm db:migrate:local
 ```
 
-Open http://localhost:5173 for the Polish-language barcode scanner and food text-search prototypes. Food search does not require PostgreSQL; `pnpm dev` alone is enough after installing dependencies. The existing todo API still requires the database.
+Edit `packages/database/src/schema.ts` before generating. Drizzle stores schema snapshots and SQL under `packages/database/drizzle/`. The generation command copies SQL into the flat `packages/database/migrations/` directory required by Wrangler. Commit both directories. Handwritten data migrations, such as the greeting seed, live directly in `migrations/` with timestamp-prefixed names.
 
-## Food search prototype
+Never edit an applied migration. Add a new migration instead. Backend deployment applies committed migrations automatically before uploading the Worker. Keep migrations compatible with the previous backend because database changes and application deployment are separate operations.
 
-- Submit a product or brand name, such as `skyr` or `Piątnica`. Searches use Open Food Facts with the `countries=poland` filter, 20 source records per page.
-- Select a result to calculate calories and macros for a portion. Values are per 100 g or 100 ml as recorded on the label. Use the matching unit; the prototype does not convert mass to volume.
-- Missing nutrients stay missing, not zero. Polish product names take priority; kJ converts to kcal when kcal is absent.
-- Requests time out after 15 seconds. Successful searches are cached for five minutes in a bounded server cache. Search runs on submission, not on every keystroke, to reduce requests to the public API.
-- Open Food Facts is community-maintained and licensed under ODbL. A Polish country tag does not guarantee current availability at any retailer. Coverage, spelling matches, and nutrition accuracy depend on the source. Check the product label.
-- Text search uses the public text-search endpoint, not a custom fuzzy-search index. Neither prototype includes a meal diary, saved portions, or a local product database.
+## Deployment
 
-Food search code lives in `apps/api/src/modules/food/`, its shared input and result types in `packages/shared/src/food.ts`, and the UI in `apps/web/src/app.tsx`.
+- Frontend: https://calwise.lastlab.win
+- API health: https://calwise-api.lastlab.win/health
+- Greeting: https://calwise-api.lastlab.win/trpc/greeting
 
-## Barcode scanner prototype
+See [deployment setup](docs/deployment.md) for the state bucket, credentials, manual Terraform workflow, and initial releases. Relevant changes on `master` deploy each application independently after checks pass. Infrastructure never applies automatically.
 
-The default view scans EAN-8, EAN-13 and UPC-A codes locally with native barcode detection or a bundled WebAssembly worker. Nutrition lookups use the global Open Food Facts database. Manual code entry is also available.
-
-Phone camera access requires HTTPS. Full PWA installation and offline asset caching are not included. See [scanner setup and testing notes](docs/barcode-scanner.md).
-
-## Commands
-
-| Command            | What it does                                      |
-| ------------------ | ------------------------------------------------- |
-| `pnpm dev`         | run all `dev` scripts in parallel (`vp run`)      |
-| `pnpm build`       | build all packages (cached by `vp run`)           |
-| `pnpm test`        | run Vitest across the workspace (`vp test`)       |
-| `pnpm check`       | format-check + lint (`vp check`)                  |
-| `pnpm typecheck`   | `tsc` in every package (cached by `vp run`)       |
-| `pnpm lint`        | Oxlint (`vp lint`)                                |
-| `pnpm fmt`         | Oxfmt (`vp fmt`)                                  |
-| `pnpm db:up`       | start postgres container                          |
-| `pnpm db:generate` | generate a SQL migration from schema changes      |
-| `pnpm db:migrate`  | apply migrations to the database                  |
-| `pnpm db:push`     | push schema directly (prototyping, no migrations) |
-| `pnpm db:studio`   | open Drizzle Studio                               |
-
-## Effect typechecking
-
-`pnpm typecheck` runs `tsc` in every package. The root `prepare` script runs
-`effect-tsgo patch --typescript` after installs, replacing the local compiler with
-Effect's compatible build. This enables Effect diagnostics configured in
-`tsconfig.base.json`. Keep TypeScript's version compatible with `@effect/tsgo`.
-
-For VS Code, install the TypeScript 7 extension and configure the workspace SDK
-path as `./node_modules/typescript/bin`. Select that SDK and restart the
-TypeScript server.
-
-## Documentation
-
-- [CONTEXT-MAP.md](./CONTEXT-MAP.md) — the domain contexts and where each one's `CONTEXT.md` (glossary of domain language) lives
-- [docs/adr/](./docs/adr) — architecture decision records; read these before changing anything that looks unusual, it may be deliberate
-
-## Notes
-
-- **Ports**: postgres binds to host port `5434` by default (configurable via `POSTGRES_PORT` in `.env`) to avoid clashing with other local postgres instances. The container listens on `5432` internally.
-- **Effect v4**: the API uses the v4 RC (`Context.Service` class keys, `Layer.effect`, `ManagedRuntime`). Drizzle is pinned to a 1.0 RC build compiled against the same effect RC — prerelease APIs shift between builds (e.g. `Schema.TaggedErrorClass` → `Schema.TaggedError`), so keep `effect`, `@effect/sql-pg`, and `drizzle-orm` moving together.
-- **API architecture**: `@calwise/database` (drizzle schema + the native `drizzle-orm/effect-postgres` driver on `@effect/sql-pg`, exposed as an Effect `Database` service whose query builders are yieldable Effects) → `modules/todo/todo-service.ts` (Effect service, with an in-memory `testLayer` next to it) → `trpc-router.ts` (tRPC v11 router, mounted on Hono at `/trpc` in `app.ts`) → `index.ts` (server entry + graceful shutdown). The web app consumes the router type-only via `@calwise/api/trpc` (a devDependency) and validates forms with the same `@calwise/shared` schemas the procedures use. The api imports package TypeScript source directly — Node resolves the pnpm symlinks and strips types natively.
-- **Lint/format config**: `.oxfmtrc.json` and `.oxlintrc.json` are the single source of truth. `vp fmt`/`vp lint`/`vp check` only read config from `vite.config.ts`, so the root config imports both files and passes them through. Note oxfmt uses Prettier-style keys (`printWidth`, `tabWidth`).
-- **Versions**: all shared dependency versions live in the `catalog:` section of `pnpm-workspace.yaml`. `vitest`, `oxfmt`, and `oxlint` are pinned to the versions bundled by `vite-plus` — keep them in sync when upgrading.
+The foundation has no accounts, forms, product integrations, or public write endpoints.
