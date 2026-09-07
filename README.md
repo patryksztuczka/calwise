@@ -40,7 +40,24 @@ pnpm db:migrate        # apply drizzle migrations
 pnpm dev               # start web + api in parallel
 ```
 
-Open http://localhost:5173 — the page shows live API status and a todo list backed by the api via tRPC.
+Open http://localhost:5173 for the Polish-language barcode scanner and food text-search prototypes. Food search does not require PostgreSQL; `pnpm dev` alone is enough after installing dependencies. The existing todo API still requires the database.
+
+## Food search prototype
+
+- Submit a product or brand name, such as `skyr` or `Piątnica`. Searches use Open Food Facts with the `countries=poland` filter, 20 source records per page.
+- Select a result to calculate calories and macros for a portion. Values are per 100 g or 100 ml as recorded on the label. Use the matching unit; the prototype does not convert mass to volume.
+- Missing nutrients stay missing, not zero. Polish product names take priority; kJ converts to kcal when kcal is absent.
+- Requests time out after 15 seconds. Successful searches are cached for five minutes in a bounded server cache. Search runs on submission, not on every keystroke, to reduce requests to the public API.
+- Open Food Facts is community-maintained and licensed under ODbL. A Polish country tag does not guarantee current availability at any retailer. Coverage, spelling matches, and nutrition accuracy depend on the source. Check the product label.
+- Text search uses the public text-search endpoint, not a custom fuzzy-search index. Neither prototype includes a meal diary, saved portions, or a local product database.
+
+Food search code lives in `apps/api/src/modules/food/`, its shared input and result types in `packages/shared/src/food.ts`, and the UI in `apps/web/src/app.tsx`.
+
+## Barcode scanner prototype
+
+The default view scans EAN-8, EAN-13 and UPC-A codes locally with native barcode detection or a bundled WebAssembly worker. Nutrition lookups use the global Open Food Facts database. Manual code entry is also available.
+
+Phone camera access requires HTTPS. Full PWA installation and offline asset caching are not included. See [scanner setup and testing notes](docs/barcode-scanner.md).
 
 ## Commands
 
