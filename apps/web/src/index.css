@@ -1,1 +1,98 @@
 @import "tailwindcss";
+
+/*
+ * Design tokens mirrored from the Calwise Pencil file
+ * ("Calwise · Design system · Foundations"). Token names match the design
+ * variables so a change on either side is easy to trace.
+ */
+@theme {
+  /* 01 Color */
+  --color-bg: #0b0d0e; /* App background */
+  --color-canvas: #101213; /* Canvas behind the screen frame */
+  --color-surface: #151719; /* Cards & inputs */
+  --color-surface-nav: #191c1deb; /* Navigation surface */
+  --color-line: #303335; /* Borders & dividers */
+  --color-white: #f4f5ef; /* Primary text (design "white", intentionally off-white) */
+  --color-muted: #969b98; /* Secondary text */
+  --color-lime: #d0f438; /* Primary action & focus */
+  --color-accent-soft: #d0f43816; /* Selected tab */
+  --color-success-soft: #d0f43812; /* Added confirmation */
+  --color-success-border: #d0f43844; /* Confirmation outline */
+  --color-track: #303435; /* Macro track */
+  --color-gauge-empty: #272b2c; /* Unfilled gauge */
+  --color-home-indicator: #f4f5ef66;
+  --color-over: #f2b56b; /* Over target: only after a target is exceeded */
+  --color-danger: #f08c88; /* Destructive, irreversible actions */
+  --color-skeleton: #282d2e; /* Loading placeholder */
+
+  /* 02 Typography */
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  --text-8: 8px;
+  --text-9: 9px;
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-22: 22px;
+  --text-23: 23px;
+  --text-24: 24px;
+  --text-25: 25px;
+  --text-30: 30px;
+  --text-32: 32px;
+  --text-35: 35px;
+  --text-86: 86px;
+
+  /* 03 Corners & borders (1 px borders; radii follow the control) */
+  --radius-2: 2px;
+  --radius-8: 8px; /* Input */
+  --radius-10: 10px; /* Meal / confirmation */
+  --radius-12: 12px; /* Search / editor */
+  --radius-14: 14px; /* Primary button */
+  --radius-18: 18px; /* Filter chip */
+  --radius-20: 20px;
+  --radius-22: 22px; /* Icon button */
+  --radius-26: 26px; /* Selected tab */
+  --radius-32: 32px; /* Tab bar */
+  --radius-36: 36px; /* Screen frame */
+
+  /* 04 Spacing: the design scale (4 6 8 12 16 20 24 32 48) maps onto the
+     default 4px Tailwind scale (p-1 p-1.5 p-2 p-3 p-4 p-5 p-6 p-8 p-12). */
+
+  /* Motion: 900 ms one-shot cubic ease-out counter reveal */
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-white);
+    font-family: var(--font-body);
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 3px;
+  }
+}
