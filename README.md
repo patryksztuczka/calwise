@@ -40,7 +40,13 @@ pnpm db:migrate        # apply drizzle migrations
 pnpm dev               # start web + api in parallel
 ```
 
-Open http://localhost:5173 for the Polish-language barcode scanner and food text-search prototypes. Food search does not require PostgreSQL; `pnpm dev` alone is enough after installing dependencies. The existing todo API still requires the database.
+Open http://localhost:5173 for the Today screen with fixed mock data from the Pen design. The existing Polish-language barcode scanner and food text-search prototypes are at `/food`. Food search does not require PostgreSQL; `pnpm dev` alone is enough after installing dependencies. The existing todo API still requires the database.
+
+## Today screen
+
+The default screen uses the sample day June 15, 2026: 1,450 kcal eaten against a 2,000 kcal goal, three logged meals, and protein, carbs, and fat counters. Data lives in `apps/web/src/modules/today/mock-today.ts`; it is not fetched or persisted. Calorie counters and the segmented gauge share a 900 ms reveal, skipped for reduced motion. Meal rows expand to show their mock summary. Profile, Diary, and Trends are disabled until those screens exist. Log food opens the existing search/scanner, which does not save meals yet.
+
+Pen foundation colors, font families, radii, and the 4 px spacing scale are configured as Tailwind v4 tokens in `apps/web/src/index.css`. Inter and Barlow Condensed are self-hosted. The older food prototype styles are scoped to its wrapper to avoid changing Today.
 
 ## Food search prototype
 
@@ -51,11 +57,11 @@ Open http://localhost:5173 for the Polish-language barcode scanner and food text
 - Open Food Facts is community-maintained and licensed under ODbL. A Polish country tag does not guarantee current availability at any retailer. Coverage, spelling matches, and nutrition accuracy depend on the source. Check the product label.
 - Text search uses the public text-search endpoint, not a custom fuzzy-search index. Neither prototype includes a meal diary, saved portions, or a local product database.
 
-Food search code lives in `apps/api/src/modules/food/`, its shared input and result types in `packages/shared/src/food.ts`, and the UI in `apps/web/src/app.tsx`.
+Food search code lives in `apps/api/src/modules/food/`, its shared input and result types in `packages/shared/src/food.ts`, and the UI in `apps/web/src/modules/food/food-prototype.tsx`.
 
 ## Barcode scanner prototype
 
-The default view scans EAN-8, EAN-13 and UPC-A codes locally with native barcode detection or a bundled WebAssembly worker. Nutrition lookups use the global Open Food Facts database. Manual code entry is also available.
+The `/food` view scans EAN-8, EAN-13 and UPC-A codes locally with native barcode detection or a bundled WebAssembly worker. Nutrition lookups use the global Open Food Facts database. Manual code entry is also available.
 
 Phone camera access requires HTTPS. Full PWA installation and offline asset caching are not included. See [scanner setup and testing notes](docs/barcode-scanner.md).
 

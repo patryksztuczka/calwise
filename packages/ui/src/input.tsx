@@ -3,7 +3,7 @@ import type { ComponentPropsWithRef } from "react";
 export function Input({ className = "", ...props }: ComponentPropsWithRef<"input">) {
   return (
     <input
-      className={`min-w-0 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-sm text-zinc-50 outline-none placeholder:text-zinc-500 focus:border-emerald-400 aria-invalid:border-red-400 ${className}`}
+      className={`min-w-0 rounded-8 border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-lime aria-invalid:border-danger ${className}`}
       {...props}
     />
   );
