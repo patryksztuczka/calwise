@@ -11,6 +11,11 @@ resource "cloudflare_d1_database" "main" {
   name                  = var.d1_database_name
   primary_location_hint = "weur"
 
+  # The API always reports this block; declaring it avoids a perpetual in-place update.
+  read_replication = {
+    mode = "disabled"
+  }
+
   lifecycle {
     prevent_destroy = true
   }
