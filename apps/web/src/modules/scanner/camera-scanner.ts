@@ -1,10 +1,22 @@
-import { createBarcodeDecoder } from "./barcode-decoder";
+import { createBarcodeDecoder, type Decoder } from "./barcode-decoder";
+import { guideCropRect } from "./guide-crop-rect";
+
+export type ScannerFailureReason =
+  | "permission-denied"
+  | "camera-not-found"
+  | "camera-busy"
+  | "unsupported"
+  | "startup-failed"
+  | "scan-interrupted";
 
 export type ScannerState =
   | { kind: "starting" }
-  | { kind: "scanning"; torchAvailable: boolean; torchOn: boolean; torchBusy: boolean }
+  | {
+      kind: "scanning";
+      torch: { readonly available: boolean; readonly on: boolean; readonly busy: boolean };
+    }
   | { kind: "paused" }
-  | { kind: "error"; message: string };
+  | { kind: "error"; reason: ScannerFailureReason };
 
 interface CameraCapabilities extends MediaTrackCapabilities {
   torch?: boolean;
@@ -13,18 +25,18 @@ interface CameraConstraints extends MediaTrackConstraintSet {
   torch?: boolean;
 }
 
-function cameraError(error: Error) {
+function cameraError(error: Error): ScannerFailureReason {
   switch (error.name) {
     case "NotAllowedError":
     case "SecurityError":
-      return "Camera access was denied. Allow camera access in your browser settings, then try again.";
+      return "permission-denied";
     case "NotFoundError":
     case "OverconstrainedError":
-      return "No camera was found on this device.";
+      return "camera-not-found";
     case "NotReadableError":
-      return "The camera is busy. Close other apps using it, then try again.";
+      return "camera-busy";
     default:
-      return "The scanner could not start. Check your camera and connection, then try again.";
+      return "startup-failed";
   }
 }
 
@@ -39,15 +51,11 @@ export function startCameraScanner(
   const { signal } = controller;
   let stream: MediaStream | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let torchOn = false;
-  let torchBusy = false;
-  let torchAvailable = false;
+  const torch = { available: false, on: false, busy: false };
 
   function stop() {
     controller.abort();
     clearTimeout(timer);
-    document.removeEventListener("visibilitychange", pauseWhenHidden);
-    window.removeEventListener("pagehide", pause);
     stream?.getTracks().forEach((track) => track.stop());
     video.pause();
     video.srcObject = null;
@@ -59,43 +67,92 @@ export function startCameraScanner(
     onState({ kind: "paused" });
   }
 
-  function pauseWhenHidden() {
-    if (document.hidden) pause();
+  function fail(reason: ScannerFailureReason) {
+    if (signal.aborted) return;
+    stop();
+    onState({ kind: "error", reason });
   }
 
   function publishScanning() {
-    onState({ kind: "scanning", torchAvailable, torchOn, torchBusy });
+    onState({ kind: "scanning", torch: { ...torch } });
   }
 
   async function toggleTorch() {
     const track = stream?.getVideoTracks()[0];
-    if (!track || !torchAvailable || torchBusy || signal.aborted) return;
-    torchBusy = true;
+    if (!track || !torch.available || torch.busy || signal.aborted) return;
+    torch.busy = true;
     publishScanning();
     try {
-      const constraints: CameraConstraints = { torch: !torchOn };
+      const constraints: CameraConstraints = { torch: !torch.on };
       await track.applyConstraints({ advanced: [constraints] });
-      torchOn = !torchOn;
+      torch.on = !torch.on;
     } catch {
-      torchAvailable = false;
+      torch.available = false;
     } finally {
-      torchBusy = false;
+      torch.busy = false;
       if (!signal.aborted) publishScanning();
+    }
+  }
+
+  async function scan(context: CanvasRenderingContext2D, decoder: Decoder) {
+    if (signal.aborted) return;
+    const started = performance.now();
+    try {
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0) {
+        const crop = guideCropRect(
+          {
+            width: video.videoWidth,
+            height: video.videoHeight,
+            viewport: video.getBoundingClientRect(),
+          },
+          guide.getBoundingClientRect(),
+        );
+        const canvas = context.canvas;
+        canvas.width = Math.max(1, Math.min(960, Math.round(crop.width)));
+        canvas.height = Math.max(1, Math.round((crop.height * canvas.width) / crop.width));
+        context.drawImage(
+          video,
+          crop.x,
+          crop.y,
+          crop.width,
+          crop.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        );
+        const code = await decoder.detect(context.getImageData(0, 0, canvas.width, canvas.height));
+        if (signal.aborted) return;
+        if (code) {
+          stop();
+          onScan(code);
+          return;
+        }
+      }
+      // At most ten scans per second, with only one decode in flight.
+      timer = setTimeout(
+        () => void scan(context, decoder),
+        Math.max(0, 100 - (performance.now() - started)),
+      );
+    } catch {
+      fail("scan-interrupted");
     }
   }
 
   async function start() {
     onState({ kind: "starting" });
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-      onState({
-        kind: "error",
-        message: "Camera scanning needs HTTPS and a browser with camera support.",
-      });
-      stop();
+      fail("unsupported");
       return;
     }
-    document.addEventListener("visibilitychange", pauseWhenHidden);
-    window.addEventListener("pagehide", pause);
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.hidden) pause();
+      },
+      { signal },
+    );
+    window.addEventListener("pagehide", pause, { signal });
     if (document.hidden) {
       pause();
       return;
@@ -117,64 +174,22 @@ export function startCameraScanner(
       }
       stream = acquired;
       const track = stream.getVideoTracks()[0];
-      track?.addEventListener("ended", pause, { once: true });
+      track?.addEventListener("ended", pause, { once: true, signal });
       const capabilities: CameraCapabilities = track?.getCapabilities?.() ?? {};
-      torchAvailable = capabilities.torch === true;
+      torch.available = capabilities.torch === true;
       video.srcObject = stream;
       await video.play();
       signal.throwIfAborted();
       const decoder = await createBarcodeDecoder(signal);
       signal.throwIfAborted();
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d", { willReadFrequently: true });
+      const context = document
+        .createElement("canvas")
+        .getContext("2d", { willReadFrequently: true });
       if (!context) throw new Error("Camera frames are unavailable");
       publishScanning();
-
-      async function scan() {
-        if (signal.aborted) return;
-        const started = performance.now();
-        try {
-          if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0) {
-            // Map the visible alignment guide through object-cover into camera pixels.
-            const view = video.getBoundingClientRect();
-            const frame = guide.getBoundingClientRect();
-            const scale = Math.max(view.width / video.videoWidth, view.height / video.videoHeight);
-            const width = frame.width / scale;
-            const height = frame.height / scale;
-            const x =
-              (video.videoWidth - view.width / scale) / 2 + (frame.left - view.left) / scale;
-            const y =
-              (video.videoHeight - view.height / scale) / 2 + (frame.top - view.top) / scale;
-            canvas.width = Math.max(1, Math.min(960, Math.round(width)));
-            canvas.height = Math.max(1, Math.round((height * canvas.width) / width));
-            context!.drawImage(video, x, y, width, height, 0, 0, canvas.width, canvas.height);
-            const code = await decoder.detect(canvas);
-            if (signal.aborted) return;
-            if (code) {
-              stop();
-              onScan(code);
-              return;
-            }
-          }
-          // At most ten scans per second, with only one decode in flight.
-          timer = setTimeout(() => void scan(), Math.max(0, 100 - (performance.now() - started)));
-        } catch {
-          if (signal.aborted) return;
-          stop();
-          onState({
-            kind: "error",
-            message: "Scanning was interrupted. Try starting the camera again.",
-          });
-        }
-      }
-      void scan();
+      void scan(context, decoder);
     } catch (error) {
-      if (signal.aborted) return;
-      stop();
-      onState({
-        kind: "error",
-        message: cameraError(error instanceof Error ? error : new Error()),
-      });
+      fail(cameraError(error instanceof Error ? error : new Error()));
     }
   }
 

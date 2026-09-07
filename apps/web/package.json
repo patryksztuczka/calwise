@@ -19,7 +19,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:",
-    "zxing-wasm": "^3.1.3"
+    "zxing-wasm": "catalog:"
   },
   "devDependencies": {
     "@calwise/api": "workspace:*",

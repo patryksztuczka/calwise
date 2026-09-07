@@ -1,9 +1,13 @@
 import type { DecoderReply } from "./decoder.worker";
 
+export interface Decoder {
+  detect(image: ImageData): Promise<string | undefined>;
+}
+
 const formats = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "itf"];
 
 interface NativeDetector {
-  detect(source: HTMLCanvasElement): Promise<{ rawValue: string }[]>;
+  detect(image: ImageData): Promise<{ rawValue: string }[]>;
 }
 
 interface NativeDetectorConstructor {
@@ -18,90 +22,87 @@ declare global {
   }
 }
 
-function workerDecoder(signal: AbortSignal) {
-  const worker = new Worker(new URL("./decoder.worker.ts", import.meta.url), { type: "module" });
-  let resolveReply: ((reply: DecoderReply) => void) | undefined;
-  let rejectReply: ((error: Error) => void) | undefined;
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-
-  function waitForReply() {
-    return new Promise<DecoderReply>((resolve, reject) => {
-      resolveReply = resolve;
-      rejectReply = reject;
-      timeout = setTimeout(() => reject(new Error("Barcode decoder timed out")), 15_000);
-    });
+async function nativeDecoder(): Promise<Decoder | undefined> {
+  try {
+    const Detector = window.BarcodeDetector;
+    if (!Detector) return;
+    const supported = await Detector.getSupportedFormats();
+    if (!formats.every((format) => supported.includes(format))) return;
+    const detector = new Detector({ formats });
+    return {
+      async detect(image) {
+        return (await detector.detect(image)).find((result) => result.rawValue.length > 0)
+          ?.rawValue;
+      },
+    };
+  } catch {
+    // Some browsers expose the API but cannot initialize its platform service.
+    return undefined;
   }
+}
 
-  worker.addEventListener("message", (event: MessageEvent<DecoderReply>) => {
-    clearTimeout(timeout);
-    if (event.data.kind === "error") rejectReply?.(new Error("Barcode decoder failed"));
-    else resolveReply?.(event.data);
-  });
-  worker.addEventListener("error", () => {
-    clearTimeout(timeout);
-    rejectReply?.(new Error("Barcode decoder could not load"));
-  });
-  signal.addEventListener(
-    "abort",
-    () => {
-      worker.terminate();
-      clearTimeout(timeout);
-      rejectReply?.(new DOMException("Scanning stopped", "AbortError"));
-    },
-    { once: true },
-  );
-
-  const ready = waitForReply();
+function workerDecoder(signal: AbortSignal): Decoder {
+  signal.throwIfAborted();
+  const worker = new Worker(new URL("./decoder.worker.ts", import.meta.url), { type: "module" });
+  signal.addEventListener("abort", () => worker.terminate(), { once: true });
   return {
-    ready,
-    async detect(canvas: HTMLCanvasElement) {
+    async detect(image) {
       signal.throwIfAborted();
-      const context = canvas.getContext("2d", { willReadFrequently: true });
-      if (!context) throw new Error("Camera frames are unavailable");
-      const image = context.getImageData(0, 0, canvas.width, canvas.height);
-      const reply = waitForReply();
-      worker.postMessage(image, [image.data.buffer]);
-      const result = await reply;
-      return result.kind === "result" ? result.code : undefined;
+      const request = new AbortController();
+      const deadline = AbortSignal.any([signal, AbortSignal.timeout(15_000)]);
+      return new Promise<string | undefined>((resolve, reject) => {
+        worker.addEventListener(
+          "message",
+          (event: MessageEvent<DecoderReply>) => {
+            if (event.data.kind === "error") reject(new Error("Barcode decoder failed"));
+            else resolve(event.data.code);
+          },
+          { once: true, signal: request.signal },
+        );
+        worker.addEventListener(
+          "error",
+          () => reject(new Error("Barcode decoder could not load")),
+          { once: true, signal: request.signal },
+        );
+        deadline.addEventListener(
+          "abort",
+          () => reject(new DOMException("Barcode decode aborted or timed out", "AbortError")),
+          { once: true, signal: request.signal },
+        );
+        worker.postMessage(image, [image.data.buffer]);
+      })
+        .catch((error) => {
+          // A late reply from a failed request must never satisfy a later detect call.
+          worker.terminate();
+          throw error;
+        })
+        .finally(() => request.abort());
     },
   };
 }
 
-/** Uses the platform decoder first; the bundled WASM worker is loaded only when needed. */
-export async function createBarcodeDecoder(signal: AbortSignal) {
-  let native: NativeDetector | undefined;
-  try {
-    const Detector = window.BarcodeDetector;
-    if (Detector) {
-      const supported = await Detector.getSupportedFormats();
-      if (formats.every((format) => supported.includes(format))) {
-        native = new Detector({ formats });
-      }
-    }
-  } catch {
-    // Some browsers expose the API but cannot initialize its platform service.
-  }
+/** Owns the single-flight invariant and switches from native to WASM at most once. */
+export async function createBarcodeDecoder(signal: AbortSignal): Promise<Decoder> {
+  const native = await nativeDecoder();
   signal.throwIfAborted();
-  let fallback: ReturnType<typeof workerDecoder> | undefined;
-  if (!native) {
-    fallback = workerDecoder(signal);
-    await fallback.ready;
-  }
+  let decoder = native ?? workerDecoder(signal);
+  let detecting = false;
   return {
-    async detect(canvas: HTMLCanvasElement): Promise<string | undefined> {
+    async detect(image) {
       signal.throwIfAborted();
-      if (native) {
-        try {
-          const results = await native.detect(canvas);
-          return results.find((result) => result.rawValue.length > 0)?.rawValue;
-        } catch {
+      if (detecting) throw new Error("A barcode decode is already in progress");
+      detecting = true;
+      return decoder
+        .detect(image)
+        .catch((error) => {
           signal.throwIfAborted();
-          native = undefined;
-          fallback = workerDecoder(signal);
-          await fallback.ready;
-        }
-      }
-      return fallback?.detect(canvas);
+          if (decoder !== native) throw error;
+          decoder = workerDecoder(signal);
+          return decoder.detect(image);
+        })
+        .finally(() => {
+          detecting = false;
+        });
     },
   };
 }

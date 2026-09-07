@@ -1,6 +1,7 @@
 import { ArrowLeft, ScanBarcode } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
+import { IconButton } from "../components/icon-button";
 import { PrimaryAction } from "../components/primary-action";
 import { BarcodeScanner } from "../modules/scanner/barcode-scanner";
 
@@ -10,13 +11,9 @@ export default function ScanBarcodePage() {
   return (
     <div className="flex flex-col gap-7">
       <header className="flex h-11 items-center gap-3.5">
-        <Link
-          to="/log-food"
-          aria-label="Back to log food"
-          className="inline-flex size-11 shrink-0 items-center justify-center rounded-22 border border-line hover:bg-surface"
-        >
+        <IconButton render={<Link to="/log-food" aria-label="Back to log food" />}>
           <ArrowLeft size={21} aria-hidden="true" />
-        </Link>
+        </IconButton>
         <h1 className="font-display text-30 font-bold italic">SCAN BARCODE</h1>
       </header>
       {code === null ? (

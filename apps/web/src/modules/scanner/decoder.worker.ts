@@ -1,10 +1,7 @@
 import { prepareZXingModule, readBarcodes } from "zxing-wasm/reader";
 import wasmUrl from "zxing-wasm/reader/zxing_reader.wasm?url";
 
-export type DecoderReply =
-  | { kind: "ready" }
-  | { kind: "result"; code: string | undefined }
-  | { kind: "error" };
+export type DecoderReply = { kind: "result"; code: string | undefined } | { kind: "error" };
 
 function reply(message: DecoderReply) {
   // Workers post to their owning page, not a Window, so there is no targetOrigin.
@@ -12,13 +9,8 @@ function reply(message: DecoderReply) {
   self.postMessage(message);
 }
 
-void prepareZXingModule({
-  overrides: { locateFile: () => wasmUrl },
-  fireImmediately: true,
-}).then(
-  () => reply({ kind: "ready" }),
-  () => reply({ kind: "error" }),
-);
+// readBarcodes awaits preparation. WASM loads on the first frame, not during camera startup.
+prepareZXingModule({ overrides: { locateFile: () => wasmUrl } });
 
 self.addEventListener("message", async (event: MessageEvent<ImageData>) => {
   try {
