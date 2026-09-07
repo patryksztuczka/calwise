@@ -4,13 +4,52 @@ name: Checks
 # browser → Worker → D1 end-to-end test against local emulation.
 on:
   workflow_call:
+    outputs:
+      api:
+        description: Whether this push needs an API deployment
+        value: ${{ jobs.checks.outputs.api }}
+      web:
+        description: Whether this push needs a web deployment
+        value: ${{ jobs.checks.outputs.web }}
 
 jobs:
   checks:
     name: Static checks, tests, builds
     runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.changes.outputs.api }}
+      web: ${{ steps.changes.outputs.web }}
     steps:
       - uses: actions/checkout@v5
+      - name: Select deployments for this push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: dorny/paths-filter@15192bc058cc28a13dbf6cde61f19e18988b7af6 # v3
+        id: changes
+        with:
+          # Compare the whole push, not just the last commit or the merge base.
+          base: ${{ github.event.before }}
+          ref: ${{ github.sha }}
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/database/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'tsconfig.base.json'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/deploy-api.yml'
+              - '.github/workflows/checks.yml'
+            web:
+              - 'apps/web/**'
+              - 'apps/api/src/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'tsconfig.base.json'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/deploy-web.yml'
+              - '.github/workflows/checks.yml'
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
