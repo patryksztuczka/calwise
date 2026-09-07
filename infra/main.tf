@@ -21,6 +21,21 @@ resource "cloudflare_d1_database" "main" {
   }
 }
 
+# The food catalog has no user data and has its own migrations and import.
+resource "cloudflare_d1_database" "food" {
+  account_id            = var.cloudflare_account_id
+  name                  = "calwise-food"
+  primary_location_hint = "weur"
+
+  read_replication = {
+    mode = "disabled"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
 # ---- Frontend (Pages) -----------------------------------------------------
 #
 # Deployments are pushed by CI with `wrangler pages deploy`, so the project has

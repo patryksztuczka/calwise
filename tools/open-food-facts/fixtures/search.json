@@ -1,0 +1,10 @@
+{
+  "name": "Żółty ŁACIATE Ā́ café",
+  "queries": [
+    { "query": "Żółty ŁACIATE", "expression": "\"Żólty\"* AND \"lACIATE\"*" },
+    { "query": "zolty lac", "expression": "\"zolty\"* AND \"lac\"*" },
+    { "query": "Żółty", "expression": "\"Żólty\"*" },
+    { "query": "a cafe", "expression": "\"a\"* AND \"cafe\"*" },
+    { "query": "café", "expression": "\"café\"*" }
+  ]
+}

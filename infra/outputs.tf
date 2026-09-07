@@ -6,6 +6,10 @@ output "d1_database_id" {
   value = cloudflare_d1_database.main.id
 }
 
+output "food_d1_database_id" {
+  value = cloudflare_d1_database.food.id
+}
+
 output "pages_subdomain" {
   value = cloudflare_pages_project.web.subdomain
 }

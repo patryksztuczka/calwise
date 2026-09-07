@@ -8,6 +8,12 @@
   "observability": { "enabled": true },
   "d1_databases": [
     {
+      "binding": "FOOD_DB",
+      "database_name": "calwise-food",
+      "migrations_dir": "../../packages/database/migrations-food",
+      "migrations_pattern": "../../packages/database/migrations-food/*/migration.sql",
+    },
+    {
       "binding": "DB",
       // Created by Terraform (infra/). wrangler resolves the id from the name at deploy time.
       "database_name": "calwise",

@@ -7,7 +7,7 @@
   "singleQuote": false,
   "trailingComma": "all",
   "ignorePatterns": [
-    "packages/database/migrations/",
+    "packages/database/migrations*/",
     "apps/api/worker-configuration.d.ts",
     ".wrangler/",
     ".agent-sources/",

@@ -7,8 +7,9 @@
   },
   "scripts": {
     "dev": "wrangler dev --port 8787 --var BETTER_AUTH_SECRET:local-development-secret",
-    "db:migrate:local": "wrangler d1 migrations apply calwise --local",
-    "db:migrate:remote": "wrangler d1 migrations apply calwise --remote",
+    "db:migrate:local": "bash ./scripts/db-migrate.sh --local",
+    "e2e:serve": "./scripts/e2e-serve.sh",
+    "db:migrate:remote": "bash ./scripts/db-migrate.sh --remote",
     "deploy": "wrangler deploy",
     "typecheck": "wrangler types --include-runtime=false && tsc -p tsconfig.json"
   },
