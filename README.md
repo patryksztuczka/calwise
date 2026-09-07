@@ -1,80 +1,81 @@
 # calwise
 
-pnpm workspace monorepo built on the [Vite+](https://viteplus.dev) toolchain (`vp`).
+pnpm workspace monorepo built on the [Vite+](https://viteplus.dev) toolchain (`vp`), deployed to Cloudflare.
+
+- Web: https://calwise.lastlab.win (Pages)
+- API: https://calwise-api.lastlab.win (Worker)
 
 ## Stack
 
 - **Toolchain**: Vite+ (`vp` — dev server, build, Vitest 4, Oxlint, Oxfmt, task runner with caching)
 - **Package manager**: pnpm (workspace + catalog for version pinning)
-- **Runtime**: Node 26 (runs TypeScript directly via native type stripping — no build step for the API)
+- **Runtime**: Node 26 locally (native type stripping); Cloudflare Workers in production
 - **TypeScript**: 7.x (native compiler)
-- **`apps/web`**: React 19 + Tailwind CSS 4 + tRPC client + TanStack Query + react-hook-form
-- **`apps/api`**: Hono + tRPC v11 + Effect 4 + Drizzle ORM + node-postgres
-- **Database**: PostgreSQL 18 via Docker Compose
+- **`apps/web`**: React 19 + Tailwind CSS 4 + tRPC client + TanStack Query, hosted on Cloudflare Pages
+- **`apps/api`**: Hono + tRPC v11 + Effect 4 via [effect-cf](https://github.com/danieljvdm/effect-cf), hosted on Cloudflare Workers
+- **Database**: Cloudflare D1 through Drizzle ORM's Effect driver (`drizzle-orm/effect-d1` over `@effect/sql-d1`)
+- **Infrastructure**: Terraform (Cloudflare provider 5.x) with state in a private R2 bucket
+- **CI/CD**: GitHub Actions
 
 ## Layout
 
 ```
 apps/
-  web/            # React + Tailwind, served by vp dev (port 5173, proxies /api and /trpc → :3000)
-  api/            # Hono + tRPC + Effect (port 3000)
+  web/            # React + Tailwind, served by vp dev (port 5173, proxies /trpc → :8787)
+  api/            # Hono + tRPC + Effect Worker (wrangler dev, port 8787); wrangler.jsonc binds D1
+    src/worker.ts # entrypoint: effect-cf Worker.make(AppLayer) delegating requests to Hono
 packages/
-  database/       # @calwise/database — drizzle schema, migrations, Effect Database service
-  shared/         # @calwise/shared — domain input schemas (Effect Schema via Standard Schema)
-  ui/             # @calwise/ui — shared React components (raw .tsx source)
+  database/       # @calwise/database — drizzle schema, generated migrations, Effect Database service
+    migrations/   # drizzle-kit output, applied by wrangler d1 migrations
+infra/            # Terraform: D1, Pages project + domain, DNS; bootstrap/ creates the R2 state bucket
+.github/workflows # ci, deploy-api, deploy-web, infra (manual), checks (reusable)
 docs/adr/         # architecture decision records
 CONTEXT-MAP.md    # domain contexts and where each module's CONTEXT.md lives
 vite.config.ts    # root Vite+ config; imports .oxfmtrc.json / .oxlintrc.json
 .oxfmtrc.json     # formatting (single source of truth, also used by editors)
 .oxlintrc.json    # linting (single source of truth, also used by editors)
-docker-compose.yml
 ```
 
 ## Getting started
 
+No Cloudflare account or credentials are needed for local development; wrangler emulates the Worker and D1 on your machine.
+
 ```sh
-cp .env.example .env   # database url, ports
 pnpm install
-pnpm db:up             # start postgres (docker)
-pnpm db:migrate        # apply drizzle migrations
-pnpm dev               # start web + api in parallel
+pnpm db:migrate:local  # create + seed the local D1 (stored under apps/api/.wrangler/)
+pnpm dev               # web (http://localhost:5173) + api (http://localhost:8787) in parallel
 ```
 
-Open http://localhost:5173 for the Polish-language barcode scanner and food text-search prototypes. Food search does not require PostgreSQL; `pnpm dev` alone is enough after installing dependencies. The existing todo API still requires the database.
-
-## Food search prototype
-
-- Submit a product or brand name, such as `skyr` or `Piątnica`. Searches use Open Food Facts with the `countries=poland` filter, 20 source records per page.
-- Select a result to calculate calories and macros for a portion. Values are per 100 g or 100 ml as recorded on the label. Use the matching unit; the prototype does not convert mass to volume.
-- Missing nutrients stay missing, not zero. Polish product names take priority; kJ converts to kcal when kcal is absent.
-- Requests time out after 15 seconds. Successful searches are cached for five minutes in a bounded server cache. Search runs on submission, not on every keystroke, to reduce requests to the public API.
-- Open Food Facts is community-maintained and licensed under ODbL. A Polish country tag does not guarantee current availability at any retailer. Coverage, spelling matches, and nutrition accuracy depend on the source. Check the product label.
-- Text search uses the public text-search endpoint, not a custom fuzzy-search index. Neither prototype includes a meal diary, saved portions, or a local product database.
-
-Food search code lives in `apps/api/src/modules/food/`, its shared input and result types in `packages/shared/src/food.ts`, and the UI in `apps/web/src/app.tsx`.
-
-## Barcode scanner prototype
-
-The default view scans EAN-8, EAN-13 and UPC-A codes locally with native barcode detection or a bundled WebAssembly worker. Nutrition lookups use the global Open Food Facts database. Manual code entry is also available.
-
-Phone camera access requires HTTPS. Full PWA installation and offline asset caching are not included. See [scanner setup and testing notes](docs/barcode-scanner.md).
+The page shows "Hello World" and the greeting seeded by the first migration, with loading and error states. The api also answers `GET /health` and `GET /trpc/greeting.current`.
 
 ## Commands
 
-| Command            | What it does                                      |
-| ------------------ | ------------------------------------------------- |
-| `pnpm dev`         | run all `dev` scripts in parallel (`vp run`)      |
-| `pnpm build`       | build all packages (cached by `vp run`)           |
-| `pnpm test`        | run Vitest across the workspace (`vp test`)       |
-| `pnpm check`       | format-check + lint (`vp check`)                  |
-| `pnpm typecheck`   | `tsc` in every package (cached by `vp run`)       |
-| `pnpm lint`        | Oxlint (`vp lint`)                                |
-| `pnpm fmt`         | Oxfmt (`vp fmt`)                                  |
-| `pnpm db:up`       | start postgres container                          |
-| `pnpm db:generate` | generate a SQL migration from schema changes      |
-| `pnpm db:migrate`  | apply migrations to the database                  |
-| `pnpm db:push`     | push schema directly (prototyping, no migrations) |
-| `pnpm db:studio`   | open Drizzle Studio                               |
+| Command                 | What it does                                                              |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `pnpm dev`              | run all `dev` scripts in parallel (`vp run`)                              |
+| `pnpm build`            | build all packages (cached by `vp run`)                                   |
+| `pnpm test`             | run Vitest unit tests across the workspace (`vp test`)                    |
+| `pnpm e2e`              | Playwright: browser → local Worker → local D1 (builds and serves both)    |
+| `pnpm check`            | format-check + lint (`vp check`)                                          |
+| `pnpm typecheck`        | `tsc` in every package (cached by `vp run`); regenerates Worker env types |
+| `pnpm lint`             | Oxlint (`vp lint`)                                                        |
+| `pnpm fmt`              | Oxfmt (`vp fmt`)                                                          |
+| `pnpm db:migrate:local` | apply pending migrations to the emulated D1                               |
+
+Inside `packages/database`: `pnpm db:generate` diffs `src/schema.ts` and writes a new migration folder; `pnpm db:generate --custom --name <x>` creates an empty one for hand-written SQL (such as seeds).
+
+Inside `apps/api`: `pnpm db:migrate:remote` and `pnpm deploy` are what CD runs; they need `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+
+## Deployment
+
+Infrastructure must exist before the first application deployment. See [infra/README.md](./infra/README.md) for the one-time bootstrap (state bucket, API tokens, repository secrets) and the manual **Infrastructure** workflow.
+
+After that, pushes to `master` deploy automatically:
+
+- **Deploy API** (`.github/workflows/deploy-api.yml`): on changes under `apps/api` or `packages/database`, runs the checks, applies D1 migrations remotely, then deploys the Worker. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
+- **Deploy Web** (`.github/workflows/deploy-web.yml`): on changes under `apps/web` (or the api's router types), runs the checks, builds with `VITE_API_URL=https://calwise-api.lastlab.win`, and publishes `dist` to the `calwise` Pages project.
+
+Neither workflow waits for the other. Every workflow, including `CI` on pull requests, runs the same reusable `checks.yml`: formatting, lint, typecheck, unit tests, builds, and the Playwright end-to-end test against emulated Cloudflare services. A failed run is a normal failed GitHub Actions run; there is no automatic rollback.
 
 ## Effect typechecking
 
@@ -91,11 +92,13 @@ TypeScript server.
 
 - [CONTEXT-MAP.md](./CONTEXT-MAP.md) — the domain contexts and where each one's `CONTEXT.md` (glossary of domain language) lives
 - [docs/adr/](./docs/adr) — architecture decision records; read these before changing anything that looks unusual, it may be deliberate
+- [infra/README.md](./infra/README.md) — what Terraform owns versus wrangler, and how to bootstrap
 
 ## Notes
 
-- **Ports**: postgres binds to host port `5434` by default (configurable via `POSTGRES_PORT` in `.env`) to avoid clashing with other local postgres instances. The container listens on `5432` internally.
-- **Effect v4**: the API uses the v4 RC (`Context.Service` class keys, `Layer.effect`, `ManagedRuntime`). Drizzle is pinned to a 1.0 RC build compiled against the same effect RC — prerelease APIs shift between builds (e.g. `Schema.TaggedErrorClass` → `Schema.TaggedError`), so keep `effect`, `@effect/sql-pg`, and `drizzle-orm` moving together.
-- **API architecture**: `@calwise/database` (drizzle schema + the native `drizzle-orm/effect-postgres` driver on `@effect/sql-pg`, exposed as an Effect `Database` service whose query builders are yieldable Effects) → `modules/todo/todo-service.ts` (Effect service, with an in-memory `testLayer` next to it) → `trpc-router.ts` (tRPC v11 router, mounted on Hono at `/trpc` in `app.ts`) → `index.ts` (server entry + graceful shutdown). The web app consumes the router type-only via `@calwise/api/trpc` (a devDependency) and validates forms with the same `@calwise/shared` schemas the procedures use. The api imports package TypeScript source directly — Node resolves the pnpm symlinks and strips types natively.
+- **Effect v4**: the api uses the v4 RC (`Context.Service` class keys, `Layer.effect`). `effect`, `@effect/sql-d1`, `effect-cf`, and `drizzle-orm` are pinned together in the pnpm catalog; prerelease APIs shift between builds, so upgrade them as a unit. effect-cf's manifest requires `effect ^4.0.0-rc.112`, which the current pin satisfies.
+- **API architecture**: `@calwise/database` (drizzle schema + a `Database` Effect service; `@calwise/database/d1` provides it from the `DB` binding through effect-cf) → `modules/greeting/greeting-service.ts` (Effect service, with an in-memory `testLayer` next to it) → `trpc-router.ts` (tRPC v11 router, mounted on Hono at `/trpc` in `app.ts`) → `worker.ts` (effect-cf `Worker.make` owns the runtime and hands Hono a `run` function per request). `app.ts` never imports Cloudflare modules, so unit tests run it under Node with the test layer. The web app consumes the router type-only via `@calwise/api/trpc` (a devDependency).
+- **Worker env types**: `apps/api/worker-configuration.d.ts` is generated by `wrangler types` (Env only; runtime types come from `@cloudflare/workers-types`). `pnpm typecheck` regenerates it; commit the result when `wrangler.jsonc` bindings change.
+- **CORS**: the Worker allows `https://calwise.lastlab.win` and any `localhost` origin (for `vp preview` and Playwright). Local `vp dev` proxies `/trpc` instead, so no CORS is involved.
 - **Lint/format config**: `.oxfmtrc.json` and `.oxlintrc.json` are the single source of truth. `vp fmt`/`vp lint`/`vp check` only read config from `vite.config.ts`, so the root config imports both files and passes them through. Note oxfmt uses Prettier-style keys (`printWidth`, `tabWidth`).
 - **Versions**: all shared dependency versions live in the `catalog:` section of `pnpm-workspace.yaml`. `vitest`, `oxfmt`, and `oxlint` are pinned to the versions bundled by `vite-plus` — keep them in sync when upgrading.

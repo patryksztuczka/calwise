@@ -1,0 +1,3 @@
+# wrangler applies drizzle-kit migrations
+
+`drizzle-kit generate` remains the way to produce migrations from `packages/database/src/schema.ts` (and `--custom` for hand-written SQL such as seeds), but `wrangler d1 migrations apply` is the only thing that applies them — locally against the emulated D1, and remotely in the Deploy API workflow before the Worker is deployed. drizzle-kit 1.0 writes one folder per migration (`<timestamp>_<name>/migration.sql`), which wrangler discovers through `migrations_pattern` in `wrangler.jsonc`. One applier for both environments means the migration table and ordering are the same everywhere, and CI needs no database credentials.

@@ -12,29 +12,8 @@ export default defineConfig({
   fmt,
   lint,
   test: {
-    // .agent-sources holds read-only source mirrors for reference — never test them
-    projects: [
-      {
-        test: {
-          name: "unit",
-          include: ["**/*.test.ts"],
-          exclude: [
-            "**/node_modules/**",
-            "**/dist/**",
-            "**/.agent-sources/**",
-            "**/*-integration.test.ts",
-          ],
-        },
-      },
-      {
-        test: {
-          name: "integration",
-          include: ["**/*-integration.test.ts"],
-          exclude: ["**/node_modules/**", "**/dist/**", "**/.agent-sources/**"],
-          // Spins up an ephemeral postgres via testcontainers and applies migrations
-          globalSetup: ["./apps/api/test/integration-setup.ts"],
-        },
-      },
-    ],
+    // Unit tests only. Browser → Worker → D1 is covered by Playwright (`pnpm e2e`).
+    include: ["**/*.test.ts"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/.agent-sources/**", "**/e2e/**"],
   },
 });

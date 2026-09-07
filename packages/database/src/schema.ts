@@ -1,11 +1,9 @@
-import { boolean, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const todos = pgTable("todos", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  done: boolean("done").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export const greetings = sqliteTable("greetings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  message: text("message").notNull(),
 });
 
-export type Todo = typeof todos.$inferSelect;
-export type NewTodo = typeof todos.$inferInsert;
+export type Greeting = typeof greetings.$inferSelect;
+export type NewGreeting = typeof greetings.$inferInsert;

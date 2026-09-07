@@ -1,16 +1,11 @@
 import { defineConfig } from "drizzle-kit";
 
-try {
-  process.loadEnvFile("../../.env");
-} catch {
-  // no .env yet — fall back to the docker-compose defaults below
-}
-
+// Only `drizzle-kit generate` runs against this config. Migrations are applied
+// by wrangler (`wrangler d1 migrations apply`), which discovers the generated
+// `migrations/*/migration.sql` files through `migrations_pattern` in
+// apps/api/wrangler.jsonc.
 export default defineConfig({
   schema: "./src/schema.ts",
-  out: "./drizzle",
-  dialect: "postgresql",
-  dbCredentials: {
-    url: process.env.DATABASE_URL ?? "postgres://calwise:calwise@localhost:5434/calwise",
-  },
+  out: "./migrations",
+  dialect: "sqlite",
 });

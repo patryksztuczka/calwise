@@ -2,9 +2,9 @@
 
 ## Contexts
 
-- [Todo](./apps/api/src/modules/todo/CONTEXT.md): capturing and listing the things a user intends to get done
+- [Greeting](./apps/api/src/modules/greeting/CONTEXT.md): the seeded message that proves the browser → Worker → D1 path works
 
 ## Relationships
 
-- **Todo → web**: `apps/web/src/modules/todo` is a client of the Todo context. It consumes the api's tRPC router type-only (`import type { AppRouter } from "@calwise/api/trpc"`) and holds no domain rules of its own.
-- **Todo ↔ shared**: the context's input schemas live in `@calwise/shared/todo` and are used verbatim on both sides — as tRPC procedure inputs in the api and as form resolvers in the web app.
+- **Greeting → web**: `apps/web/src/app.tsx` is a client of the Greeting context. It consumes the api's tRPC router type-only (`import type { AppRouter } from "@calwise/api/trpc"`) and holds no domain rules of its own.
+- **Greeting → database**: the context reads the `greetings` table defined in `@calwise/database/schema`; the row shape is the Drizzle-inferred `Greeting` type.

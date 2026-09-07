@@ -4,24 +4,22 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema.ts"
+    "./schema": "./src/schema.ts",
+    "./d1": "./src/d1.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
-    "@effect/sql-pg": "catalog:",
+    "@effect/sql-d1": "catalog:",
     "drizzle-orm": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "effect-cf": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
+    "@cloudflare/workers-types": "catalog:",
     "drizzle-kit": "catalog:",
-    "pg": "catalog:",
     "typescript": "catalog:"
   }
 }
