@@ -34,6 +34,6 @@ jobs:
         env:
           VITE_API_URL: https://calwise-api.lastlab.win
       - name: Deploy to Pages
-        run: pnpm --filter @calwise/web deploy
+        run: pnpm --filter @calwise/web run deploy
       - name: Smoke test
         run: curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-all-errors --output /dev/null https://calwise.lastlab.win/
