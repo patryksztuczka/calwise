@@ -1,40 +1,27 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
-import { Effect, Schema } from "effect";
+import type { Effect } from "effect";
 import type { AppServices } from "../layers.ts";
-import { runtime } from "../runtime.ts";
 
-/** Domain-level "bad request" error resolvers can yield; mapped to BAD_REQUEST. */
-export class InvalidRequest extends Schema.TaggedError<InvalidRequest>()("InvalidRequest", {
-  message: Schema.String,
-}) {}
+/** Runs an Effect against the Worker's runtime; supplied per request by the Worker entrypoint. */
+export type RunEffect = <A, E>(effect: Effect.Effect<A, E, AppServices>) => Promise<A>;
 
-const t = initTRPC.create();
+export interface TrpcContext {
+  readonly run: RunEffect;
+}
+
+const t = initTRPC.context<TrpcContext>().create();
 
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
-/**
- * Runs an Effect inside a tRPC resolver through the app runtime,
- * mapping the typed error channel to TRPCErrors.
- */
-export const runTrpc = async <A>(
-  effect: Effect.Effect<A, EffectDrizzleQueryError | InvalidRequest, AppServices>,
+/** Maps a failed Effect to a tRPC error so callers see a proper error envelope. */
+export const runTrpc = async <A, E>(
+  ctx: TrpcContext,
+  effect: Effect.Effect<A, E, AppServices>,
 ): Promise<A> => {
-  const result = await runtime.runPromise(
-    effect.pipe(
-      Effect.map((value) => ({ ok: true as const, value })),
-      Effect.catchTags({
-        InvalidRequest: (error) =>
-          Effect.succeed({
-            ok: false as const,
-            error: new TRPCError({ code: "BAD_REQUEST", message: error.message }),
-          }),
-      }),
-    ),
-  );
-  if (!result.ok) {
-    throw result.error;
+  try {
+    return await ctx.run(effect);
+  } catch (cause) {
+    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "internal server error", cause });
   }
-  return result.value;
 };

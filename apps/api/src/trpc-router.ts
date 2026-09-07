@@ -1,10 +1,8 @@
-import { foodRouter } from "./modules/food/food-trpc.ts";
 import { router } from "./http/trpc.ts";
-import { todoRouter } from "./modules/todo/todo-trpc.ts";
+import { greetingRouter } from "./modules/greeting/greeting-trpc.ts";
 
 export const appRouter = router({
-  todo: todoRouter,
-  food: foodRouter,
+  greeting: greetingRouter,
 });
 
 export type AppRouter = typeof appRouter;

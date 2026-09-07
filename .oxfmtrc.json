@@ -7,7 +7,9 @@
   "singleQuote": false,
   "trailingComma": "all",
   "ignorePatterns": [
-    "packages/database/drizzle/",
+    "packages/database/migrations/",
+    "apps/api/worker-configuration.d.ts",
+    ".wrangler/",
     ".agent-sources/",
     ".agent/**",
     ".agents/**",

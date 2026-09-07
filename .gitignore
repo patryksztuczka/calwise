@@ -6,3 +6,12 @@ dist/
 .vite/
 .vp/
 coverage/
+.wrangler/
+.dev.vars
+playwright-report/
+test-results/
+infra/**/.terraform/
+infra/**/*.tfstate
+infra/**/*.tfstate.backup
+infra/**/backend.hcl
+infra/**/*.tfvars

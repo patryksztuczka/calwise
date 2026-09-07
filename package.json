@@ -7,18 +7,12 @@
     "dev": "vp run -r --parallel dev",
     "build": "vp run -r build",
     "test": "vp test",
-    "test:unit": "vp test --project unit",
-    "test:integration": "vp test --project integration",
+    "e2e": "pnpm --filter @calwise/web e2e",
     "lint": "vp lint",
     "fmt": "vp fmt",
     "check": "vp check",
     "typecheck": "vp run -r typecheck",
-    "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down",
-    "db:push": "pnpm --filter @calwise/database db:push",
-    "db:generate": "pnpm --filter @calwise/database db:generate",
-    "db:migrate": "pnpm --filter @calwise/database db:migrate",
-    "db:studio": "pnpm --filter @calwise/database db:studio"
+    "db:migrate:local": "pnpm --filter @calwise/api db:migrate:local"
   },
   "devDependencies": {
     "@effect/tsgo": "0.41.0",

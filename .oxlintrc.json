@@ -35,7 +35,9 @@
     ".turbo/",
     "dist/",
     "coverage/",
-    "packages/database/drizzle/",
+    "packages/database/migrations/",
+    "apps/api/worker-configuration.d.ts",
+    ".wrangler/",
     ".agent-sources/",
     ".agent/**",
     ".agents/**",
@@ -52,7 +54,7 @@
   ],
   "overrides": [
     {
-      "files": ["apps/web/**", "packages/ui/**"],
+      "files": ["apps/web/**"],
       "plugins": ["react"],
       "rules": {
         "react/react-in-jsx-scope": "off"

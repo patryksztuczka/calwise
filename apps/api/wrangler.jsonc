@@ -1,0 +1,18 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "calwise-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-08-25",
+  "workers_dev": false,
+  "routes": [{ "pattern": "calwise-api.lastlab.win", "custom_domain": true }],
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      // Created by Terraform (infra/). wrangler resolves the id from the name at deploy time.
+      "database_name": "calwise",
+      "migrations_dir": "../../packages/database/migrations",
+      "migrations_pattern": "../../packages/database/migrations/*/migration.sql",
+    },
+  ],
+}

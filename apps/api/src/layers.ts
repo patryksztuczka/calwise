@@ -1,7 +1,7 @@
-import { Database } from "@calwise/database";
+import { DatabaseLive } from "@calwise/database/d1";
 import { Layer } from "effect";
-import { TodoService } from "./modules/todo/todo-service.ts";
+import { GreetingService } from "./modules/greeting/greeting-service.ts";
 
-export const AppLayer = TodoService.layer.pipe(Layer.provideMerge(Database.layer));
+export const AppLayer = GreetingService.layer.pipe(Layer.provide(DatabaseLive));
 
-export type AppServices = TodoService | Database;
+export type AppServices = GreetingService;

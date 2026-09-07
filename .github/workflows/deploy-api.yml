@@ -1,0 +1,46 @@
+name: Deploy API
+
+# Applies pending D1 migrations, then deploys the Worker. Independent of the
+# frontend workflow; a failed run is the only signal (no rollback).
+on:
+  push:
+    branches: [master]
+    paths:
+      - apps/api/**
+      - packages/database/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - tsconfig.base.json
+      - .github/workflows/deploy-api.yml
+      - .github/workflows/checks.yml
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+
+  deploy:
+    name: Migrate D1 and deploy Worker
+    needs: checks
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply D1 migrations
+        run: pnpm --filter @calwise/api db:migrate:remote
+      - name: Deploy Worker
+        run: pnpm --filter @calwise/api deploy
+      - name: Smoke test
+        run: curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-all-errors https://calwise-api.lastlab.win/health
