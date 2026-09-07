@@ -5,6 +5,8 @@ import { AppShell } from "./layouts/app-shell";
 import { AuthLayout } from "./layouts/auth-layout";
 
 const TodayPage = lazy(() => import("./pages/today-page"));
+const ScanBarcodePage = lazy(() => import("./pages/scan-barcode-page"));
+const LogFoodPage = lazy(() => import("./pages/log-food-page"));
 const GreetingPage = lazy(() => import("./pages/greeting-page"));
 const ComingSoonPage = lazy(() => import("./pages/coming-soon-page"));
 const SignInPage = lazy(() => import("./pages/sign-in-page"));
@@ -18,11 +20,17 @@ export default function App() {
           <Route path="sign-in" element={<SignInPage />} />
           <Route path="sign-up" element={<SignUpPage />} />
         </Route>
+        <Route element={<RequireAuth />}>
+          <Route element={<AppShell showNavigation={false} />}>
+            <Route path="scan" element={<ScanBarcodePage />} />
+          </Route>
+        </Route>
         <Route element={<AppShell />}>
           {/* The greeting smoke test stays public so the end-to-end path can be checked without an account. */}
           <Route path="greeting" element={<GreetingPage />} />
           <Route element={<RequireAuth />}>
             <Route index element={<TodayPage />} />
+            <Route path="log-food" element={<LogFoodPage />} />
             <Route path="*" element={<ComingSoonPage />} />
           </Route>
         </Route>
