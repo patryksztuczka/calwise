@@ -9,6 +9,8 @@ on:
         required: true
       CLOUDFLARE_ACCOUNT_ID:
         required: true
+      BETTER_AUTH_SECRET:
+        required: true
 
 concurrency:
   group: deploy-api
@@ -31,6 +33,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Apply D1 migrations
         run: pnpm --filter @calwise/api db:migrate:remote
+      - name: Set the session signing secret
+        run: printf '%s' "$BETTER_AUTH_SECRET" | pnpm --filter @calwise/api exec wrangler secret put BETTER_AUTH_SECRET
+        env:
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
       - name: Deploy Worker
         run: pnpm --filter @calwise/api run deploy
       - name: Smoke test

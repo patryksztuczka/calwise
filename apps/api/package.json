@@ -6,7 +6,7 @@
     "./trpc": "./src/trpc-router.ts"
   },
   "scripts": {
-    "dev": "wrangler dev --port 8787",
+    "dev": "wrangler dev --port 8787 --var BETTER_AUTH_SECRET:local-development-secret",
     "db:migrate:local": "wrangler d1 migrations apply calwise --local",
     "db:migrate:remote": "wrangler d1 migrations apply calwise --remote",
     "deploy": "wrangler deploy",
@@ -16,6 +16,7 @@
     "@calwise/database": "workspace:*",
     "@hono/trpc-server": "catalog:",
     "@trpc/server": "catalog:",
+    "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "effect-cf": "catalog:",

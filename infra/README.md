@@ -21,7 +21,7 @@ Terraform (Cloudflare provider 5.x) owns the long-lived platform resources; wran
    ```
 
 3. In the dashboard, create an R2 API token (Object Read & Write, bucket `calwise-terraform-state`) and note its access key pair.
-4. Add repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`.
+4. Add repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `BETTER_AUTH_SECRET` (any long random string, for example `openssl rand -base64 32`; the Deploy API workflow pushes it to the Worker).
 5. Run the **Infrastructure** workflow (Actions → Infrastructure → Run workflow) with `plan`, then with `apply`.
 
 Only after the apply succeeds should the first application deployments run: the Worker binds D1 by name and Pages deploys need the project to exist.
