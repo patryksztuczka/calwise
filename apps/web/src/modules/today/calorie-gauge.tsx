@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { segmentArc } from "../../lib/segment-arc";
 
 const SIZE = 142;
 const SEGMENTS = 40;
@@ -12,17 +13,10 @@ const center = SIZE / 2;
 const thickness = OUTER_RADIUS * (1 - INNER_RATIO);
 const radius = OUTER_RADIUS - thickness / 2;
 
-function point(angleDegrees: number): string {
-  const angle = (angleDegrees * Math.PI) / 180;
-  return `${(center + radius * Math.cos(angle)).toFixed(2)} ${(center - radius * Math.sin(angle)).toFixed(2)}`;
-}
-
 /** Arc paths for the 40 segments, ordered clockwise from the bottom left to the bottom right, leaving a gap at the bottom. */
-const segmentPaths = Array.from({ length: SEGMENTS }, (_, index) => {
-  const from = FIRST_SEGMENT_ANGLE - index * SEGMENT_STEP;
-  const to = from - SEGMENT_SWEEP;
-  return `M ${point(from)} A ${radius} ${radius} 0 0 1 ${point(to)}`;
-});
+const segmentPaths = Array.from({ length: SEGMENTS }, (_, index) =>
+  segmentArc(center, radius, FIRST_SEGMENT_ANGLE - index * SEGMENT_STEP, SEGMENT_SWEEP),
+);
 
 interface CalorieGaugeProps {
   /** Share of the goal eaten, 0 to 1. */

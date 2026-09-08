@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/api/food-input-rules";
 import { ArrowLeft, CircleX, ScanBarcode, Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
 import { IconButton } from "../components/icon-button";
-import { useTRPC } from "../lib/trpc";
-import { FoodAttribution, ProductResult, ProductSkeletons } from "../modules/food/product-details";
+import { ProductSearchResults } from "../modules/food/product-search-results";
+import { useProductSearch } from "../modules/food/use-product-search";
 
 export default function LogFoodPage() {
   const [params, setParams] = useSearchParams();
@@ -12,23 +12,7 @@ export default function LogFoodPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const query = params.get("q") ?? "";
   const term = query.trim();
-  const [debounced, setDebounced] = useState(term);
-  const valid = term.length >= 2 && term.length <= 100 && /[\p{L}\p{N}]/u.test(term);
-  const trpc = useTRPC();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(term), 300);
-    return () => clearTimeout(timer);
-  }, [term]);
-
-  const search = useQuery({
-    ...trpc.food.search.queryOptions({ q: debounced, limit: 20 }),
-    enabled: valid && debounced === term,
-    staleTime: 60_000,
-    retry: false,
-  });
-  const loading = valid && (debounced !== term || search.isPending);
-  const data = valid && debounced === term ? search.data : undefined;
+  const { state, flush } = useProductSearch(term);
 
   function updateQuery(value: string) {
     setParams(value ? { q: value } : {}, { replace: true });
@@ -52,7 +36,7 @@ export default function LogFoodPage() {
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
-          setDebounced(term);
+          flush();
         }}
       >
         <label htmlFor="product-search" className="sr-only">
@@ -66,7 +50,7 @@ export default function LogFoodPage() {
             type="search"
             value={query}
             onChange={(event) => updateQuery(event.target.value)}
-            maxLength={100}
+            maxLength={SEARCH_MAX_LENGTH}
             placeholder="Search by name or brand"
             autoComplete="off"
             enterKeyHint="search"
@@ -92,64 +76,10 @@ export default function LogFoodPage() {
           All foods
         </span>
         <p id="search-hint" className="text-10 text-muted">
-          Search with at least 2 characters
+          Search with at least {SEARCH_MIN_LENGTH} characters
         </p>
       </div>
-      <section aria-labelledby="results-heading" className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 id="results-heading" className="text-11 font-bold tracking-[1px]">
-            RESULTS
-          </h2>
-          <span role="status" className="text-11 text-muted">
-            {data &&
-              `${data.products.length === 20 ? "First 20" : data.products.length} ${data.products.length === 1 ? "food" : "foods"}`}
-          </span>
-        </div>
-        {!valid && (
-          <p className="py-10 text-center text-13 leading-relaxed text-muted">
-            {term
-              ? "Enter 2 to 100 characters with a letter or number."
-              : "Find a food by name or brand, or scan its barcode."}
-          </p>
-        )}
-        {loading && <ProductSkeletons />}
-        {valid && debounced === term && search.isError && (
-          <div role="alert" className="flex flex-col items-start gap-3 py-5 text-13">
-            <p className="text-danger">
-              Could not search products. Check your connection and try again.
-            </p>
-            <button
-              type="button"
-              onClick={() => void search.refetch()}
-              disabled={search.isFetching}
-              className="min-h-11 text-lime disabled:opacity-50"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-        {data && (
-          <>
-            {data.products.length === 0 ? (
-              <p className="py-10 text-center text-13 leading-relaxed text-muted">
-                No products found. Try another name or brand, or scan a barcode.
-              </p>
-            ) : (
-              <ul key={debounced} className="flex flex-col gap-1">
-                {data.products.map((product) => (
-                  <ProductResult key={product.barcode} product={product} />
-                ))}
-              </ul>
-            )}
-            {data.products.length === 20 && (
-              <p className="text-11 text-muted">
-                Showing the first 20 matches. Refine your search to find more specific products.
-              </p>
-            )}
-            <FoodAttribution attribution={data.attribution} />
-          </>
-        )}
-      </section>
+      <ProductSearchResults state={state} />
     </div>
   );
 }

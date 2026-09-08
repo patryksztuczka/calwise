@@ -3,22 +3,29 @@ import { products, publicProductColumns, type Product } from "@calwise/database/
 import { asc, eq, sql } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Context, Effect, Layer, Schema } from "effect";
+import {
+  BARCODE_PATTERN,
+  DEFAULT_SEARCH_LIMIT,
+  SEARCH_MAX_LENGTH,
+  SEARCH_MIN_LENGTH,
+  SEARCH_PATTERN,
+} from "./food-input-rules.ts";
 
 export const FoodSearchInput = Schema.toStandardSchemaV1(
   Schema.Struct({
     q: Schema.Trim.check(
-      Schema.isMinLength(2),
-      Schema.isMaxLength(100),
-      Schema.isPattern(/[\p{L}\p{N}]/u),
+      Schema.isMinLength(SEARCH_MIN_LENGTH),
+      Schema.isMaxLength(SEARCH_MAX_LENGTH),
+      Schema.isPattern(SEARCH_PATTERN),
     ),
     limit: Schema.Number.check(Schema.isInt(), Schema.isBetween({ minimum: 1, maximum: 50 })).pipe(
-      Schema.withDecodingDefaultKey(Effect.succeed(20)),
+      Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_SEARCH_LIMIT)),
     ),
   }),
 );
 
 export const FoodBarcodeInput = Schema.toStandardSchemaV1(
-  Schema.Struct({ barcode: Schema.String.check(Schema.isPattern(/^\d{4,24}$/)) }),
+  Schema.Struct({ barcode: Schema.String.check(Schema.isPattern(BARCODE_PATTERN)) }),
 );
 
 /** Literal AND-prefix search. User input never becomes FTS operators or SQL. */

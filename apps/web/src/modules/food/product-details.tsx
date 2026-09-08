@@ -1,12 +1,7 @@
-import type { inferOutput } from "@trpc/tanstack-react-query";
 import { ChevronDown, ChevronUp, Package } from "lucide-react";
 import { useId, useState } from "react";
-import type { useTRPC } from "../../lib/trpc";
-
-type BarcodeResult = inferOutput<ReturnType<typeof useTRPC>["food"]["barcode"]>;
-export type Product = BarcodeResult["product"];
-
-const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 });
+import { nutritionFormat as number } from "../../lib/number-format";
+import type { FoodSearchResult, Product } from "./food-types";
 
 interface ProductProps {
   readonly product: Product;
@@ -18,7 +13,7 @@ interface ProductIdentityProps extends ProductProps {
 
 export function ProductIdentity({ product, showEnergy = false }: ProductIdentityProps) {
   return (
-    <>
+    <span className="flex min-w-0 flex-1 items-center gap-3.5">
       <span className="flex size-[42px] shrink-0 items-center justify-center rounded-10 bg-surface text-muted">
         <Package size={20} aria-hidden="true" />
       </span>
@@ -33,7 +28,7 @@ export function ProductIdentity({ product, showEnergy = false }: ProductIdentity
           </span>
         )}
       </span>
-    </>
+    </span>
   );
 }
 
@@ -127,7 +122,7 @@ export function ProductNutrition({ product }: ProductProps) {
 }
 
 interface FoodAttributionProps {
-  readonly attribution: BarcodeResult["attribution"];
+  readonly attribution: FoodSearchResult["attribution"];
 }
 
 export function FoodAttribution({ attribution }: FoodAttributionProps) {

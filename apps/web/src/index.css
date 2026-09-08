@@ -69,23 +69,6 @@
   --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Indeterminate barcode lookup: 40 segments fill and empty, never a percentage. */
-@keyframes barcode-activity {
-  0%,
-  100% {
-    stroke-dasharray: 0 100;
-  }
-  50% {
-    stroke-dasharray: 100 0;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .barcode-activity {
-    animation: barcode-activity 2.4s ease-in-out infinite;
-  }
-}
-
 @layer base {
   html,
   body,

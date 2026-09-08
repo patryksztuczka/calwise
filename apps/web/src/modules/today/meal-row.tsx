@@ -1,4 +1,5 @@
 import { Apple, ChevronRight, Moon, Utensils, Zap, type LucideIcon } from "lucide-react";
+import { numberFormat as number } from "../../lib/number-format";
 import type { LoggedMeal, MealIcon } from "./today-data";
 
 const icons: Record<MealIcon, LucideIcon> = {
@@ -7,8 +8,6 @@ const icons: Record<MealIcon, LucideIcon> = {
   apple: Apple,
   moon: Moon,
 };
-
-const number = new Intl.NumberFormat("en-US");
 
 interface MealRowProps {
   readonly meal: LoggedMeal;

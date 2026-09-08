@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./trpc": "./src/trpc-router.ts"
+    "./trpc": "./src/trpc-router.ts",
+    "./food-input-rules": "./src/modules/food/food-input-rules.ts"
   },
   "scripts": {
     "dev": "wrangler dev --port 8787 --var BETTER_AUTH_SECRET:local-development-secret",

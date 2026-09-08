@@ -1,3 +1,4 @@
+import { nutritionFormat as grams } from "../../lib/number-format";
 import type { MacroIntake } from "./today-data";
 
 /**
@@ -57,8 +58,6 @@ export function summarizeMacro(macro: MacroIntake): MacroSummary {
     over: Math.max(macro.consumed - macro.target, 0),
   };
 }
-
-const grams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 
 /** Explanation shown under the macro counters when at least one target is exceeded. */
 export function macroOverTargetNote(macros: readonly MacroSummary[]): string | null {
