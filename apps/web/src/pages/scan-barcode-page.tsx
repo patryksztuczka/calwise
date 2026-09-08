@@ -3,11 +3,15 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { IconButton } from "../components/icon-button";
 import { BarcodeLookup } from "../modules/food/barcode-lookup";
+import { DestinationControl } from "../modules/food-log/destination-picker";
+import { useLogDestination } from "../modules/food-log/log-types";
+import { LoggingFooter } from "../modules/food-log/logging-session";
 import { BarcodeScanner } from "../modules/scanner/barcode-scanner";
 
 export default function ScanBarcodePage() {
   const [code, setCode] = useState<string | null>(null);
   const location = useLocation();
+  const destination = useLogDestination();
   const searchUrl = `/log-food${location.search}`;
 
   return (
@@ -18,7 +22,7 @@ export default function ScanBarcodePage() {
         </IconButton>
         <h1 className="font-display text-30 font-bold italic">SCAN BARCODE</h1>
       </header>
-      <p className="text-10 font-semibold tracking-[1px] text-muted">ON-DEVICE SCAN</p>
+      <DestinationControl destination={destination} onChoose={destination.setDestination} />
       {code === null ? (
         <BarcodeScanner onScan={setCode} />
       ) : (
@@ -37,12 +41,14 @@ export default function ScanBarcodePage() {
       </div>
       {code !== null && (
         <BarcodeLookup
+          logging
           key={code}
           code={code}
           searchUrl={searchUrl}
           onDismiss={() => setCode(null)}
         />
       )}
+      <LoggingFooter />
     </div>
   );
 }

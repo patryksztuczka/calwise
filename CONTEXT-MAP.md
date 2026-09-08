@@ -7,12 +7,18 @@
 
 - [Food](./apps/api/src/modules/food/CONTEXT.md): the public Polish-market catalog, barcode lookup, and name and brand search
 
+- [Food log](./apps/api/src/modules/food-log/CONTEXT.md): food consumed by a user, grouped into fixed meal slots by date
+
 ## Relationships
 
 - **Greeting → web**: `apps/web/src/app.tsx` is a client of the Greeting context. It consumes the api's tRPC router type-only (`import type { AppRouter } from "@calwise/api/trpc"`) and holds no domain rules of its own.
 - **Greeting → database**: the context reads the `greetings` table defined in `@calwise/database/schema`; the row shape is the Drizzle-inferred `Greeting` type.
 - **Auth → web**: the sign-in and sign-up screens and the `RequireAuth` route guard in `apps/web` are clients of the Auth context through the Better Auth client; the web app holds no auth rules of its own.
 - **Auth → database**: the context owns the `users`, `sessions`, `accounts` and `verifications` tables in `@calwise/database/schema`; their shape follows Better Auth's Drizzle adapter.
+- **Food → Food log**: new food entries capture the catalog product's name and nutrition, with a user-selected basis of grams or millilitres. Later catalog updates do not rewrite entries.
+- **Auth → Food log**: every food-log query and mutation requires a session and acts only on the caller's entries.
+- **Food log → database**: private entries live in `food_entries` in the user database, not the public food catalog.
+- **Food log → web**: the daily overview, meal detail, search, barcode review, and entry editor use the food-log tRPC procedures.
 - **Food → database**: the catalog uses `@calwise/database/food-schema` and `migrations-food/` in `@calwise/database`, backed by its own D1 database. It does not contain user data.
 - **Food → tRPC**: search and barcode lookup are public queries and do not require an Auth session.
 - **Food → web**: product search and barcode lookup consume the API router type-only. Both apps depend on `@calwise/food-rules` for catalog input constraints and limits; that package has no runtime dependencies.

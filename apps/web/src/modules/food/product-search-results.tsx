@@ -1,7 +1,8 @@
 import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/food-rules";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
 import { nutritionFormat as number } from "../../lib/number-format";
+import { AddFoodForm } from "../food-log/logging-session";
 import type { Product } from "./food-types";
 import { FoodAttribution, ProductIdentity, ProductNutrition } from "./product-details";
 import type { ProductSearchState } from "./product-search-state";
@@ -9,9 +10,14 @@ import type { ProductSearchState } from "./product-search-state";
 interface ProductSearchResultsProps {
   readonly state: ProductSearchState;
   readonly onRetry: () => void;
+  readonly logging?: boolean;
 }
 
-export function ProductSearchResults({ state, onRetry }: ProductSearchResultsProps) {
+export function ProductSearchResults({
+  state,
+  onRetry,
+  logging = false,
+}: ProductSearchResultsProps) {
   switch (state.status) {
     case "idle":
       return (
@@ -61,7 +67,7 @@ export function ProductSearchResults({ state, onRetry }: ProductSearchResultsPro
         <ResultsSection count={`${count} ${count === 1 ? "food" : "foods"}`}>
           <ul className="flex flex-col gap-1">
             {state.data.products.map((product) => (
-              <ProductResult key={product.barcode} product={product} />
+              <ProductResult key={product.barcode} product={product} logging={logging} />
             ))}
           </ul>
           {state.capped && (
@@ -101,7 +107,13 @@ function SearchMessage({ children }: { readonly children: ReactNode }) {
   return <p className="py-10 text-center text-13 leading-relaxed text-muted">{children}</p>;
 }
 
-function ProductResult({ product }: { readonly product: Product }) {
+function ProductResult({
+  product,
+  logging,
+}: {
+  readonly product: Product;
+  readonly logging: boolean;
+}) {
   const [expanded, setExpanded] = useState(false);
   const detailsId = useId();
   return (
@@ -123,13 +135,19 @@ function ProductResult({ product }: { readonly product: Product }) {
         <span className="flex size-11 shrink-0 items-center justify-center rounded-22 border border-line">
           {expanded ? (
             <ChevronUp size={21} className="text-muted" aria-hidden="true" />
+          ) : logging ? (
+            <Plus size={21} className="text-lime" aria-hidden="true" />
           ) : (
             <ChevronDown size={21} className="text-lime" aria-hidden="true" />
           )}
         </span>
       </button>
       <div id={detailsId} hidden={!expanded} className="px-4 pb-4">
-        <ProductNutrition product={product} />
+        {logging ? (
+          expanded && <AddFoodForm product={product} onAdded={() => setExpanded(false)} />
+        ) : (
+          <ProductNutrition product={product} />
+        )}
       </div>
     </li>
   );

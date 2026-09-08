@@ -2,8 +2,11 @@ import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router";
 import { RequireAuth } from "./components/require-auth";
 import { AppShell } from "./layouts/app-shell";
+import { LoggingSession } from "./modules/food-log/logging-session";
 import { AuthLayout } from "./layouts/auth-layout";
 
+const MealPage = lazy(() => import("./pages/meal-page"));
+const EditFoodPage = lazy(() => import("./pages/edit-food-page"));
 const TodayPage = lazy(() => import("./pages/today-page"));
 const ScanBarcodePage = lazy(() => import("./pages/scan-barcode-page"));
 const LogFoodPage = lazy(() => import("./pages/log-food-page"));
@@ -22,8 +25,12 @@ export default function App() {
         </Route>
         <Route element={<RequireAuth />}>
           <Route element={<AppShell showNavigation={false} />}>
-            <Route path="scan" element={<ScanBarcodePage />} />
-            <Route path="log-food" element={<LogFoodPage />} />
+            <Route element={<LoggingSession />}>
+              <Route path="scan" element={<ScanBarcodePage />} />
+              <Route path="log-food" element={<LogFoodPage />} />
+            </Route>
+            <Route path="meal/:meal" element={<MealPage />} />
+            <Route path="food-entry/:id" element={<EditFoodPage />} />
           </Route>
         </Route>
         <Route element={<AppShell />}>

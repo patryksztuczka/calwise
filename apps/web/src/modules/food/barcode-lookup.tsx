@@ -5,6 +5,7 @@ import { IconButton } from "../../components/icon-button";
 import { SegmentedActivity } from "../../components/segmented-activity";
 import { FoodAttribution, ProductIdentity, ProductNutrition } from "./product-details";
 import type { LookupState } from "./barcode-lookup-state";
+import { AddFoodForm } from "../food-log/logging-session";
 import { useBarcodeLookup } from "./use-barcode-lookup";
 
 const headings = {
@@ -22,9 +23,10 @@ interface BarcodeLookupProps {
   readonly code: string;
   readonly searchUrl: string;
   readonly onDismiss: () => void;
+  readonly logging?: boolean;
 }
 
-export function BarcodeLookup({ code, searchUrl, onDismiss }: BarcodeLookupProps) {
+export function BarcodeLookup({ code, searchUrl, onDismiss, logging = false }: BarcodeLookupProps) {
   const { state, retry } = useBarcodeLookup(code);
   const { title, Icon, color } = headings[state.status];
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -56,7 +58,13 @@ export function BarcodeLookup({ code, searchUrl, onDismiss }: BarcodeLookupProps
         </IconButton>
       </header>
       <div className="mt-3 flex flex-col gap-4">
-        <LookupContent state={state} searchUrl={searchUrl} onRetry={retry} />
+        <LookupContent
+          state={state}
+          searchUrl={searchUrl}
+          onRetry={retry}
+          logging={logging}
+          onAdded={onDismiss}
+        />
         {state.status !== "found" && (
           <p className="text-11 break-all text-muted">
             Barcode:{" "}
@@ -81,9 +89,11 @@ interface LookupContentProps {
   readonly state: LookupState;
   readonly searchUrl: string;
   readonly onRetry: () => void;
+  readonly logging: boolean;
+  readonly onAdded: () => void;
 }
 
-function LookupContent({ state, searchUrl, onRetry }: LookupContentProps) {
+function LookupContent({ state, searchUrl, onRetry, logging, onAdded }: LookupContentProps) {
   switch (state.status) {
     case "invalid":
       return (
@@ -129,11 +139,17 @@ function LookupContent({ state, searchUrl, onRetry }: LookupContentProps) {
       return (
         <>
           <p role="status" className="text-12 text-muted">
-            Product details. Nothing is added to your meals.
+            {logging
+              ? "Check your portion before adding. Nothing added yet."
+              : "Product details. Nothing is added to your meals."}
           </p>
           <div className="flex flex-col gap-5 rounded-12 border border-line bg-surface p-4">
             <ProductIdentity product={state.data.product} />
-            <ProductNutrition product={state.data.product} />
+            {logging ? (
+              <AddFoodForm product={state.data.product} onAdded={onAdded} />
+            ) : (
+              <ProductNutrition product={state.data.product} />
+            )}
           </div>
           <FoodAttribution attribution={state.data.attribution} />
         </>
