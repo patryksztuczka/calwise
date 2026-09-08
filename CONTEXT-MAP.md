@@ -15,4 +15,5 @@
 - **Auth → database**: the context owns the `users`, `sessions`, `accounts` and `verifications` tables in `@calwise/database/schema`; their shape follows Better Auth's Drizzle adapter.
 - **Food → database**: the catalog uses `@calwise/database/food-schema` and `migrations-food/` in `@calwise/database`, backed by its own D1 database. It does not contain user data.
 - **Food → tRPC**: search and barcode lookup are public queries and do not require an Auth session.
+- **Food → web**: product search and barcode lookup consume the API router type-only. Both apps depend on `@calwise/food-rules` for catalog input constraints and limits; that package has no runtime dependencies.
 - **Auth → tRPC**: every tRPC call carries the caller's session in its context; other contexts read it through `protectedProcedure` and never touch the auth tables.

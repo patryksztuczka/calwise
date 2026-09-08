@@ -6,10 +6,11 @@ import { Context, Effect, Layer, Schema } from "effect";
 import {
   BARCODE_PATTERN,
   DEFAULT_SEARCH_LIMIT,
+  MAX_SEARCH_LIMIT,
   SEARCH_MAX_LENGTH,
   SEARCH_MIN_LENGTH,
   SEARCH_PATTERN,
-} from "./food-input-rules.ts";
+} from "@calwise/food-rules";
 
 export const FoodSearchInput = Schema.toStandardSchemaV1(
   Schema.Struct({
@@ -18,9 +19,10 @@ export const FoodSearchInput = Schema.toStandardSchemaV1(
       Schema.isMaxLength(SEARCH_MAX_LENGTH),
       Schema.isPattern(SEARCH_PATTERN),
     ),
-    limit: Schema.Number.check(Schema.isInt(), Schema.isBetween({ minimum: 1, maximum: 50 })).pipe(
-      Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_SEARCH_LIMIT)),
-    ),
+    limit: Schema.Number.check(
+      Schema.isInt(),
+      Schema.isBetween({ minimum: 1, maximum: MAX_SEARCH_LIMIT }),
+    ).pipe(Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_SEARCH_LIMIT))),
   }),
 );
 

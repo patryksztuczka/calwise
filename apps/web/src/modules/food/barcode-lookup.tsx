@@ -4,7 +4,8 @@ import { Link } from "react-router";
 import { IconButton } from "../../components/icon-button";
 import { SegmentedActivity } from "../../components/segmented-activity";
 import { FoodAttribution, ProductIdentity, ProductNutrition } from "./product-details";
-import { useBarcodeLookup, type LookupState } from "./use-barcode-lookup";
+import type { LookupState } from "./barcode-lookup-state";
+import { useBarcodeLookup } from "./use-barcode-lookup";
 
 const headings = {
   invalid: { title: "INVALID BARCODE", Icon: ScanBarcode, color: "text-muted" },
@@ -24,7 +25,7 @@ interface BarcodeLookupProps {
 }
 
 export function BarcodeLookup({ code, searchUrl, onDismiss }: BarcodeLookupProps) {
-  const state = useBarcodeLookup(code);
+  const { state, retry } = useBarcodeLookup(code);
   const { title, Icon, color } = headings[state.status];
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -55,7 +56,7 @@ export function BarcodeLookup({ code, searchUrl, onDismiss }: BarcodeLookupProps
         </IconButton>
       </header>
       <div className="mt-3 flex flex-col gap-4">
-        <LookupContent state={state} searchUrl={searchUrl} />
+        <LookupContent state={state} searchUrl={searchUrl} onRetry={retry} />
         {state.status !== "found" && (
           <p className="text-11 break-all text-muted">
             Barcode:{" "}
@@ -79,9 +80,10 @@ export function BarcodeLookup({ code, searchUrl, onDismiss }: BarcodeLookupProps
 interface LookupContentProps {
   readonly state: LookupState;
   readonly searchUrl: string;
+  readonly onRetry: () => void;
 }
 
-function LookupContent({ state, searchUrl }: LookupContentProps) {
+function LookupContent({ state, searchUrl, onRetry }: LookupContentProps) {
   switch (state.status) {
     case "invalid":
       return (
@@ -115,7 +117,7 @@ function LookupContent({ state, searchUrl }: LookupContentProps) {
           <p className="text-muted">
             Could not look up this barcode. Check your connection and try again.
           </p>
-          <button type="button" onClick={state.retry} className="min-h-11 text-lime">
+          <button type="button" onClick={onRetry} className="min-h-11 text-lime">
             Try again
           </button>
           <Link to={searchUrl} className="flex min-h-11 items-center text-lime">

@@ -1,4 +1,4 @@
-import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/api/food-input-rules";
+import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/food-rules";
 import { ArrowLeft, CircleX, ScanBarcode, Search } from "lucide-react";
 import { useRef } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
@@ -12,7 +12,7 @@ export default function LogFoodPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const query = params.get("q") ?? "";
   const term = query.trim();
-  const { state, flush } = useProductSearch(term);
+  const { state, flush, retry } = useProductSearch(term);
 
   function updateQuery(value: string) {
     setParams(value ? { q: value } : {}, { replace: true });
@@ -79,7 +79,8 @@ export default function LogFoodPage() {
           Search with at least {SEARCH_MIN_LENGTH} characters
         </p>
       </div>
-      <ProductSearchResults state={state} />
+      {/* A new search collapses any expanded product rows. */}
+      <ProductSearchResults key={term} state={state} onRetry={retry} />
     </div>
   );
 }

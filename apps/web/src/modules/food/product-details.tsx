@@ -1,5 +1,5 @@
-import { ChevronDown, ChevronUp, Package } from "lucide-react";
-import { useId, useState } from "react";
+import { Package } from "lucide-react";
+import type { ReactNode } from "react";
 import { nutritionFormat as number } from "../../lib/number-format";
 import type { FoodSearchResult, Product } from "./food-types";
 
@@ -8,10 +8,10 @@ interface ProductProps {
 }
 
 interface ProductIdentityProps extends ProductProps {
-  readonly showEnergy?: boolean;
+  readonly children?: ReactNode;
 }
 
-export function ProductIdentity({ product, showEnergy = false }: ProductIdentityProps) {
+export function ProductIdentity({ product, children }: ProductIdentityProps) {
   return (
     <span className="flex min-w-0 flex-1 items-center gap-3.5">
       <span className="flex size-[42px] shrink-0 items-center justify-center rounded-10 bg-surface text-muted">
@@ -22,41 +22,9 @@ export function ProductIdentity({ product, showEnergy = false }: ProductIdentity
         <span className="text-11 text-muted">
           {[product.brands, product.packageQuantity].filter(Boolean).join(" · ") || "Packaged food"}
         </span>
-        {showEnergy && (
-          <span className="text-11 text-muted">
-            {number.format(product.energyKcal100g)} kcal · 100 g / ml
-          </span>
-        )}
+        {children}
       </span>
     </span>
-  );
-}
-
-export function ProductResult({ product }: ProductProps) {
-  const [expanded, setExpanded] = useState(false);
-  const detailsId = useId();
-  return (
-    <li className={expanded ? "rounded-12 border border-line bg-surface" : "border-b border-line"}>
-      <button
-        type="button"
-        aria-expanded={expanded}
-        aria-controls={detailsId}
-        onClick={() => setExpanded(!expanded)}
-        className={`flex min-h-[84px] w-full items-center gap-3.5 py-3 text-left ${expanded ? "px-3" : ""}`}
-      >
-        <ProductIdentity product={product} showEnergy={!expanded} />
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-22 border border-line">
-          {expanded ? (
-            <ChevronUp size={21} className="text-muted" aria-hidden="true" />
-          ) : (
-            <ChevronDown size={21} className="text-lime" aria-hidden="true" />
-          )}
-        </span>
-      </button>
-      <div id={detailsId} hidden={!expanded} className="px-4 pb-4">
-        <ProductNutrition product={product} />
-      </div>
-    </li>
   );
 }
 
@@ -139,26 +107,5 @@ export function FoodAttribution({ attribution }: FoodAttributionProps) {
       </a>{" "}
       · {attribution.license}
     </p>
-  );
-}
-
-export function ProductSkeletons() {
-  return (
-    <div role="status" aria-label="Searching products">
-      <span className="sr-only">Searching products...</span>
-      <div aria-hidden="true" className="motion-safe:animate-pulse">
-        {[0, 1, 2, 3].map((row) => (
-          <div key={row} className="flex h-[84px] items-center gap-3.5 border-b border-line">
-            <span className="size-[42px] shrink-0 rounded-8 bg-skeleton" />
-            <div className="flex flex-1 flex-col gap-2.5">
-              <span className="h-3.5 w-3/4 rounded-8 bg-skeleton" />
-              <span className="h-2.5 w-3/5 rounded-8 bg-skeleton" />
-              <span className="h-2 w-1/3 rounded-8 bg-skeleton" />
-            </div>
-            <span className="size-11 rounded-22 bg-skeleton" />
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }

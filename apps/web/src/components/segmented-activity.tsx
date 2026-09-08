@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
-import { segmentArc } from "../lib/segment-arc";
+import { RING_SEGMENTS, SegmentedRing } from "./segmented-ring";
 
-const SEGMENTS = 40;
 const CYCLE_MS = 2_400;
-const REDUCED_MOTION_FILL = 24;
-const paths = Array.from({ length: SEGMENTS }, (_, index) =>
-  segmentArc(88, 69.5, 90 - index * 9, 3.3),
-);
+const REDUCED_MOTION_FILL = Math.round(RING_SEGMENTS * 0.6);
 
 /** Indeterminate activity: fill clockwise, empty in reverse. Reduced motion keeps a static 60% arc. */
 export function SegmentedActivity() {
+  const filled = useActivityFill();
+  return (
+    <div className="size-44">
+      <SegmentedRing filled={filled} activeClass="stroke-lime" />
+    </div>
+  );
+}
+
+function useActivityFill() {
   const [filled, setFilled] = useState(REDUCED_MOTION_FILL);
   useEffect(() => {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -24,7 +29,7 @@ export function SegmentedActivity() {
       function tick(now: number) {
         const phase = ((now - startTime) % CYCLE_MS) / CYCLE_MS;
         const progress = (1 - Math.cos(phase * 2 * Math.PI)) / 2;
-        setFilled(Math.round(progress * SEGMENTS));
+        setFilled(Math.round(progress * RING_SEGMENTS));
         frame = requestAnimationFrame(tick);
       }
       frame = requestAnimationFrame(tick);
@@ -37,17 +42,5 @@ export function SegmentedActivity() {
     };
   }, []);
 
-  return (
-    <svg viewBox="0 0 176 176" className="size-44" aria-hidden="true">
-      {paths.map((d, index) => (
-        <path
-          key={d}
-          d={d}
-          fill="none"
-          strokeWidth={13}
-          className={index < filled ? "stroke-lime" : "stroke-gauge-empty"}
-        />
-      ))}
-    </svg>
-  );
+  return filled;
 }
