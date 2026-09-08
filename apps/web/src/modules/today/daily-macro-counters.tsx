@@ -1,7 +1,6 @@
+import { nutritionFormat as grams } from "../../lib/number-format";
 import { macroOverTargetNote, summarizeMacro } from "./daily-summary";
 import type { MacroIntake } from "./today-data";
-
-const grams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 
 /** Protein, carbs and fat against their daily targets ("Component / Daily macro counters"). */
 export function DailyMacroCounters({ macros }: { readonly macros: readonly MacroIntake[] }) {

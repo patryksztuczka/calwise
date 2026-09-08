@@ -33,6 +33,7 @@ jobs:
             api:
               - 'apps/api/**'
               - 'packages/database/**'
+              - 'packages/food-rules/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -42,6 +43,7 @@ jobs:
               - '.github/workflows/checks.yml'
             web:
               - 'apps/web/**'
+              - 'packages/food-rules/**'
               - 'apps/api/src/**'
               - 'package.json'
               - 'pnpm-lock.yaml'

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@calwise/database": "workspace:*",
+    "@calwise/food-rules": "workspace:*",
     "@hono/trpc-server": "catalog:",
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",

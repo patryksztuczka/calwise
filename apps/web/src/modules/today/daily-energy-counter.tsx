@@ -1,9 +1,8 @@
 import { Check, ChevronDown } from "lucide-react";
+import { numberFormat as number } from "../../lib/number-format";
 import { CalorieGauge } from "./calorie-gauge";
 import { summarizeCalories } from "./daily-summary";
 import { useRevealProgress } from "./use-reveal-progress";
-
-const number = new Intl.NumberFormat("en-US");
 
 function dayLabel(date: string): string {
   return new Date(`${date}T00:00:00`)
