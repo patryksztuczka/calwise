@@ -1,4 +1,3 @@
-import { BARCODE_PATTERN } from "@calwise/food-rules";
 import type { QueryStatus } from "@tanstack/react-query";
 import type { FoodBarcodeResult } from "./food-types";
 
@@ -12,8 +11,8 @@ interface LookupQuery {
   readonly errorCode: string | undefined;
 }
 
-export function deriveLookupState(code: string, lookup: LookupQuery): LookupState {
-  if (!BARCODE_PATTERN.test(code)) return { status: "invalid" };
+export function deriveLookupState(valid: boolean, lookup: LookupQuery): LookupState {
+  if (!valid) return { status: "invalid" };
   // A background refresh must not replace a known product with an error screen.
   if (lookup.data) return { status: "found", data: lookup.data };
   if (lookup.status === "pending") return { status: "loading" };

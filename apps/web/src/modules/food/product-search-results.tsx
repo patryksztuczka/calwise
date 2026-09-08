@@ -1,4 +1,4 @@
-import { DEFAULT_SEARCH_LIMIT, SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/food-rules";
+import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/food-rules";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
 import { nutritionFormat as number } from "../../lib/number-format";
@@ -57,20 +57,16 @@ export function ProductSearchResults({ state, onRetry }: ProductSearchResultsPro
       );
     case "results": {
       const count = state.data.products.length;
-      const capped = count === DEFAULT_SEARCH_LIMIT;
       return (
-        <ResultsSection
-          count={`${capped ? `First ${DEFAULT_SEARCH_LIMIT}` : count} ${count === 1 ? "food" : "foods"}`}
-        >
+        <ResultsSection count={`${count} ${count === 1 ? "food" : "foods"}`}>
           <ul className="flex flex-col gap-1">
             {state.data.products.map((product) => (
               <ProductResult key={product.barcode} product={product} />
             ))}
           </ul>
-          {capped && (
+          {state.capped && (
             <p className="text-11 text-muted">
-              Showing the first {DEFAULT_SEARCH_LIMIT} matches. Refine your search to find more
-              specific products.
+              More matches may be available. Refine your search to find more specific products.
             </p>
           )}
           <FoodAttribution attribution={state.data.attribution} />
