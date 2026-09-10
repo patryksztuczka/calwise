@@ -1,4 +1,4 @@
-import { ChartPie, NotebookText, TrendingUp } from "lucide-react";
+import { ChartPie, NotebookText, TrendingUp, UserRound } from "lucide-react";
 import { Outlet } from "react-router";
 import { TabBar, type TabBarItem } from "../components/tab-bar";
 
@@ -6,6 +6,7 @@ const tabs: readonly TabBarItem[] = [
   { to: "/", label: "Today", icon: <ChartPie size={21} aria-hidden="true" /> },
   { to: "/diary", label: "Diary", icon: <NotebookText size={21} aria-hidden="true" /> },
   { to: "/trends", label: "Trends", icon: <TrendingUp size={21} aria-hidden="true" /> },
+  { to: "/profile", label: "Profile", icon: <UserRound size={21} aria-hidden="true" /> },
 ];
 
 interface AppShellProps {

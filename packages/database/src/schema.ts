@@ -1,6 +1,6 @@
 import { LOGGED_UNITS, MEAL_SLOTS } from "@calwise/food-rules/log";
 import { getTableColumns, sql } from "drizzle-orm";
-import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
 
 export const greetings = sqliteTable("greetings", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -32,6 +32,22 @@ export const users = sqliteTable("users", {
 });
 
 export type User = typeof users.$inferSelect;
+
+export const nutritionGoals = sqliteTable(
+  "nutrition_goals",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    date: text("date").notNull(),
+    kcal: integer("kcal").notNull(),
+    mode: text("mode", { enum: ["percentages", "grams"] }).notNull(),
+    protein: real("protein").notNull(),
+    carbs: real("carbs").notNull(),
+    fat: real("fat").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.date] })],
+);
 
 export const foodEntries = sqliteTable(
   "food_entries",

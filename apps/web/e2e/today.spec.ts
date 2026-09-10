@@ -21,7 +21,7 @@ test("opens on an empty daily log with default targets", async ({ page }) => {
       expect(page.getByRole("button", { name: new RegExp(meal) })).toBeVisible(),
     ),
   );
-  await expect(page.getByText(/Default targets/)).toBeVisible();
+  await expect(page.getByText(/Daily targets/)).toBeVisible();
   await expect(page.getByRole("link", { name: "LOG FOOD" })).toBeVisible();
 });
 
