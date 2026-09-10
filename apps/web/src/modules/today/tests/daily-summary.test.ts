@@ -44,7 +44,7 @@ describe("summarizeCalories", () => {
 });
 
 describe("summarizeMacro", () => {
-  const protein = { key: "protein", label: "Protein", consumed: 150, target: 125 } as const;
+  const protein = { key: "protein", consumed: 150, target: 125 } as const;
 
   it("caps the bar at the track while keeping the excess visible", () => {
     expect(summarizeMacro(protein)).toMatchObject({ progress: 1, over: 25 });
@@ -60,9 +60,9 @@ describe("summarizeMacro", () => {
 
 describe("macroOverTargetNote", () => {
   const macros = [
-    summarizeMacro({ key: "protein", label: "Protein", consumed: 150, target: 125 }),
-    summarizeMacro({ key: "carbs", label: "Carbs", consumed: 245, target: 225 }),
-    summarizeMacro({ key: "fat", label: "Fat", consumed: 80, target: 67 }),
+    summarizeMacro({ key: "protein", consumed: 150, target: 125 }),
+    summarizeMacro({ key: "carbs", consumed: 245, target: 225 }),
+    summarizeMacro({ key: "fat", consumed: 80, target: 67 }),
   ];
 
   it("is silent while every macro is within its target", () => {

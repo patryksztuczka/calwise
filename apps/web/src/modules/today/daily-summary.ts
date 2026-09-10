@@ -1,5 +1,17 @@
 import { nutritionFormat as grams } from "../../lib/number-format";
-import type { MacroIntake } from "./today-data";
+export const MACRO_KEYS = ["protein", "carbs", "fat"] as const;
+export type MacroKey = (typeof MACRO_KEYS)[number];
+export const MACRO_LABELS: Record<MacroKey, string> = {
+  protein: "Protein",
+  carbs: "Carbs",
+  fat: "Fat",
+};
+
+export interface MacroIntake {
+  readonly key: MacroKey;
+  readonly consumed: number;
+  readonly target: number;
+}
 
 /**
  * Rules from the "Daily counter states" board:
@@ -45,6 +57,7 @@ export function summarizeCalories(eaten: number, goal: number): CalorieSummary {
 }
 
 export interface MacroSummary extends MacroIntake {
+  readonly label: string;
   /** Share of the target consumed, capped at 1 so bars stay inside their tracks. */
   readonly progress: number;
   /** Grams beyond the target, zero unless exceeded. */
@@ -54,6 +67,7 @@ export interface MacroSummary extends MacroIntake {
 export function summarizeMacro(macro: MacroIntake): MacroSummary {
   return {
     ...macro,
+    label: MACRO_LABELS[macro.key],
     progress: macro.target > 0 ? Math.min(macro.consumed / macro.target, 1) : 0,
     over: Math.max(macro.consumed - macro.target, 0),
   };

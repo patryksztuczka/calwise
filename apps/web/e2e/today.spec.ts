@@ -11,12 +11,17 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole("heading", { name: "CALWISE" })).toBeVisible();
 });
 
-test("opens on the Today overview built from the mocked daily log", async ({ page }) => {
+test("opens on an empty daily log with default targets", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "CALWISE" })).toBeVisible();
   await expect(page.getByText("KCAL EATEN", { exact: true })).toBeVisible();
-  await expect(page.getByText("1,450", { exact: true })).toBeVisible();
-  await expect(page.getByRole("img", { name: "550 kcal left" })).toBeVisible();
-  await expect(page.getByText("3 logged")).toBeVisible();
+  await expect(page.getByRole("img", { name: "2,000 kcal left" })).toBeVisible();
+  await expect(page.getByText("0 foods logged")).toBeVisible();
+  await Promise.all(
+    ["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) =>
+      expect(page.getByRole("button", { name: new RegExp(meal) })).toBeVisible(),
+    ),
+  );
+  await expect(page.getByText(/Default targets/)).toBeVisible();
   await expect(page.getByRole("link", { name: "LOG FOOD" })).toBeVisible();
 });
 

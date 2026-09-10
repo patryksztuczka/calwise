@@ -1,3 +1,4 @@
+import { parseLocalDate } from "@calwise/food-rules/log";
 import { Check, ChevronDown } from "lucide-react";
 import { numberFormat as number } from "../../lib/number-format";
 import { CalorieGauge } from "./calorie-gauge";
@@ -5,8 +6,12 @@ import { summarizeCalories } from "./daily-summary";
 import { useRevealProgress } from "./use-reveal-progress";
 
 function dayLabel(date: string): string {
-  return new Date(`${date}T00:00:00`)
-    .toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+  return parseLocalDate(date)
+    .toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    })
     .toUpperCase();
 }
 

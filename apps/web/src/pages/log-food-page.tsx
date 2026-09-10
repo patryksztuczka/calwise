@@ -3,35 +3,39 @@ import { ArrowLeft, CircleX, ScanBarcode, Search } from "lucide-react";
 import { useRef } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
 import { IconButton } from "../components/icon-button";
+import { DestinationControl } from "../modules/food-log/destination-picker";
+import { usePatchSearchParams } from "../lib/patch-search-params";
+import { useLogDestination } from "../modules/food-log/destination";
+import { renderAddFoodForm, LoggingFooter } from "../modules/food-log/logging-session";
 import { ProductSearchResults } from "../modules/food/product-search-results";
 import { useProductSearch } from "../modules/food/use-product-search";
 
 export default function LogFoodPage() {
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const patchParams = usePatchSearchParams();
   const location = useLocation();
+  const destination = useLogDestination();
   const inputRef = useRef<HTMLInputElement>(null);
   const query = params.get("q") ?? "";
   const term = query.trim();
   const { state, flush, retry } = useProductSearch(term);
 
   function updateQuery(value: string) {
-    setParams(value ? { q: value } : {}, { replace: true });
+    patchParams({ q: value || null });
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-[calc(100dvh-64px)] flex-col gap-3">
       <header className="flex h-11 items-center gap-3.5">
         <IconButton render={<Link to="/" aria-label="Back to today" />}>
           <ArrowLeft size={21} aria-hidden="true" />
         </IconButton>
-        <h1 className="flex-1 font-display text-30 font-bold italic">SEARCH FOOD</h1>
+        <h1 className="flex-1 font-display text-30 font-bold italic">ADD FOOD</h1>
         <IconButton render={<Link to={`/scan${location.search}`} aria-label="Scan barcode" />}>
           <ScanBarcode size={21} className="text-lime" aria-hidden="true" />
         </IconButton>
       </header>
-      <p className="text-12 text-muted">
-        Explore products and nutrition. Nothing is added to your meals.
-      </p>
+      <DestinationControl destination={destination} onChoose={destination.setDestination} />
       <form
         role="search"
         onSubmit={(event) => {
@@ -80,7 +84,13 @@ export default function LogFoodPage() {
         </p>
       </div>
       {/* A new search collapses any expanded product rows. */}
-      <ProductSearchResults key={term} state={state} onRetry={retry} />
+      <ProductSearchResults
+        key={term}
+        state={state}
+        onRetry={retry}
+        renderProduct={renderAddFoodForm}
+      />
+      <LoggingFooter />
     </div>
   );
 }

@@ -1,15 +1,26 @@
 import { Plus, UserRound } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { DEFAULT_TARGETS } from "@calwise/food-rules/log";
+import { nutritionFormat } from "../lib/number-format";
+import { useTRPC } from "../lib/trpc";
+import { DateNavigation } from "../modules/food-log/date-navigation";
+import { LogQueryState } from "../modules/food-log/log-query-state";
+import { daySummary } from "../modules/food-log/day-summary";
+import { mealUrl, useLogDestination } from "../modules/food-log/destination";
 import { IconButton } from "../components/icon-button";
 import { PrimaryAction } from "../components/primary-action";
 import { DailyEnergyCounter } from "../modules/today/daily-energy-counter";
 import { DailyMacroCounters } from "../modules/today/daily-macro-counters";
 import { MealRow } from "../modules/today/meal-row";
-import { mockDailyLog } from "../modules/today/today-data";
 
 /** "Calwise · Today": the daily overview with the energy counter, macro counters and logged meals. */
 export default function TodayPage() {
-  const log = mockDailyLog;
+  const trpc = useTRPC();
+  const navigate = useNavigate();
+  const { date, setDate } = useLogDestination();
+  const query = useQuery(trpc.foodLog.day.queryOptions({ date }));
+  const log = daySummary(query.data ?? []);
   return (
     <div className="flex flex-col gap-[22px]">
       <header className="flex h-11 items-center justify-between">
@@ -21,36 +32,52 @@ export default function TodayPage() {
         </IconButton>
       </header>
 
-      <div className="mt-[6px]">
-        <DailyEnergyCounter
-          date={log.date}
-          caloriesEaten={log.caloriesEaten}
-          calorieGoal={log.calorieGoal}
-        />
-      </div>
+      <DateNavigation date={date} onChange={setDate} />
+      {query.isPending || query.isError ? (
+        <LogQueryState failed={query.isError} retry={() => void query.refetch()} />
+      ) : (
+        <>
+          <div className="mt-[6px]">
+            <DailyEnergyCounter
+              date={date}
+              caloriesEaten={log.totals.kcal}
+              calorieGoal={DEFAULT_TARGETS.kcal}
+            />
+          </div>
 
-      <DailyMacroCounters macros={log.macros} />
+          <DailyMacroCounters totals={log.totals} />
+          <p className="text-center text-10 text-muted">
+            Default targets · {nutritionFormat.format(DEFAULT_TARGETS.kcal)} kcal · Protein{" "}
+            {DEFAULT_TARGETS.protein} g · Carbs {DEFAULT_TARGETS.carbs} g · Fat{" "}
+            {DEFAULT_TARGETS.fat} g
+          </p>
 
-      <section aria-labelledby="meals-heading" className="flex flex-col gap-2.5">
-        <div className="flex items-center justify-between">
-          <h2
-            id="meals-heading"
-            className="font-body text-11 font-bold tracking-[1.1px] text-white"
-          >
-            YOUR MEALS
-          </h2>
-          <p className="font-body text-11 text-muted">{log.meals.length} logged</p>
-        </div>
-        <ul className="flex flex-col gap-2.5">
-          {log.meals.map((meal) => (
-            <li key={meal.id}>
-              <MealRow meal={meal} />
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <PrimaryAction render={<Link to="/log-food" />}>
+          <section aria-labelledby="meals-heading" className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <h2
+                id="meals-heading"
+                className="font-body text-11 font-bold tracking-[1.1px] text-white"
+              >
+                YOUR MEALS
+              </h2>
+              <p className="font-body text-11 text-muted">{log.count} foods logged</p>
+            </div>
+            <ul className="flex flex-col gap-2.5">
+              {log.meals.map((meal) => (
+                <li key={meal.meal}>
+                  <MealRow
+                    {...meal}
+                    onOpen={() => {
+                      void navigate(mealUrl({ date, meal: meal.meal }));
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        </>
+      )}
+      <PrimaryAction render={<Link to={`/log-food?date=${date}`} />}>
         <Plus size={23} strokeWidth={2.5} aria-hidden="true" />
         LOG FOOD
       </PrimaryAction>
