@@ -4,8 +4,8 @@ import { Link, useLocation } from "react-router";
 import { IconButton } from "../components/icon-button";
 import { BarcodeLookup } from "../modules/food/barcode-lookup";
 import { DestinationControl } from "../modules/food-log/destination-picker";
-import { useLogDestination } from "../modules/food-log/log-types";
-import { LoggingFooter } from "../modules/food-log/logging-session";
+import { useLogDestination } from "../modules/food-log/destination";
+import { renderAddFoodForm, LoggingFooter } from "../modules/food-log/logging-session";
 import { BarcodeScanner } from "../modules/scanner/barcode-scanner";
 
 export default function ScanBarcodePage() {
@@ -41,7 +41,7 @@ export default function ScanBarcodePage() {
       </div>
       {code !== null && (
         <BarcodeLookup
-          logging
+          renderProduct={renderAddFoodForm}
           key={code}
           code={code}
           searchUrl={searchUrl}

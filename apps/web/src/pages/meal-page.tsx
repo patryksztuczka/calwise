@@ -1,4 +1,4 @@
-import { entryNutrition, MEAL_NAMES, MEAL_SLOTS } from "@calwise/food-rules/log";
+import { entryNutrition, MEAL_NAMES, MEAL_SLOTS, sumNutrition } from "@calwise/food-rules/log";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, Plus, Utensils } from "lucide-react";
 import { Link, Navigate, useParams } from "react-router";
@@ -6,10 +6,9 @@ import { IconButton } from "../components/icon-button";
 import { PrimaryAction } from "../components/primary-action";
 import { nutritionFormat } from "../lib/number-format";
 import { useTRPC } from "../lib/trpc";
-import { LogQueryState } from "../modules/food-log/date-navigation";
-import { sumEntries } from "../modules/food-log/day-summary";
-import { loggingUrl, useLogDestination } from "../modules/food-log/log-types";
-import { NutritionPreview } from "../modules/food-log/portion-editor";
+import { LogQueryState } from "../modules/food-log/log-query-state";
+import { loggingUrl, useLogDestination } from "../modules/food-log/destination";
+import { MealNutritionSummary } from "../modules/food-log/nutrition-preview";
 
 export default function MealPage() {
   const { meal: rawMeal } = useParams();
@@ -32,7 +31,7 @@ export default function MealPage() {
         <LogQueryState failed={query.isError} retry={() => void query.refetch()} />
       ) : (
         <>
-          <NutritionPreview prominent totals={sumEntries(entries)} />
+          <MealNutritionSummary totals={sumNutrition(entries)} />
           <div className="mt-5 flex justify-between border-t border-line pt-5 text-11">
             <h2 className="font-semibold tracking-[1px]">FOODS</h2>
             <span className="text-muted">

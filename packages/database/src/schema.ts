@@ -1,4 +1,5 @@
-import { sql } from "drizzle-orm";
+import { LOGGED_UNITS, MEAL_SLOTS } from "@calwise/food-rules/log";
+import { getTableColumns, sql } from "drizzle-orm";
 import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const greetings = sqliteTable("greetings", {
@@ -47,15 +48,17 @@ export const foodEntries = sqliteTable(
     carbohydrates100g: real("carbohydrates_100g").notNull(),
     fat100g: real("fat_100g").notNull(),
     amount: real("amount").notNull(),
-    unit: text("unit", { enum: ["g", "ml"] }).notNull(),
+    unit: text("unit", { enum: LOGGED_UNITS }).notNull(),
     date: text("date").notNull(),
-    meal: text("meal", { enum: ["breakfast", "lunch", "dinner", "snacks"] }).notNull(),
+    meal: text("meal", { enum: MEAL_SLOTS }).notNull(),
     createdAt: integer("created_at").notNull(),
   },
   (table) => [index("food_entries_user_date_idx").on(table.userId, table.date)],
 );
 
 export type FoodEntry = typeof foodEntries.$inferSelect;
+const { userId: _userId, ...publicFoodEntryColumns } = getTableColumns(foodEntries);
+export { publicFoodEntryColumns };
 
 export const sessions = sqliteTable(
   "sessions",

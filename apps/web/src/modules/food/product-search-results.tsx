@@ -1,23 +1,18 @@
 import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/food-rules";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ChevronUp, Plus } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
 import { nutritionFormat as number } from "../../lib/number-format";
-import { AddFoodForm } from "../food-log/logging-session";
-import type { Product } from "./food-types";
-import { FoodAttribution, ProductIdentity, ProductNutrition } from "./product-details";
+import type { Product, RenderProduct } from "./food-types";
+import { FoodAttribution, ProductIdentity } from "./product-details";
 import type { ProductSearchState } from "./product-search-state";
 
 interface ProductSearchResultsProps {
   readonly state: ProductSearchState;
   readonly onRetry: () => void;
-  readonly logging?: boolean;
+  readonly renderProduct: RenderProduct;
 }
 
-export function ProductSearchResults({
-  state,
-  onRetry,
-  logging = false,
-}: ProductSearchResultsProps) {
+export function ProductSearchResults({ state, onRetry, renderProduct }: ProductSearchResultsProps) {
   switch (state.status) {
     case "idle":
       return (
@@ -67,7 +62,11 @@ export function ProductSearchResults({
         <ResultsSection count={`${count} ${count === 1 ? "food" : "foods"}`}>
           <ul className="flex flex-col gap-1">
             {state.data.products.map((product) => (
-              <ProductResult key={product.barcode} product={product} logging={logging} />
+              <ProductResult
+                key={product.barcode}
+                product={product}
+                renderProduct={renderProduct}
+              />
             ))}
           </ul>
           {state.capped && (
@@ -109,10 +108,10 @@ function SearchMessage({ children }: { readonly children: ReactNode }) {
 
 function ProductResult({
   product,
-  logging,
+  renderProduct,
 }: {
   readonly product: Product;
-  readonly logging: boolean;
+  readonly renderProduct: ProductSearchResultsProps["renderProduct"];
 }) {
   const [expanded, setExpanded] = useState(false);
   const detailsId = useId();
@@ -135,20 +134,16 @@ function ProductResult({
         <span className="flex size-11 shrink-0 items-center justify-center rounded-22 border border-line">
           {expanded ? (
             <ChevronUp size={21} className="text-muted" aria-hidden="true" />
-          ) : logging ? (
-            <Plus size={21} className="text-lime" aria-hidden="true" />
           ) : (
-            <ChevronDown size={21} className="text-lime" aria-hidden="true" />
+            <Plus size={21} className="text-lime" aria-hidden="true" />
           )}
         </span>
       </button>
-      <div id={detailsId} hidden={!expanded} className="px-4 pb-4">
-        {logging ? (
-          expanded && <AddFoodForm product={product} onAdded={() => setExpanded(false)} />
-        ) : (
-          <ProductNutrition product={product} />
-        )}
-      </div>
+      {expanded && (
+        <div id={detailsId} className="px-4 pb-4">
+          {renderProduct(product, () => setExpanded(false))}
+        </div>
+      )}
     </li>
   );
 }

@@ -1,10 +1,20 @@
 import { nutritionFormat as grams } from "../../lib/number-format";
-import { macroOverTargetNote, summarizeMacro } from "./daily-summary";
-import type { MacroIntake } from "./today-data";
+import { MACRO_KEYS, macroOverTargetNote, summarizeMacro, type MacroKey } from "./daily-summary";
+import { DEFAULT_TARGETS } from "@calwise/food-rules/log";
 
 /** Protein, carbs and fat against their daily targets ("Component / Daily macro counters"). */
-export function DailyMacroCounters({ macros }: { readonly macros: readonly MacroIntake[] }) {
-  const summaries = macros.map(summarizeMacro);
+export function DailyMacroCounters({
+  totals,
+}: {
+  readonly totals: Readonly<Record<MacroKey, number>>;
+}) {
+  const summaries = MACRO_KEYS.map((key) =>
+    summarizeMacro({
+      key,
+      consumed: totals[key],
+      target: DEFAULT_TARGETS[key],
+    }),
+  );
   const note = macroOverTargetNote(summaries);
   return (
     <section aria-label="Macronutrients" className="border-y border-line py-[15px]">
@@ -27,7 +37,8 @@ export function DailyMacroCounters({ macros }: { readonly macros: readonly Macro
                 </span>
                 <span className="font-body text-9 text-muted">/ {grams.format(macro.target)}</span>
                 <span className="sr-only">
-                  grams{over ? `, ${grams.format(macro.over)} g over target` : ""}
+                  grams
+                  {over ? `, ${grams.format(macro.over)} g over target` : ""}
                 </span>
               </dd>
               <div

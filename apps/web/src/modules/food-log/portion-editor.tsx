@@ -1,13 +1,17 @@
-import { entryNutrition, type LoggedUnit, type NutritionBasis } from "@calwise/food-rules/log";
+import {
+  entryNutrition,
+  isValidPortion,
+  LOGGED_UNITS,
+  parseAmount,
+  type Portion,
+  type LoggedUnit,
+  type NutritionBasis,
+} from "@calwise/food-rules/log";
 import { Plus } from "lucide-react";
 import { useId, useState } from "react";
 import { PrimaryAction } from "../../components/primary-action";
-import { nutritionFormat } from "../../lib/number-format";
+import { NutritionPreview } from "./nutrition-preview";
 
-export interface Portion {
-  readonly amount: number;
-  readonly unit: LoggedUnit;
-}
 export function PortionEditor({
   basis,
   initial,
@@ -26,19 +30,15 @@ export function PortionEditor({
   const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
   const [unit, setUnit] = useState<LoggedUnit>(initial?.unit ?? "g");
   const id = useId();
-  const quantity = Number(amount.replace(",", "."));
-  const totals = entryNutrition(basis, quantity);
-  const valid =
-    /^(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:e[+-]?\d+)?$/i.test(amount) &&
-    quantity > 0 &&
-    Number.isFinite(quantity) &&
-    Object.values(totals).every(Number.isFinite);
+  const quantity = parseAmount(amount);
+  const portion =
+    quantity !== null && isValidPortion(basis, quantity) ? { amount: quantity, unit } : null;
   return (
     <form
       className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
-        if (valid && !pending) onSave({ amount: quantity, unit });
+        if (portion && !pending) onSave(portion);
       }}
     >
       <fieldset disabled={pending} className="grid grid-cols-2 gap-4">
@@ -62,11 +62,16 @@ export function PortionEditor({
           UNIT
           <select
             value={unit}
-            onChange={(event) => setUnit(event.target.value === "ml" ? "ml" : "g")}
+            onChange={(event) =>
+              setUnit(LOGGED_UNITS.find((item) => item === event.target.value) ?? "g")
+            }
             className="h-12 rounded-8 border border-line bg-bg px-3 text-[16px] font-normal tracking-normal text-white outline-none focus:border-lime"
           >
-            <option value="g">g</option>
-            <option value="ml">ml</option>
+            {LOGGED_UNITS.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
         </label>
       </fieldset>
@@ -74,9 +79,9 @@ export function PortionEditor({
         Nutrition per 100 {unit}. Choose the unit matching the label.
       </p>
       <div aria-live="polite">
-        <NutritionPreview totals={valid ? totals : null} />
+        <NutritionPreview totals={portion && entryNutrition(basis, portion.amount)} />
       </div>
-      {amount && !valid && (
+      {amount && !portion && (
         <p role="alert" className="text-12 text-danger">
           Enter a valid amount greater than zero.
         </p>
@@ -86,47 +91,10 @@ export function PortionEditor({
           {error}
         </p>
       )}
-      <PrimaryAction compact type="submit" disabled={!valid || pending}>
+      <PrimaryAction size="compact" type="submit" disabled={!portion || pending}>
         {!initial && !pending && <Plus size={23} aria-hidden="true" />}
         {pending ? "SAVING…" : label}
       </PrimaryAction>
     </form>
-  );
-}
-
-export function NutritionPreview({
-  totals,
-  prominent = false,
-}: {
-  readonly totals: ReturnType<typeof entryNutrition> | null;
-  readonly prominent?: boolean;
-}) {
-  return (
-    <div className={prominent ? "flex flex-col gap-3" : "flex items-center gap-3"}>
-      <div className={prominent ? "" : "shrink-0 border-r border-line pr-3"}>
-        <span
-          className={`font-display font-bold ${prominent ? "text-60 text-white" : "text-30 text-lime"}`}
-        >
-          {totals ? nutritionFormat.format(totals.kcal) : "—"}
-        </span>
-        <span className="ml-1 text-10 text-muted">kcal</span>
-      </div>
-      <div className="grid flex-1 grid-cols-3 gap-2">
-        {(
-          [
-            ["protein", "PROTEIN"],
-            ["carbs", "CARBS"],
-            ["fat", "FAT"],
-          ] as const
-        ).map(([key, name]) => (
-          <div key={key}>
-            <p className="text-9 text-muted">{name}</p>
-            <p className="text-12 font-semibold">
-              {totals ? nutritionFormat.format(totals[key]) : "—"} g
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }

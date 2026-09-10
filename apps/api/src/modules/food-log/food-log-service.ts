@@ -1,22 +1,14 @@
 import { Database } from "@calwise/database";
-import { foodEntries, type FoodEntry } from "@calwise/database/schema";
+import { foodEntries, publicFoodEntryColumns, type FoodEntry } from "@calwise/database/schema";
 import type { Product } from "@calwise/database/food-schema";
-import { and, asc, eq, getTableColumns } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Context, Effect, Layer } from "effect";
-import type { LoggedUnit, MealSlot } from "@calwise/food-rules/log";
-
-export interface EntryAmount {
-  readonly amount: number;
-  readonly unit: LoggedUnit;
-}
-export interface Destination {
-  readonly date: string;
-  readonly meal: MealSlot;
-}
+import type { EntryChange } from "@calwise/food-rules/log";
 export type Entry = Omit<FoodEntry, "userId">;
-const { userId: _userId, ...publicColumns } = getTableColumns(foodEntries);
 
+/** Only these four columns change after capture; nothing else from a request reaches the row. */
+const entryChange = ({ amount, unit, date, meal }: EntryChange) => ({ amount, unit, date, meal });
 const owned = (userId: string, id: string) =>
   and(eq(foodEntries.userId, userId), eq(foodEntries.id, id));
 
@@ -35,12 +27,12 @@ export class FoodLogService extends Context.Service<
       userId: string,
       id: string,
       product: Product,
-      input: EntryAmount & Destination,
+      change: EntryChange,
     ) => Effect.Effect<Entry | undefined, EffectDrizzleQueryError>;
     readonly update: (
       userId: string,
       id: string,
-      input: EntryAmount & Destination,
+      change: EntryChange,
     ) => Effect.Effect<Entry | undefined, EffectDrizzleQueryError>;
     readonly remove: (userId: string, id: string) => Effect.Effect<void, EffectDrizzleQueryError>;
   }
@@ -51,7 +43,7 @@ export class FoodLogService extends Context.Service<
       const db = yield* Database;
       const get = Effect.fn("FoodLogService.get")(function* (userId: string, id: string) {
         const rows = yield* db
-          .select(publicColumns)
+          .select(publicFoodEntryColumns)
           .from(foodEntries)
           .where(owned(userId, id))
           .limit(1);
@@ -59,7 +51,7 @@ export class FoodLogService extends Context.Service<
       });
       const day = Effect.fn("FoodLogService.day")(function* (userId: string, date: string) {
         return yield* db
-          .select(publicColumns)
+          .select(publicFoodEntryColumns)
           .from(foodEntries)
           .where(and(eq(foodEntries.userId, userId), eq(foodEntries.date, date)))
           .orderBy(asc(foodEntries.createdAt), asc(foodEntries.id));
@@ -68,7 +60,7 @@ export class FoodLogService extends Context.Service<
         userId: string,
         id: string,
         product: Product,
-        input: EntryAmount & Destination,
+        change: EntryChange,
       ) {
         yield* db
           .insert(foodEntries)
@@ -82,7 +74,7 @@ export class FoodLogService extends Context.Service<
             protein100g: product.protein100g,
             carbohydrates100g: product.carbohydrates100g,
             fat100g: product.fat100g,
-            ...input,
+            ...entryChange(change),
             createdAt: Date.now(),
           })
           .onConflictDoNothing({ target: foodEntries.id });
@@ -91,13 +83,13 @@ export class FoodLogService extends Context.Service<
       const update = Effect.fn("FoodLogService.update")(function* (
         userId: string,
         id: string,
-        input: EntryAmount & Destination,
+        change: EntryChange,
       ) {
         const rows = yield* db
           .update(foodEntries)
-          .set(input)
+          .set(entryChange(change))
           .where(owned(userId, id))
-          .returning(publicColumns);
+          .returning(publicFoodEntryColumns);
         return rows[0];
       });
       const remove = Effect.fn("FoodLogService.remove")(function* (userId: string, id: string) {

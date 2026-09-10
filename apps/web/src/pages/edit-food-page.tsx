@@ -1,13 +1,16 @@
-import { MEAL_NAMES } from "@calwise/food-rules/log";
+import { MEAL_NAMES, type Destination, type EntryChange } from "@calwise/food-rules/log";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRightLeft, ChevronRight, Utensils } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { IconButton } from "../components/icon-button";
 import { useTRPC } from "../lib/trpc";
-import { LogQueryState } from "../modules/food-log/date-navigation";
+import { LogQueryState } from "../modules/food-log/log-query-state";
 import { DestinationPicker } from "../modules/food-log/destination-picker";
-import { mealUrl, timeZone, type Destination, type FoodEntry } from "../modules/food-log/log-types";
+import { mealUrl } from "../modules/food-log/destination";
+import type { FoodEntry } from "../modules/food-log/food-log-types";
+import { RemoveFood } from "../modules/food-log/remove-food";
+import { ChangeNotice, type EntryAction } from "../modules/food-log/change-notice";
 import { PortionEditor } from "../modules/food-log/portion-editor";
 
 export default function EditFoodPage() {
@@ -31,9 +34,7 @@ function EntryEditor({ entry }: { readonly entry: FoodEntry }) {
   const cache = useQueryClient();
   const navigate = useNavigate();
   const [moving, setMoving] = useState(false);
-  const [undo, setUndo] = useState<Destination | null>(null);
-  const [confirmRemove, setConfirmRemove] = useState(false);
-  const [message, setMessage] = useState("");
+  const [lastAction, setLastAction] = useState<EntryAction | null>(null);
   const update = useMutation(
     trpc.foodLog.update.mutationOptions({
       onSuccess: (saved) => {
@@ -51,24 +52,18 @@ function EntryEditor({ entry }: { readonly entry: FoodEntry }) {
     }),
   );
   const pending = update.isPending || remove.isPending;
-  function move(destination: Destination, reverting: boolean) {
+  const error =
+    update.isError || remove.isError ? "Could not save this change. Try again." : undefined;
+  function move(destination: Destination, action: EntryAction) {
+    save({ amount: entry.amount, unit: entry.unit, ...destination }, action);
+  }
+  function save(change: EntryChange, action: EntryAction) {
     update.mutate(
-      {
-        id: entry.id,
-        amount: entry.amount,
-        unit: entry.unit,
-        ...destination,
-        timeZone: timeZone(),
-      },
+      { id: entry.id, ...change },
       {
         onSuccess: () => {
           setMoving(false);
-          setUndo(reverting ? null : { date: entry.date, meal: entry.meal });
-          setMessage(
-            reverting
-              ? "Move undone"
-              : `Moved to ${MEAL_NAMES[destination.meal]} · ${destination.date}`,
-          );
+          setLastAction(action);
         },
       },
     );
@@ -99,46 +94,21 @@ function EntryEditor({ entry }: { readonly entry: FoodEntry }) {
           label="SAVE CHANGES"
           pending={pending}
           onSave={(portion) =>
-            update.mutate(
-              {
-                id: entry.id,
-                date: entry.date,
-                meal: entry.meal,
-                timeZone: timeZone(),
-                ...portion,
-              },
-              {
-                onSuccess: () => {
-                  setMessage("Changes saved");
-                  setUndo(null);
-                },
-              },
-            )
+            save({ ...portion, date: entry.date, meal: entry.meal }, { kind: "saved" })
           }
         />
       </div>
-      {update.isError || remove.isError ? (
+      {error && !moving && (
         <p role="alert" className="text-12 text-danger">
-          Could not save this change. Try again.
+          {error}
         </p>
-      ) : null}
-      {message && (
-        <div
-          role="status"
-          className="flex items-center justify-between gap-3 rounded-12 border border-lime/30 bg-lime/10 p-3 text-12"
-        >
-          <span>{message}</span>
-          {undo && (
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => move(undo, true)}
-              className="min-h-11 text-lime"
-            >
-              Undo
-            </button>
-          )}
-        </div>
+      )}
+      {lastAction && (
+        <ChangeNotice
+          action={lastAction}
+          pending={pending}
+          onUndo={(destination) => move(destination, { kind: "undone" })}
+        />
       )}
       <button
         type="button"
@@ -157,52 +127,19 @@ function EntryEditor({ entry }: { readonly entry: FoodEntry }) {
       </p>
       {moving && (
         <DestinationPicker
-          title="MOVE FOOD"
+          purpose="move"
           pending={pending}
-          error={update.isError ? "Could not move this food. Try again." : undefined}
+          error={error}
           initial={entry}
           onClose={() => {
             if (!pending) setMoving(false);
           }}
           onChoose={(destination) => {
-            if (!pending) move(destination, false);
+            if (!pending) move(destination, { kind: "moved", to: destination, from: entry });
           }}
         />
       )}
-      <div className="mt-auto pt-8">
-        {confirmRemove ? (
-          <div className="flex flex-col gap-3">
-            <p className="text-13">Remove this food entry?</p>
-            <div className="flex gap-6">
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => remove.mutate({ id: entry.id })}
-                className="min-h-11 text-12 text-danger"
-              >
-                Confirm removal
-              </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => setConfirmRemove(false)}
-                className="min-h-11 text-12"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => setConfirmRemove(true)}
-            className="min-h-11 text-12 text-danger"
-          >
-            Remove food
-          </button>
-        )}
-      </div>
+      <RemoveFood pending={pending} onRemove={() => remove.mutate({ id: entry.id })} />
     </div>
   );
 }

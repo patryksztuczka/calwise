@@ -1,10 +1,16 @@
-import { localDate } from "@calwise/food-rules/log";
+import { localDate, parseLocalDate } from "@calwise/food-rules/log";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { PrimaryAction } from "../../components/primary-action";
 
-const monthFormat = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" });
-const dayFormat = new Intl.DateTimeFormat("en", { month: "short", day: "numeric" });
+const monthFormat = new Intl.DateTimeFormat("en", {
+  month: "long",
+  year: "numeric",
+});
+const dayFormat = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+});
 
 export function DateCalendar({
   initial,
@@ -16,7 +22,7 @@ export function DateCalendar({
   readonly mealName?: string | undefined;
 }) {
   const [selected, setSelected] = useState(initial);
-  const [month, setMonth] = useState(() => new Date(`${initial.slice(0, 7)}-01T12:00:00`));
+  const [month, setMonth] = useState(() => parseLocalDate(`${initial.slice(0, 7)}-01`));
   const today = localDate();
   const firstWeekday = (month.getDay() + 6) % 7;
   const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
@@ -85,7 +91,7 @@ export function DateCalendar({
         )}
       </p>
       <PrimaryAction onClick={() => onChoose(selected)}>
-        USE {dayFormat.format(new Date(`${selected}T12:00:00`)).toUpperCase()}
+        USE {dayFormat.format(parseLocalDate(selected)).toUpperCase()}
       </PrimaryAction>
     </div>
   );

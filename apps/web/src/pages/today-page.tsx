@@ -1,11 +1,13 @@
 import { Plus, UserRound } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MEAL_SLOTS } from "@calwise/food-rules/log";
+import { DEFAULT_TARGETS } from "@calwise/food-rules/log";
+import { nutritionFormat } from "../lib/number-format";
 import { useTRPC } from "../lib/trpc";
-import { DateNavigation, LogQueryState } from "../modules/food-log/date-navigation";
+import { DateNavigation } from "../modules/food-log/date-navigation";
+import { LogQueryState } from "../modules/food-log/log-query-state";
 import { daySummary } from "../modules/food-log/day-summary";
-import { mealUrl, useLogDestination } from "../modules/food-log/log-types";
+import { mealUrl, useLogDestination } from "../modules/food-log/destination";
 import { IconButton } from "../components/icon-button";
 import { PrimaryAction } from "../components/primary-action";
 import { DailyEnergyCounter } from "../modules/today/daily-energy-counter";
@@ -16,10 +18,9 @@ import { MealRow } from "../modules/today/meal-row";
 export default function TodayPage() {
   const trpc = useTRPC();
   const navigate = useNavigate();
-  const [, setParams] = useSearchParams();
-  const { date } = useLogDestination();
+  const { date, setDate } = useLogDestination();
   const query = useQuery(trpc.foodLog.day.queryOptions({ date }));
-  const log = daySummary(date, query.data ?? []);
+  const log = daySummary(query.data ?? []);
   return (
     <div className="flex flex-col gap-[22px]">
       <header className="flex h-11 items-center justify-between">
@@ -31,22 +32,24 @@ export default function TodayPage() {
         </IconButton>
       </header>
 
-      <DateNavigation date={date} onChange={(value) => setParams({ date: value })} />
+      <DateNavigation date={date} onChange={setDate} />
       {query.isPending || query.isError ? (
         <LogQueryState failed={query.isError} retry={() => void query.refetch()} />
       ) : (
         <>
           <div className="mt-[6px]">
             <DailyEnergyCounter
-              date={log.date}
-              caloriesEaten={log.caloriesEaten}
-              calorieGoal={log.calorieGoal}
+              date={date}
+              caloriesEaten={log.totals.kcal}
+              calorieGoal={DEFAULT_TARGETS.kcal}
             />
           </div>
 
-          <DailyMacroCounters macros={log.macros} />
+          <DailyMacroCounters totals={log.totals} />
           <p className="text-center text-10 text-muted">
-            Default targets · 2,000 kcal · Protein 125 g · Carbs 225 g · Fat 67 g
+            Default targets · {nutritionFormat.format(DEFAULT_TARGETS.kcal)} kcal · Protein{" "}
+            {DEFAULT_TARGETS.protein} g · Carbs {DEFAULT_TARGETS.carbs} g · Fat{" "}
+            {DEFAULT_TARGETS.fat} g
           </p>
 
           <section aria-labelledby="meals-heading" className="flex flex-col gap-2.5">
@@ -57,16 +60,15 @@ export default function TodayPage() {
               >
                 YOUR MEALS
               </h2>
-              <p className="font-body text-11 text-muted">{query.data?.length ?? 0} foods logged</p>
+              <p className="font-body text-11 text-muted">{log.count} foods logged</p>
             </div>
             <ul className="flex flex-col gap-2.5">
               {log.meals.map((meal) => (
-                <li key={meal.id}>
+                <li key={meal.meal}>
                   <MealRow
-                    meal={meal}
+                    {...meal}
                     onOpen={() => {
-                      const slot = MEAL_SLOTS.find((item) => item === meal.id);
-                      if (slot) void navigate(mealUrl({ date, meal: slot }));
+                      void navigate(mealUrl({ date, meal: meal.meal }));
                     }}
                   />
                 </li>

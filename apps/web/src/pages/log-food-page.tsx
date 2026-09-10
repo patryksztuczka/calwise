@@ -4,13 +4,15 @@ import { useRef } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
 import { IconButton } from "../components/icon-button";
 import { DestinationControl } from "../modules/food-log/destination-picker";
-import { useLogDestination } from "../modules/food-log/log-types";
-import { LoggingFooter } from "../modules/food-log/logging-session";
+import { usePatchSearchParams } from "../lib/patch-search-params";
+import { useLogDestination } from "../modules/food-log/destination";
+import { renderAddFoodForm, LoggingFooter } from "../modules/food-log/logging-session";
 import { ProductSearchResults } from "../modules/food/product-search-results";
 import { useProductSearch } from "../modules/food/use-product-search";
 
 export default function LogFoodPage() {
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const patchParams = usePatchSearchParams();
   const location = useLocation();
   const destination = useLogDestination();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -19,15 +21,7 @@ export default function LogFoodPage() {
   const { state, flush, retry } = useProductSearch(term);
 
   function updateQuery(value: string) {
-    setParams(
-      () => {
-        const next = new URLSearchParams(window.location.search);
-        if (value) next.set("q", value);
-        else next.delete("q");
-        return next;
-      },
-      { replace: true },
-    );
+    patchParams({ q: value || null });
   }
 
   return (
@@ -90,7 +84,12 @@ export default function LogFoodPage() {
         </p>
       </div>
       {/* A new search collapses any expanded product rows. */}
-      <ProductSearchResults key={term} state={state} onRetry={retry} logging />
+      <ProductSearchResults
+        key={term}
+        state={state}
+        onRetry={retry}
+        renderProduct={renderAddFoodForm}
+      />
       <LoggingFooter />
     </div>
   );

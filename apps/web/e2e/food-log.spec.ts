@@ -15,7 +15,6 @@ interface LogRequest {
   readonly unit?: string;
   readonly date?: string;
   readonly meal?: string;
-  readonly timeZone?: string;
 }
 const mutate = (
   request: APIRequestContext,
@@ -72,6 +71,14 @@ test("logs, reloads, edits, moves, undoes and removes food through the designed 
   await expect(page.getByText("No food logged yet.", { exact: true })).toBeVisible();
 });
 
+test("changing the overview date preserves unrelated search params", async ({ page }) => {
+  await signUp(page);
+  await page.goto("/?date=2026-01-02&keep=value");
+  await page.getByRole("button", { name: "Previous day" }).click();
+  await expect(page).toHaveURL(/date=2026-01-01/);
+  await expect(page).toHaveURL(/keep=value/);
+});
+
 test("requires a meal, keeps duplicate additions separate and undoes only one", async ({
   page,
 }) => {
@@ -80,7 +87,9 @@ test("requires a meal, keeps duplicate additions separate and undoes only one", 
   await page.getByRole("button", { name: /ADDING TO Choose meal/ }).click();
   await page.getByRole("button", { name: "Snacks", exact: true }).click();
   await page.getByRole("button", { name: "USE SNACKS" }).click();
+  await expect(page).toHaveURL(/meal=snacks/);
   await page.getByRole("searchbox").fill("zolty ser");
+  await expect(page).toHaveURL(/meal=snacks/);
   async function addSnack(amount: string) {
     await page.getByRole("button", { name: /Żółty ser testowy/ }).click();
     await page.getByLabel("AMOUNT", { exact: true }).fill(amount);
@@ -110,7 +119,6 @@ test("validates log mutations, isolates accounts, and makes retries idempotent i
     unit: "g",
     date: "2026-01-02",
     meal: "lunch",
-    timeZone: "UTC",
   };
   expect((await mutate(request, "add", input)).status()).toBe(401);
   await signUp(page);
@@ -119,22 +127,26 @@ test("validates log mutations, isolates accounts, and makes retries idempotent i
     [
       { amount: 0 },
       { amount: -1 },
+      { amount: Number.MAX_VALUE },
       { amount: "100" },
       { unit: "container" },
       { date: "2026-02-30" },
       { date: "2999-01-01" },
       { meal: "brunch" },
-      { timeZone: "invalid" },
     ].map(async (patch) => {
       expect((await mutate(owner, "add", { ...input, ...patch })).status()).toBe(400);
     }),
   );
+  expect((await mutate(owner, "add", { ...input, barcode: "9999999999999" })).status()).toBe(404);
   const added = await mutate(owner, "add", input);
   expect(added.ok()).toBe(true);
   expect(await added.json()).toMatchObject({
     result: { data: { id: input.id, name: "Żółty ser testowy", energyKcal100g: 350 } },
   });
   expect((await mutate(owner, "add", input)).ok()).toBe(true);
+  const reused = await mutate(owner, "add", { ...input, amount: 200 });
+  expect(reused.ok()).toBe(true);
+  expect(await reused.json()).toMatchObject({ result: { data: { id: input.id, amount: 100 } } });
   const day = await (await query(owner, "day", { date: input.date })).json();
   expect(day.result.data).toHaveLength(1);
   expect(day.result.data[0]).not.toHaveProperty("userId");

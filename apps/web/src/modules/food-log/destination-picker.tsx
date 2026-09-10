@@ -1,60 +1,42 @@
-import { localDate, MEAL_NAMES, MEAL_SLOTS, isLogDate } from "@calwise/food-rules/log";
-import { CalendarDays, Check, ChevronDown, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  localDate,
+  MEAL_NAMES,
+  MEAL_SLOTS,
+  isLoggableDate,
+  type Destination,
+} from "@calwise/food-rules/log";
+import { CalendarDays, Check, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { PrimaryAction } from "../../components/primary-action";
-import type { Destination } from "./log-types";
+import { BottomSheet } from "../../components/bottom-sheet";
 import { DateCalendar } from "./date-calendar";
+import type { DestinationDraft } from "./destination";
 
 export function DestinationPicker({
   initial,
   onChoose,
   onClose,
-  title = "ASSIGN TO MEAL",
+  purpose = "assign",
   pending = false,
   error,
 }: {
-  readonly initial: { readonly date: string; readonly meal: Destination["meal"] | null };
+  readonly initial: DestinationDraft;
   readonly onChoose: (value: Destination) => void;
   readonly onClose: () => void;
-  readonly title?: string;
+  readonly purpose?: "assign" | "move";
   readonly pending?: boolean;
   readonly error?: string | undefined;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const heading = useId();
   const [date, setDate] = useState(initial.date);
   const [meal, setMeal] = useState(initial.meal);
   const [choosingDate, setChoosingDate] = useState(false);
-  useEffect(() => {
-    const node = dialog.current;
-    node?.showModal();
-    return () => node?.close();
-  }, []);
   return (
-    <dialog
-      ref={dialog}
-      aria-labelledby={heading}
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
-      className="fixed inset-x-0 top-auto bottom-0 mx-auto max-h-[90dvh] w-full max-w-[430px] overflow-y-auto rounded-t-20 border border-line bg-bg p-5 pb-[max(24px,env(safe-area-inset-bottom))] text-white backdrop:bg-bg/80 sm:bottom-6 sm:rounded-b-36"
+    <BottomSheet
+      title={choosingDate ? "CHOOSE DATE" : purpose === "assign" ? "ASSIGN TO MEAL" : "MOVE FOOD"}
+      onClose={onClose}
+      pending={pending}
+      closeLabel="Close destination picker"
     >
-      <div className="mx-auto mb-5 h-1 w-10 rounded-2 bg-line" />
-      <header className="mb-5 flex items-center justify-between">
-        <h2 id={heading} className="font-display text-24 font-bold italic">
-          {choosingDate ? "CHOOSE DATE" : title}
-        </h2>
-        <button
-          type="button"
-          aria-label="Close destination picker"
-          onClick={onClose}
-          disabled={pending}
-          className="flex size-11 items-center justify-center rounded-full border border-line"
-        >
-          <X size={20} />
-        </button>
-      </header>
       {error && (
         <p role="alert" className="mb-3 text-12 text-danger">
           {error}
@@ -95,7 +77,7 @@ export function DestinationPicker({
                 </button>
               ))}
             </div>
-            {title === "ASSIGN TO MEAL" && (
+            {purpose === "assign" && (
               <p className="mb-5 text-11 leading-relaxed text-muted">
                 Only new additions go to this meal.
                 <br />
@@ -103,7 +85,7 @@ export function DestinationPicker({
               </p>
             )}
             <PrimaryAction
-              disabled={!meal || !isLogDate(date) || date > localDate()}
+              disabled={!meal || !isLoggableDate(date, localDate())}
               onClick={() => {
                 if (meal) onChoose({ date, meal });
               }}
@@ -113,7 +95,7 @@ export function DestinationPicker({
           </>
         )}
       </fieldset>
-    </dialog>
+    </BottomSheet>
   );
 }
 
@@ -121,7 +103,7 @@ export function DestinationControl({
   destination,
   onChoose,
 }: {
-  readonly destination: { readonly date: string; readonly meal: Destination["meal"] | null };
+  readonly destination: DestinationDraft;
   readonly onChoose: (value: Destination) => void;
 }) {
   const [open, setOpen] = useState(false);

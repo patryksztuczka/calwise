@@ -8,11 +8,11 @@ All `foodLog` procedures require a session. Queries and writes always filter by 
 
 - `day({ date })` returns the caller's entries for a calendar date, in creation order.
 - `entry({ id })` returns one owned entry or `NOT_FOUND`.
-- `add({ id, barcode, amount, unit, date, meal, timeZone })` captures the catalog name, brand, calories, protein, carbohydrates, and fat. `id` is a client-generated UUID retained for retries. A new addition gets a new UUID, even for the same product.
-- `update({ id, amount, unit, date, meal, timeZone })` changes the portion or destination without rereading the catalog.
+- `add({ id, barcode, amount, unit, date, meal })` captures the catalog name, brand, calories, protein, carbohydrates, and fat. `id` is a client-generated UUID retained for retries. A new addition gets a new UUID, even for the same product.
+- `update({ id, amount, unit, date, meal })` changes the portion or destination without rereading the catalog.
 - `remove({ id })` deletes an owned entry. Repeated removal is harmless.
 
-Dates are valid `YYYY-MM-DD` calendar dates, not timestamps. Add and update compare the destination date with today in the device's IANA time zone. Unknown time zones and future dates are rejected. Amounts must be finite and positive; calculated nutrition must also remain finite.
+Dates are valid `YYYY-MM-DD` calendar dates, not timestamps. Add and update reject dates later than today in UTC+14, the earliest zone to reach a new date. This accepts local today everywhere without trusting client-supplied time zones. The client enforces its own local today. Amounts must be finite and positive; calculated nutrition must also remain finite.
 
 Users choose `g` or `ml` freely. This declares the nutrition basis, rather than converting volume and weight. Both use `amount / 100` times the captured values. Totals sum unrounded values; rounding is for display only.
 
