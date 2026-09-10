@@ -1,7 +1,7 @@
 import { Plus, UserRound } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { DEFAULT_TARGETS } from "@calwise/food-rules/log";
+import { DEFAULT_GOALS, goalTargets } from "@calwise/food-rules/goals";
 import { nutritionFormat } from "../lib/number-format";
 import { useTRPC } from "../lib/trpc";
 import { DateNavigation } from "../modules/food-log/date-navigation";
@@ -20,6 +20,8 @@ export default function TodayPage() {
   const navigate = useNavigate();
   const { date, setDate } = useLogDestination();
   const query = useQuery(trpc.foodLog.day.queryOptions({ date }));
+  const goalsQuery = useQuery(trpc.profile.goals.queryOptions({ date }));
+  const targets = goalTargets(goalsQuery.data ?? DEFAULT_GOALS);
   const log = daySummary(query.data ?? []);
   return (
     <div className="flex flex-col gap-[22px]">
@@ -27,29 +29,34 @@ export default function TodayPage() {
         <h1 className="font-display text-32 leading-none font-extrabold tracking-[-0.8px] text-lime italic">
           CALWISE
         </h1>
-        <IconButton aria-label="Profile" disabled title="Profile is not available yet">
+        <IconButton aria-label="Profile" render={<Link to="/profile" />}>
           <UserRound size={21} aria-hidden="true" />
         </IconButton>
       </header>
 
       <DateNavigation date={date} onChange={setDate} />
-      {query.isPending || query.isError ? (
-        <LogQueryState failed={query.isError} retry={() => void query.refetch()} />
+      {query.isPending || query.isError || goalsQuery.isPending || goalsQuery.isError ? (
+        <LogQueryState
+          failed={query.isError || goalsQuery.isError}
+          retry={() => {
+            void query.refetch();
+            void goalsQuery.refetch();
+          }}
+        />
       ) : (
         <>
           <div className="mt-[6px]">
             <DailyEnergyCounter
               date={date}
               caloriesEaten={log.totals.kcal}
-              calorieGoal={DEFAULT_TARGETS.kcal}
+              calorieGoal={targets.kcal}
             />
           </div>
 
-          <DailyMacroCounters totals={log.totals} />
+          <DailyMacroCounters totals={log.totals} targets={targets} />
           <p className="text-center text-10 text-muted">
-            Default targets · {nutritionFormat.format(DEFAULT_TARGETS.kcal)} kcal · Protein{" "}
-            {DEFAULT_TARGETS.protein} g · Carbs {DEFAULT_TARGETS.carbs} g · Fat{" "}
-            {DEFAULT_TARGETS.fat} g
+            Daily targets · {nutritionFormat.format(targets.kcal)} kcal · Protein {targets.protein}{" "}
+            g · Carbs {targets.carbs} g · Fat {targets.fat} g
           </p>
 
           <section aria-labelledby="meals-heading" className="flex flex-col gap-2.5">

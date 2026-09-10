@@ -5,14 +5,16 @@ import { DEFAULT_TARGETS } from "@calwise/food-rules/log";
 /** Protein, carbs and fat against their daily targets ("Component / Daily macro counters"). */
 export function DailyMacroCounters({
   totals,
+  targets = DEFAULT_TARGETS,
 }: {
+  readonly targets?: Readonly<Record<MacroKey, number>>;
   readonly totals: Readonly<Record<MacroKey, number>>;
 }) {
   const summaries = MACRO_KEYS.map((key) =>
     summarizeMacro({
       key,
       consumed: totals[key],
-      target: DEFAULT_TARGETS[key],
+      target: targets[key],
     }),
   );
   const note = macroOverTargetNote(summaries);

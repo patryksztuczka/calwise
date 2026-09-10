@@ -5,6 +5,8 @@ import { AppShell } from "./layouts/app-shell";
 import { LoggingSession } from "./modules/food-log/logging-session";
 import { AuthLayout } from "./layouts/auth-layout";
 
+const ProfilePage = lazy(() => import("./pages/profile-page"));
+const NutritionGoalsPage = lazy(() => import("./pages/nutrition-goals-page"));
 const MealPage = lazy(() => import("./pages/meal-page"));
 const EditFoodPage = lazy(() => import("./pages/edit-food-page"));
 const TodayPage = lazy(() => import("./pages/today-page"));
@@ -29,6 +31,7 @@ export default function App() {
               <Route path="scan" element={<ScanBarcodePage />} />
               <Route path="log-food" element={<LogFoodPage />} />
             </Route>
+            <Route path="profile/nutrition-goals" element={<NutritionGoalsPage />} />
             <Route path="meal/:meal" element={<MealPage />} />
             <Route path="food-entry/:id" element={<EditFoodPage />} />
           </Route>
@@ -38,6 +41,7 @@ export default function App() {
           <Route path="greeting" element={<GreetingPage />} />
           <Route element={<RequireAuth />}>
             <Route index element={<TodayPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="*" element={<ComingSoonPage />} />
           </Route>
         </Route>
