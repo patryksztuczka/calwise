@@ -15,13 +15,17 @@ test("opens on an empty daily log with default targets", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "CALWISE" })).toBeVisible();
   await expect(page.getByText("KCAL EATEN", { exact: true })).toBeVisible();
   await expect(page.getByRole("img", { name: "2,000 kcal left" })).toBeVisible();
-  await expect(page.getByText("0 foods logged")).toBeVisible();
+  await expect(page.getByText(/foods logged/)).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Daily energy" }).getByRole("button")).toHaveCount(
+    0,
+  );
   await Promise.all(
     ["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) =>
       expect(page.getByRole("button", { name: new RegExp(meal) })).toBeVisible(),
     ),
   );
-  await expect(page.getByText(/Daily targets/)).toBeVisible();
+  await expect(page.getByText(/Daily targets/)).toHaveCount(0);
+  await expect(page.locator("header").getByRole("link", { name: "Profile" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "LOG FOOD" })).toBeVisible();
 });
 

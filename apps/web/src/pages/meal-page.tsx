@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight, Plus, Utensils } from "lucide-react";
 import { Link, Navigate, useParams } from "react-router";
 import { IconButton } from "../components/icon-button";
 import { PrimaryAction } from "../components/primary-action";
+import { formatLongDate } from "../lib/date-format";
 import { nutritionFormat } from "../lib/number-format";
 import { useTRPC } from "../lib/trpc";
 import { LogQueryState } from "../modules/food-log/log-query-state";
@@ -26,7 +27,9 @@ export default function MealPage() {
         </IconButton>
         <h1 className="font-display text-30 font-bold italic">{MEAL_NAMES[meal].toUpperCase()}</h1>
       </header>
-      <p className="text-11 font-semibold text-lime">{date}</p>
+      <time dateTime={date} className="text-11 font-semibold text-lime">
+        {formatLongDate(date)}
+      </time>
       {query.isPending || query.isError ? (
         <LogQueryState failed={query.isError} retry={() => void query.refetch()} />
       ) : (
@@ -67,14 +70,6 @@ export default function MealPage() {
               ))}
             </ul>
           )}
-          <p className="text-11 text-muted">Tap a food to edit its portion or move it.</p>
-          <p className="text-10 text-muted">
-            Nutrition from{" "}
-            <a href="https://world.openfoodfacts.org" className="underline">
-              Open Food Facts contributors
-            </a>
-            , ODbL.
-          </p>
         </>
       )}
       <div className="mt-auto pt-5">

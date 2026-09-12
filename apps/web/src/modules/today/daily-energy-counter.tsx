@@ -1,28 +1,16 @@
-import { parseLocalDate } from "@calwise/food-rules/log";
-import { Check, ChevronDown } from "lucide-react";
+import { Check } from "lucide-react";
 import { numberFormat as number } from "../../lib/number-format";
 import { CalorieGauge } from "./calorie-gauge";
 import { summarizeCalories } from "./daily-summary";
 import { useRevealProgress } from "./use-reveal-progress";
 
-function dayLabel(date: string): string {
-  return parseLocalDate(date)
-    .toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    })
-    .toUpperCase();
-}
-
 interface DailyEnergyCounterProps {
-  readonly date: string;
   readonly caloriesEaten: number;
   readonly calorieGoal: number;
 }
 
 /** Eaten calories, remaining budget in a segmented gauge and the goal caption ("Component / Daily energy counter"). */
-export function DailyEnergyCounter({ date, caloriesEaten, calorieGoal }: DailyEnergyCounterProps) {
+export function DailyEnergyCounter({ caloriesEaten, calorieGoal }: DailyEnergyCounterProps) {
   const reveal = useRevealProgress();
   const final = summarizeCalories(caloriesEaten, calorieGoal);
   const animated = summarizeCalories(Math.round(caloriesEaten * reveal), calorieGoal);
@@ -33,20 +21,6 @@ export function DailyEnergyCounter({ date, caloriesEaten, calorieGoal }: DailyEn
   return (
     <section aria-label="Daily energy" className="flex flex-col">
       <div className="flex items-center justify-between">
-        <button
-          type="button"
-          aria-haspopup="listbox"
-          className="flex items-center gap-1 font-body text-12 font-bold tracking-[1.2px] text-lime"
-        >
-          TODAY
-          <ChevronDown size={14} aria-hidden="true" />
-        </button>
-        <time dateTime={date} className="font-body text-10 font-medium tracking-[1px] text-muted">
-          {dayLabel(date)}
-        </time>
-      </div>
-
-      <div className="mt-[27px] flex items-center justify-between">
         <div className="flex flex-col">
           <p
             className="font-display text-86 leading-none font-bold tracking-[-2px] text-white italic tabular-nums"

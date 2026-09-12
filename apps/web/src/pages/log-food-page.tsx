@@ -1,4 +1,4 @@
-import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/food-rules";
+import { SEARCH_MAX_LENGTH } from "@calwise/food-rules";
 import { ArrowLeft, CircleX, ScanBarcode, Search } from "lucide-react";
 import { useRef } from "react";
 import { Link, useLocation, useSearchParams } from "react-router";
@@ -58,7 +58,6 @@ export default function LogFoodPage() {
             placeholder="Search by name or brand"
             autoComplete="off"
             enterKeyHint="search"
-            aria-describedby="search-hint"
             className="min-w-0 flex-1 bg-transparent text-15 outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
           />
           <button
@@ -79,9 +78,6 @@ export default function LogFoodPage() {
         <span className="rounded-18 bg-lime px-6 py-2.5 text-11 font-semibold text-bg">
           All foods
         </span>
-        <p id="search-hint" className="text-10 text-muted">
-          Search with at least {SEARCH_MIN_LENGTH} characters
-        </p>
       </div>
       {/* A new search collapses any expanded product rows. */}
       <ProductSearchResults
