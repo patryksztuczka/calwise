@@ -1,11 +1,30 @@
 import { Database } from "@calwise/database";
 import { foodEntries, publicFoodEntryColumns, type FoodEntry } from "@calwise/database/schema";
-import type { Product } from "@calwise/database/food-schema";
+import type { NutritionBasisUnit } from "@calwise/food-rules/personal-product";
 import { and, asc, eq } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Context, Effect, Layer } from "effect";
 import type { EntryChange } from "@calwise/food-rules/log";
 export type Entry = Omit<FoodEntry, "userId">;
+
+export interface CapturedProduct {
+  readonly productSource: "catalog" | "personal";
+  readonly personalProductId: string | null;
+  readonly nutritionBasis: NutritionBasisUnit | null;
+  readonly barcode: string | null;
+  readonly name: string;
+  readonly brands: string | null;
+  readonly energyKcal100g: number;
+  readonly energyKj100g: number | null;
+  readonly protein100g: number;
+  readonly carbohydrates100g: number;
+  readonly fat100g: number;
+  readonly saturatedFat100g: number | null;
+  readonly sugars100g: number | null;
+  readonly fiber100g: number | null;
+  readonly salt100g: number | null;
+  readonly sodium100g: number | null;
+}
 
 /** Only these four columns change after capture; nothing else from a request reaches the row. */
 const entryChange = ({ amount, unit, date, meal }: EntryChange) => ({ amount, unit, date, meal });
@@ -26,7 +45,7 @@ export class FoodLogService extends Context.Service<
     readonly add: (
       userId: string,
       id: string,
-      product: Product,
+      product: CapturedProduct,
       change: EntryChange,
     ) => Effect.Effect<Entry | undefined, EffectDrizzleQueryError>;
     readonly update: (
@@ -59,7 +78,7 @@ export class FoodLogService extends Context.Service<
       const add = Effect.fn("FoodLogService.add")(function* (
         userId: string,
         id: string,
-        product: Product,
+        product: CapturedProduct,
         change: EntryChange,
       ) {
         yield* db
@@ -68,12 +87,21 @@ export class FoodLogService extends Context.Service<
             id,
             userId,
             barcode: product.barcode,
+            productSource: product.productSource,
+            personalProductId: product.personalProductId,
+            nutritionBasis: product.nutritionBasis,
             name: product.name,
             brands: product.brands,
             energyKcal100g: product.energyKcal100g,
+            energyKj100g: product.energyKj100g,
             protein100g: product.protein100g,
             carbohydrates100g: product.carbohydrates100g,
             fat100g: product.fat100g,
+            saturatedFat100g: product.saturatedFat100g,
+            sugars100g: product.sugars100g,
+            fiber100g: product.fiber100g,
+            salt100g: product.salt100g,
+            sodium100g: product.sodium100g,
             ...entryChange(change),
             createdAt: Date.now(),
           })

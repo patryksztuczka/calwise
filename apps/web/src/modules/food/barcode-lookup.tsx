@@ -28,6 +28,8 @@ interface BarcodeLookupProps {
 export function BarcodeLookup({ code, searchUrl, onDismiss, renderProduct }: BarcodeLookupProps) {
   const { state, retry } = useBarcodeLookup(code);
   const { title, Icon, color } = headings[state.status];
+  const creationParams = new URLSearchParams(searchUrl.split("?")[1] ?? "");
+  creationParams.set("barcode", code);
   return (
     <BottomSheet
       title={
@@ -43,6 +45,7 @@ export function BarcodeLookup({ code, searchUrl, onDismiss, renderProduct }: Bar
         <LookupContent
           state={state}
           searchUrl={searchUrl}
+          creationUrl={`/create-product?${creationParams}`}
           onRetry={retry}
           renderProduct={renderProduct}
           onAdded={onDismiss}
@@ -70,12 +73,20 @@ export function BarcodeLookup({ code, searchUrl, onDismiss, renderProduct }: Bar
 interface LookupContentProps {
   readonly state: LookupState;
   readonly searchUrl: string;
+  readonly creationUrl: string;
   readonly onRetry: () => void;
   readonly renderProduct: BarcodeLookupProps["renderProduct"];
   readonly onAdded: () => void;
 }
 
-function LookupContent({ state, searchUrl, onRetry, renderProduct, onAdded }: LookupContentProps) {
+function LookupContent({
+  state,
+  searchUrl,
+  creationUrl,
+  onRetry,
+  renderProduct,
+  onAdded,
+}: LookupContentProps) {
   switch (state.status) {
     case "invalid":
       return (
@@ -96,8 +107,15 @@ function LookupContent({ state, searchUrl, onRetry, renderProduct, onAdded }: Lo
       return (
         <div role="alert" className="flex flex-col gap-3 text-13">
           <p className="text-muted">
-            This barcode is not in the food catalog. Try searching by name or brand.
+            This barcode is not in the food catalog. Add the details from its label or search by
+            name.
           </p>
+          <Link
+            to={creationUrl}
+            className="flex min-h-12 items-center justify-center rounded-10 bg-lime font-display text-18 font-bold text-bg italic"
+          >
+            CREATE PRODUCT
+          </Link>
           <Link to={searchUrl} className="flex min-h-11 items-center text-lime">
             Search by name
           </Link>
@@ -127,7 +145,7 @@ function LookupContent({ state, searchUrl, onRetry, renderProduct, onAdded }: Lo
             <ProductIdentity product={state.data.product} />
             {renderProduct(state.data.product, onAdded)}
           </div>
-          <FoodAttribution attribution={state.data.attribution} />
+          {state.data.attribution && <FoodAttribution attribution={state.data.attribution} />}
         </>
       );
   }

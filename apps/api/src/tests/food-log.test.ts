@@ -1,9 +1,11 @@
 import type { Product } from "@calwise/database/food-schema";
+import type { PersonalProduct } from "@calwise/food-rules/personal-product";
 import { TRPCError } from "@trpc/server";
 import { Effect, Layer, Schema } from "effect";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../app.ts";
 import { FoodService } from "../modules/food/food-service.ts";
+import { PersonalProductService } from "../modules/food/personal-product-service.ts";
 import { FoodLogService, type Entry } from "../modules/food-log/food-log-service.ts";
 import { testEnv } from "./test-env.ts";
 
@@ -33,6 +35,27 @@ const product: Product = {
   sourceUrl: "https://world.openfoodfacts.org/product/0000000000001",
   sourceModifiedAt: 0,
 };
+const personalProduct: PersonalProduct = {
+  source: "personal",
+  id: "c04c67ee-ce29-4442-aec3-b8f95b811c40",
+  barcode: null,
+  name: "Broth",
+  brand: null,
+  packageQuantity: "1 L",
+  servingSize: null,
+  nutritionBasis: "ml",
+  energyKcal100: 12.5,
+  energyKj100: 52.3,
+  protein100: 1,
+  carbohydrates100: 0,
+  fat100: 0,
+  saturatedFat100: 0,
+  sugars100: null,
+  fiber100: null,
+  salt100: 0.8,
+  sodium100: null,
+  createdAt: 1,
+};
 const input = {
   id: "550e8400-e29b-41d4-a716-446655440000",
   barcode: product.barcode,
@@ -41,17 +64,37 @@ const input = {
   date: "2026-01-02",
   meal: "lunch",
 } as const;
+const personalInput = {
+  id: "3a66a0aa-5d46-42af-84a4-c266f81c554b",
+  productReference: { source: "personal", id: personalProduct.id },
+  amount: 250,
+  unit: "ml",
+  date: "2026-01-02",
+  meal: "lunch",
+} as const;
 const entry: Entry = {
   ...input,
+  productSource: "catalog",
+  personalProductId: null,
+  nutritionBasis: null,
   name: product.name,
   brands: null,
   energyKcal100g: 350,
+  energyKj100g: null,
   protein100g: 25,
   carbohydrates100g: 0,
   fat100g: 25,
+  saturatedFat100g: null,
+  sugars100g: null,
+  fiber100g: null,
+  salt100g: null,
+  sodium100g: null,
   createdAt: 0,
 };
 const barcode = vi.fn(() => Effect.succeed<Product | undefined>(product));
+const getPersonalProduct = vi.fn(() =>
+  Effect.succeed<PersonalProduct | undefined>(personalProduct),
+);
 const get = vi.fn(() => Effect.succeed<Entry | undefined>(entry));
 const add = vi.fn(() => Effect.succeed<Entry | undefined>(entry));
 const update = vi.fn(() => Effect.succeed<Entry | undefined>(entry));
@@ -60,17 +103,25 @@ const day = vi.fn(() => Effect.succeed([entry]));
 const env = testEnv(
   Layer.mergeAll(
     Layer.succeed(FoodService, { barcode, search: () => Effect.succeed([]) }),
+    Layer.succeed(PersonalProductService, {
+      create: () => Effect.die("not used"),
+      list: () => Effect.die("not used"),
+      get: getPersonalProduct,
+      barcode: () => Effect.die("not used"),
+    }),
     Layer.succeed(FoodLogService, { day, get, add, update, remove }),
   ),
 );
 let cookie: string;
 let userId: string;
-const mutate = (
-  method: string,
-  body: Readonly<Record<string, string | number>>,
-  authenticated = true,
-  run = env.run,
-) =>
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly JsonValue[]
+  | { readonly [key: string]: JsonValue | undefined };
+const mutate = (method: string, body: JsonValue, authenticated = true, run = env.run) =>
   app.request(
     `/trpc/foodLog.${method}`,
     {
@@ -116,7 +167,89 @@ describe("food log API", () => {
   it("adds without a time zone and passes the authenticated owner", async () => {
     expect((await mutate("add", input)).status).toBe(200);
     const { id, barcode: _barcode, ...change } = input;
-    expect(add).toHaveBeenCalledWith(userId, id, product, change);
+    expect(add).toHaveBeenCalledWith(
+      userId,
+      id,
+      {
+        productSource: "catalog",
+        personalProductId: null,
+        nutritionBasis: null,
+        barcode: product.barcode,
+        name: product.name,
+        brands: product.brands,
+        energyKcal100g: product.energyKcal100g,
+        energyKj100g: product.energyKj100g,
+        protein100g: product.protein100g,
+        carbohydrates100g: product.carbohydrates100g,
+        fat100g: product.fat100g,
+        saturatedFat100g: product.saturatedFat100g,
+        sugars100g: product.sugars100g,
+        fiber100g: product.fiber100g,
+        salt100g: product.salt100g,
+        sodium100g: product.sodium100g,
+      },
+      change,
+    );
+  });
+  it("accepts an explicit catalog reference without breaking legacy barcode input", async () => {
+    const { barcode: catalogBarcode, ...rest } = input;
+    expect(
+      (
+        await mutate("add", {
+          ...rest,
+          productReference: { source: "catalog", barcode: catalogBarcode },
+        })
+      ).status,
+    ).toBe(200);
+    expect(barcode).toHaveBeenCalledWith(catalogBarcode);
+  });
+  it("resolves an owned personal reference and captures its basis and nullable nutrition", async () => {
+    expect((await mutate("add", personalInput)).status).toBe(200);
+    expect(getPersonalProduct).toHaveBeenCalledWith(userId, personalProduct.id);
+    expect(add).toHaveBeenCalledWith(
+      userId,
+      personalInput.id,
+      {
+        productSource: "personal",
+        personalProductId: personalProduct.id,
+        nutritionBasis: "ml",
+        barcode: null,
+        name: personalProduct.name,
+        brands: null,
+        energyKcal100g: 12.5,
+        energyKj100g: 52.3,
+        protein100g: 1,
+        carbohydrates100g: 0,
+        fat100g: 0,
+        saturatedFat100g: 0,
+        sugars100g: null,
+        fiber100g: null,
+        salt100g: 0.8,
+        sodium100g: null,
+      },
+      { amount: 250, unit: "ml", date: "2026-01-02", meal: "lunch" },
+    );
+  });
+  it("rejects incompatible personal units on add and update", async () => {
+    expect((await mutate("add", { ...personalInput, unit: "g" })).status).toBe(400);
+    expect(add).not.toHaveBeenCalled();
+
+    get.mockReturnValueOnce(
+      Effect.succeed({
+        ...entry,
+        productSource: "personal",
+        personalProductId: personalProduct.id,
+        nutritionBasis: "ml",
+        unit: "ml",
+      }),
+    );
+    expect((await mutate("update", { ...input, unit: "g" })).status).toBe(400);
+    expect(update).not.toHaveBeenCalled();
+  });
+  it("does not reveal an unowned personal reference", async () => {
+    getPersonalProduct.mockReturnValueOnce(Effect.succeed(undefined));
+    expect((await mutate("add", personalInput)).status).toBe(404);
+    expect(add).not.toHaveBeenCalled();
   });
   it("updates the snapshot without rereading the catalog", async () => {
     expect((await mutate("update", input)).status).toBe(200);

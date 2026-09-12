@@ -74,11 +74,20 @@ export default function LogFoodPage() {
           </button>
         </div>
       </form>
-      <div className="flex items-center justify-between gap-3">
-        <span className="rounded-18 bg-lime px-6 py-2.5 text-11 font-semibold text-bg">
+      <nav aria-label="Food collections" className="flex items-center gap-2">
+        <span
+          aria-current="page"
+          className="rounded-18 bg-lime px-5 py-2.5 text-11 font-semibold text-bg"
+        >
           All foods
         </span>
-      </div>
+        <Link
+          to={`/my-foods${location.search}`}
+          className="rounded-18 border border-line bg-surface px-5 py-2.5 text-11 text-muted"
+        >
+          My foods
+        </Link>
+      </nav>
       {/* A new search collapses any expanded product rows. */}
       <ProductSearchResults
         key={term}

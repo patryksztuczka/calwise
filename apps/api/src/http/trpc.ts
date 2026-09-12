@@ -12,7 +12,40 @@ export interface TrpcContext {
   readonly session: Session | null;
 }
 
-const t = initTRPC.context<TrpcContext>().create();
+export interface ConflictData {
+  readonly kind: "DUPLICATE_BARCODE" | "IDEMPOTENCY_KEY_REUSED";
+  readonly existingProductId: string;
+}
+
+class ConflictCause extends Error {
+  readonly conflict: ConflictData;
+
+  constructor(conflict: ConflictData) {
+    super(conflict.kind);
+    this.conflict = conflict;
+  }
+}
+
+const t = initTRPC.context<TrpcContext>().create({
+  errorFormatter(options) {
+    const response = options.shape;
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        conflict:
+          options.error.cause instanceof ConflictCause ? options.error.cause.conflict : null,
+      },
+    };
+  },
+});
+
+export const conflictError = (conflict: ConflictData): TRPCError =>
+  new TRPCError({
+    code: "CONFLICT",
+    message: conflict.kind,
+    cause: new ConflictCause(conflict),
+  });
 
 export const router = t.router;
 export const publicProcedure = t.procedure;

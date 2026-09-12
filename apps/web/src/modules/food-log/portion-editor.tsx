@@ -18,6 +18,7 @@ export function PortionEditor({
   label,
   pending,
   error,
+  lockedUnit,
   onSave,
 }: {
   readonly basis: NutritionBasis;
@@ -25,10 +26,11 @@ export function PortionEditor({
   readonly label: string;
   readonly pending: boolean;
   readonly error?: string | undefined;
+  readonly lockedUnit?: LoggedUnit | undefined;
   readonly onSave: (portion: Portion) => void;
 }) {
   const [amount, setAmount] = useState(initial ? String(initial.amount) : "");
-  const [unit, setUnit] = useState<LoggedUnit>(initial?.unit ?? "g");
+  const [unit, setUnit] = useState<LoggedUnit>(lockedUnit ?? initial?.unit ?? "g");
   const id = useId();
   const quantity = parseAmount(amount);
   const portion =
@@ -61,13 +63,15 @@ export function PortionEditor({
         <label className="flex flex-col gap-2 text-9 font-semibold tracking-[1px] text-muted">
           UNIT
           <select
+            aria-label="Unit"
             value={unit}
+            disabled={lockedUnit !== undefined}
             onChange={(event) =>
               setUnit(LOGGED_UNITS.find((item) => item === event.target.value) ?? "g")
             }
-            className="h-12 rounded-8 border border-line bg-bg px-3 text-[16px] font-normal tracking-normal text-white outline-none focus:border-lime"
+            className="h-12 rounded-8 border border-line bg-bg px-3 text-[16px] font-normal tracking-normal text-white outline-none focus:border-lime disabled:opacity-70"
           >
-            {LOGGED_UNITS.map((item) => (
+            {(lockedUnit ? [lockedUnit] : LOGGED_UNITS).map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -76,7 +80,10 @@ export function PortionEditor({
         </label>
       </fieldset>
       <p id={`${id}-basis`} className="text-10 text-muted">
-        Nutrition per 100 {unit}. Choose the unit matching the label.
+        Nutrition per 100 {unit}.{" "}
+        {lockedUnit
+          ? "This personal product uses its saved nutrition unit."
+          : "Choose the unit matching the label."}
       </p>
       <div aria-live="polite">
         <NutritionPreview totals={portion && entryNutrition(basis, portion.amount)} />

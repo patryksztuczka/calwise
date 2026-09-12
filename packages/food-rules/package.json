@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./log": "./src/log.ts",
-    "./goals": "./src/goals.ts"
+    "./goals": "./src/goals.ts",
+    "./personal-product": "./src/personal-product.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"

@@ -12,6 +12,8 @@ const EditFoodPage = lazy(() => import("./pages/edit-food-page"));
 const TodayPage = lazy(() => import("./pages/today-page"));
 const ScanBarcodePage = lazy(() => import("./pages/scan-barcode-page"));
 const LogFoodPage = lazy(() => import("./pages/log-food-page"));
+const MyFoodsPage = lazy(() => import("./pages/my-foods-page"));
+const CreateProductPage = lazy(() => import("./pages/create-product-page"));
 const GreetingPage = lazy(() => import("./pages/greeting-page"));
 const ComingSoonPage = lazy(() => import("./pages/coming-soon-page"));
 const SignInPage = lazy(() => import("./pages/sign-in-page"));
@@ -30,6 +32,8 @@ export default function App() {
             <Route element={<LoggingSession />}>
               <Route path="scan" element={<ScanBarcodePage />} />
               <Route path="log-food" element={<LogFoodPage />} />
+              <Route path="my-foods" element={<MyFoodsPage />} />
+              <Route path="create-product" element={<CreateProductPage />} />
             </Route>
             <Route path="profile/nutrition-goals" element={<NutritionGoalsPage />} />
             <Route path="meal/:meal" element={<MealPage />} />

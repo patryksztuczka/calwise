@@ -22,6 +22,16 @@ interface BarcodeScannerProps {
 /** Pencil's scanner viewport. Camera pixels stay on the device; onScan receives only the code. */
 export function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const [attempt, setAttempt] = useState(0);
+  const handleCaptured = useEffectEvent(onScan);
+  useEffect(() => {
+    const capture = (event: Event) => {
+      // SAFETY: CustomEvent details are read as optional data and rejected unless code is a String.
+      const code = (event as CustomEvent<{ code?: string }>).detail?.code;
+      if (code?.constructor === String) handleCaptured(code);
+    };
+    window.addEventListener("calwise:barcode-captured", capture);
+    return () => window.removeEventListener("calwise:barcode-captured", capture);
+  }, []);
   return (
     <ScannerCamera key={attempt} onScan={onScan} onRetry={() => setAttempt((value) => value + 1)} />
   );

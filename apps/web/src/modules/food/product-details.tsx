@@ -1,6 +1,6 @@
 import { Package } from "lucide-react";
 import type { ReactNode } from "react";
-import type { FoodSearchResult, Product } from "./food-types";
+import { isPersonalProduct, type FoodSearchResult, type Product } from "./food-types";
 
 interface ProductIdentityProps {
   readonly product: Product;
@@ -8,6 +8,9 @@ interface ProductIdentityProps {
 }
 
 export function ProductIdentity({ product, children }: ProductIdentityProps) {
+  const details = isPersonalProduct(product)
+    ? [product.brand, product.packageQuantity, "Your product"]
+    : [product.brands, product.packageQuantity];
   return (
     <span className="flex min-w-0 flex-1 items-center gap-3.5">
       <span className="flex size-[42px] shrink-0 items-center justify-center rounded-10 bg-surface text-muted">
@@ -16,7 +19,7 @@ export function ProductIdentity({ product, children }: ProductIdentityProps) {
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-14 font-semibold break-words">{product.name}</span>
         <span className="text-11 text-muted">
-          {[product.brands, product.packageQuantity].filter(Boolean).join(" · ") || "Packaged food"}
+          {details.filter(Boolean).join(" · ") || "Packaged food"}
         </span>
         {children}
       </span>

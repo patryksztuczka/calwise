@@ -13,6 +13,7 @@ for (const query of ["zolty ser", "Żółty", "calwise test"]) {
         data: {
           products: [
             {
+              source: "catalog",
               barcode: "0000000000001",
               name: "Żółty ser testowy",
               carbohydrates100g: 0,
@@ -33,7 +34,12 @@ test("looks up barcodes through the API and food D1", async ({ request }) => {
   });
   expect(barcode.ok()).toBe(true);
   expect(await barcode.json()).toMatchObject({
-    result: { data: { product: { barcode: "0000000000001" } } },
+    result: {
+      data: {
+        source: "catalog",
+        product: { source: "catalog", barcode: "0000000000001" },
+      },
+    },
   });
   const missing = await request.get(`${apiUrl}/trpc/food.barcode`, {
     params: { input: JSON.stringify({ barcode: "9999999999999" }) },

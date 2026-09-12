@@ -2,7 +2,7 @@ import { SEARCH_MAX_LENGTH, SEARCH_MIN_LENGTH } from "@calwise/food-rules";
 import { ChevronUp, Plus } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
 import { nutritionFormat as number } from "../../lib/number-format";
-import type { Product, RenderProduct } from "./food-types";
+import { isPersonalProduct, type Product, type RenderProduct } from "./food-types";
 import { ProductIdentity } from "./product-details";
 import type { ProductSearchState } from "./product-search-state";
 
@@ -104,19 +104,22 @@ function SearchMessage({ children }: { readonly children: ReactNode }) {
   return <p className="py-10 text-center text-13 leading-relaxed text-muted">{children}</p>;
 }
 
-function ProductResult({
+export function ProductResult({
   product,
   renderProduct,
+  initiallyExpanded = false,
 }: {
   readonly product: Product;
   readonly renderProduct: ProductSearchResultsProps["renderProduct"];
+  readonly initiallyExpanded?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(initiallyExpanded);
   const detailsId = useId();
   return (
     <li className={expanded ? "rounded-12 border border-line bg-surface" : "border-b border-line"}>
       <button
         type="button"
+        aria-label={`${expanded ? "Close" : "Select"} ${product.name}`}
         aria-expanded={expanded}
         aria-controls={detailsId}
         onClick={() => setExpanded(!expanded)}
@@ -125,7 +128,10 @@ function ProductResult({
         <ProductIdentity product={product}>
           {!expanded && (
             <span className="text-11 text-muted">
-              {number.format(product.energyKcal100g)} kcal · 100 g / ml
+              {number.format(
+                isPersonalProduct(product) ? product.energyKcal100 : product.energyKcal100g,
+              )}{" "}
+              kcal · 100 {isPersonalProduct(product) ? product.nutritionBasis : "g / ml"}
             </span>
           )}
         </ProductIdentity>
