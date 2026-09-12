@@ -3,7 +3,7 @@ import { ChevronUp, Plus } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
 import { nutritionFormat as number } from "../../lib/number-format";
 import type { Product, RenderProduct } from "./food-types";
-import { FoodAttribution, ProductIdentity } from "./product-details";
+import { ProductIdentity } from "./product-details";
 import type { ProductSearchState } from "./product-search-state";
 
 interface ProductSearchResultsProps {
@@ -53,7 +53,6 @@ export function ProductSearchResults({ state, onRetry, renderProduct }: ProductS
           <SearchMessage>
             No products found. Try another name or brand, or scan a barcode.
           </SearchMessage>
-          <FoodAttribution attribution={state.attribution} />
         </ResultsSection>
       );
     case "results": {
@@ -74,7 +73,6 @@ export function ProductSearchResults({ state, onRetry, renderProduct }: ProductS
               More matches may be available. Refine your search to find more specific products.
             </p>
           )}
-          <FoodAttribution attribution={state.data.attribution} />
         </ResultsSection>
       );
     }

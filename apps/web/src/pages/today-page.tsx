@@ -1,14 +1,12 @@
-import { Plus, UserRound } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { DEFAULT_GOALS, goalTargets } from "@calwise/food-rules/goals";
-import { nutritionFormat } from "../lib/number-format";
 import { useTRPC } from "../lib/trpc";
 import { DateNavigation } from "../modules/food-log/date-navigation";
 import { LogQueryState } from "../modules/food-log/log-query-state";
 import { daySummary } from "../modules/food-log/day-summary";
 import { mealUrl, useLogDestination } from "../modules/food-log/destination";
-import { IconButton } from "../components/icon-button";
 import { PrimaryAction } from "../components/primary-action";
 import { DailyEnergyCounter } from "../modules/today/daily-energy-counter";
 import { DailyMacroCounters } from "../modules/today/daily-macro-counters";
@@ -29,9 +27,6 @@ export default function TodayPage() {
         <h1 className="font-display text-32 leading-none font-extrabold tracking-[-0.8px] text-lime italic">
           CALWISE
         </h1>
-        <IconButton aria-label="Profile" render={<Link to="/profile" />}>
-          <UserRound size={21} aria-hidden="true" />
-        </IconButton>
       </header>
 
       <DateNavigation date={date} onChange={setDate} />
@@ -46,18 +41,10 @@ export default function TodayPage() {
       ) : (
         <>
           <div className="mt-[6px]">
-            <DailyEnergyCounter
-              date={date}
-              caloriesEaten={log.totals.kcal}
-              calorieGoal={targets.kcal}
-            />
+            <DailyEnergyCounter caloriesEaten={log.totals.kcal} calorieGoal={targets.kcal} />
           </div>
 
           <DailyMacroCounters totals={log.totals} targets={targets} />
-          <p className="text-center text-10 text-muted">
-            Daily targets · {nutritionFormat.format(targets.kcal)} kcal · Protein {targets.protein}{" "}
-            g · Carbs {targets.carbs} g · Fat {targets.fat} g
-          </p>
 
           <section aria-labelledby="meals-heading" className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
@@ -67,7 +54,6 @@ export default function TodayPage() {
               >
                 YOUR MEALS
               </h2>
-              <p className="font-body text-11 text-muted">{log.count} foods logged</p>
             </div>
             <ul className="flex flex-col gap-2.5">
               {log.meals.map((meal) => (

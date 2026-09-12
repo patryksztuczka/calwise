@@ -27,7 +27,6 @@ export default function NutritionGoalsPage() {
         </IconButton>
         <h1 className="font-display text-30 font-extrabold italic">NUTRITION GOALS</h1>
       </header>
-      <p className="text-13 text-muted">Set your daily calories and how you want to split them.</p>
       {query.isPending || query.isError ? (
         <LogQueryState failed={query.isError} retry={() => void query.refetch()} />
       ) : (
@@ -97,7 +96,7 @@ function GoalsForm({ initial }: { readonly initial: NutritionGoals }) {
       <fieldset disabled={save.isPending} className="flex flex-col gap-6">
         <label className="flex flex-col gap-2 text-11 font-semibold tracking-[1px]">
           DAILY CALORIE GOAL
-          <span className="flex items-center rounded-12 border border-line bg-surface px-4 py-3">
+          <span className="flex h-11 items-center gap-2 rounded-8 border border-line bg-surface px-3">
             <input
               aria-label="Daily calorie goal"
               type="number"
@@ -107,9 +106,9 @@ function GoalsForm({ initial }: { readonly initial: NutritionGoals }) {
               required
               value={fields.kcal}
               onChange={(event) => setFields({ ...fields, kcal: event.target.value })}
-              className="min-w-0 flex-1 bg-transparent font-display text-35 font-bold italic"
+              className="h-full min-w-0 flex-1 bg-transparent font-body text-14 font-normal tracking-normal"
             />
-            <span className="text-10 font-normal tracking-normal text-muted">kcal / day</span>
+            <span className="text-11 font-normal tracking-normal text-muted">kcal / day</span>
           </span>
         </label>
         <div>
@@ -148,7 +147,7 @@ function GoalsForm({ initial }: { readonly initial: NutritionGoals }) {
               </span>
             </label>
             <div className="w-28">
-              <div className="flex items-center gap-2 rounded-8 border border-line bg-surface px-3 py-2.5">
+              <div className="flex h-11 items-center gap-2 rounded-8 border border-line bg-surface px-3">
                 <input
                   id={key}
                   type="number"
@@ -157,7 +156,7 @@ function GoalsForm({ initial }: { readonly initial: NutritionGoals }) {
                   required
                   value={fields[key]}
                   onChange={(event) => setFields({ ...fields, [key]: event.target.value })}
-                  className="w-full min-w-0 bg-transparent text-right text-14"
+                  className="h-full w-full min-w-0 bg-transparent text-right font-body text-14 font-normal tracking-normal"
                 />
                 <span className="text-11 text-muted">{mode === "percentages" ? "%" : "g"}</span>
               </div>
@@ -192,7 +191,6 @@ function GoalsForm({ initial }: { readonly initial: NutritionGoals }) {
               : "Calories from grams must match your goal, allowing for rounding."}
           </p>
         )}
-        <p className="mt-3 text-10 text-muted">Gram targets are rounded to the nearest gram.</p>
       </div>
       {save.isError && (
         <p role="alert" className="text-13 text-danger">
@@ -200,9 +198,6 @@ function GoalsForm({ initial }: { readonly initial: NutritionGoals }) {
         </p>
       )}
       <div className="mt-2">
-        <p className="mb-3 text-center text-11 text-muted">
-          From today. Previous days stay unchanged.
-        </p>
         <PrimaryAction type="submit" disabled={!valid || save.isPending}>
           {save.isPending ? "SAVING..." : "SAVE GOALS"}
         </PrimaryAction>
