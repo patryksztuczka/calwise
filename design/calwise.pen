@@ -57,16 +57,6 @@
                   "fontWeight": "$weight-heavy",
                   "letterSpacing": -0.8,
                   "fontStyle": "$style-display"
-                },
-                {
-                  "id": "xDXM4",
-                  "type": "ref",
-                  "ref": "qBN7s",
-                  "name": "Profile button",
-                  "x": 306,
-                  "y": 0,
-                  "width": 44,
-                  "height": 44
                 }
               ]
             },
@@ -268,18 +258,6 @@
                       "fontSize": "$type-size-11",
                       "fontWeight": "$weight-bold",
                       "letterSpacing": 1.1
-                    },
-                    {
-                      "type": "text",
-                      "id": "y1XcP",
-                      "x": 304,
-                      "y": 0,
-                      "name": "Meals count",
-                      "fill": "$muted",
-                      "content": "3 logged",
-                      "fontFamily": "$font-body",
-                      "fontSize": "$type-size-11",
-                      "fontWeight": "$weight-regular"
                     }
                   ]
                 },
@@ -1374,7 +1352,7 @@
           "x": 472,
           "y": 124,
           "name": "Component / Tab bar",
-          "context": "Two tabs only: Overview and Trends. Browse past days within Overview; no separate Diary screen.",
+          "context": "Overview, Trends, and Profile. Profile opens from the dock, not the header. Diary stays hidden; past days are browsed in Overview.",
           "reusable": true,
           "width": 358,
           "height": 64,
@@ -1390,7 +1368,7 @@
               "x": 6,
               "y": 6,
               "name": "Overview tab",
-              "width": 170,
+              "width": 111.333,
               "height": 52,
               "fill": "$accent-soft",
               "cornerRadius": "$radius-26",
@@ -1399,7 +1377,7 @@
                 {
                   "type": "icon",
                   "id": "CNfxc",
-                  "x": 75,
+                  "x": 45.167,
                   "y": 8,
                   "name": "Today icon",
                   "width": 21,
@@ -1411,11 +1389,14 @@
                 {
                   "type": "text",
                   "id": "ud2qP",
-                  "x": 62,
+                  "x": 0,
                   "y": 32,
                   "name": "Overview label",
                   "fill": "$lime",
+                  "textGrowth": "fixed-width",
+                  "width": 111.333,
                   "content": "Overview",
+                  "textAlign": "center",
                   "fontFamily": "$font-body",
                   "fontSize": "$type-size-10",
                   "fontWeight": "$weight-semibold"
@@ -1464,10 +1445,10 @@
             {
               "type": "frame",
               "id": "d8veD",
-              "x": 182,
+              "x": 123.333,
               "y": 6,
               "name": "Trends tab",
-              "width": 170,
+              "width": 111.333,
               "height": 52,
               "fill": "$transparent",
               "cornerRadius": "$radius-26",
@@ -1476,7 +1457,7 @@
                 {
                   "type": "icon",
                   "id": "F7Qt5",
-                  "x": 75,
+                  "x": 45.167,
                   "y": 8,
                   "name": "Trends icon",
                   "width": 21,
@@ -1488,11 +1469,56 @@
                 {
                   "type": "text",
                   "id": "w0FnH",
-                  "x": 68,
+                  "x": 0,
                   "y": 32,
                   "name": "Trends label",
                   "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": 111.333,
                   "content": "Trends",
+                  "textAlign": "center",
+                  "fontFamily": "$font-body",
+                  "fontSize": "$type-size-10",
+                  "fontWeight": "$weight-semibold"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "j8KJO",
+              "x": 240.667,
+              "y": 6,
+              "name": "Profile tab",
+              "context": "Open Profile.",
+              "width": 111.333,
+              "height": 52,
+              "fill": "$transparent",
+              "cornerRadius": "$radius-26",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "lhiVg",
+                  "x": 45.167,
+                  "y": 8,
+                  "name": "Profile icon",
+                  "width": 21,
+                  "height": 21,
+                  "icon": "user-round",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "WgGVI",
+                  "x": 0,
+                  "y": 32,
+                  "name": "Profile label",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": 111.333,
+                  "content": "Profile",
+                  "textAlign": "center",
                   "fontFamily": "$font-body",
                   "fontSize": "$type-size-10",
                   "fontWeight": "$weight-semibold"
@@ -2482,7 +2508,7 @@
               "x": 262,
               "y": 0,
               "width": 88,
-              "height": 48,
+              "height": 44,
               "layoutPosition": "absolute",
               "descendants": {
                 "z035fQ": {
@@ -2492,24 +2518,28 @@
                   "x": 0,
                   "y": 0,
                   "width": 88,
-                  "height": 48,
+                  "height": 44,
                   "fill": "$surface"
                 },
                 "d7DH51": {
                   "content": "25",
                   "x": 14,
-                  "y": 14
+                  "y": 13,
+                  "fontFamily": "$font-body",
+                  "fontSize": 14,
+                  "fontWeight": "normal",
+                  "fontStyle": "normal"
                 },
                 "fSrv9": {
                   "type": "text",
                   "id": "aXaI3",
                   "x": 62,
-                  "y": 17,
+                  "y": 15,
                   "name": "Macro unit",
                   "fill": "$muted",
                   "content": "%",
                   "fontFamily": "$font-body",
-                  "fontSize": "$type-size-12",
+                  "fontSize": 11,
                   "fontWeight": "normal"
                 }
               }
@@ -9569,24 +9599,10 @@
           "layoutPosition": "absolute"
         },
         {
-          "id": "UdcE2",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Back to Today",
-          "x": 20,
-          "y": 62,
-          "layoutPosition": "absolute",
-          "descendants": {
-            "hY2Br": {
-              "icon": "arrow-left"
-            }
-          }
-        },
-        {
           "type": "text",
           "id": "CSBmJ",
           "layoutPosition": "absolute",
-          "x": 78,
+          "x": 20,
           "y": 66,
           "name": "Profile screen title",
           "fill": "$white",
@@ -9601,7 +9617,7 @@
           "id": "F5tQea",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 138,
+          "y": 98,
           "name": "Profile avatar",
           "width": 64,
           "height": 64,
@@ -9632,7 +9648,7 @@
           "id": "djvyb",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 146,
+          "y": 106,
           "name": "Display name",
           "fill": "$white",
           "content": "Alex Morgan",
@@ -9645,7 +9661,7 @@
           "id": "d6LFx",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 175,
+          "y": 135,
           "name": "Account email",
           "fill": "$muted",
           "content": "alex@example.com",
@@ -9659,7 +9675,7 @@
           "ref": "qBN7s",
           "name": "Edit profile",
           "x": 326,
-          "y": 148,
+          "y": 108,
           "layoutPosition": "absolute",
           "descendants": {
             "hY2Br": {
@@ -9676,7 +9692,7 @@
           "id": "ym1VY",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 240,
+          "y": 200,
           "name": "Nutrition section label",
           "fill": "$white",
           "content": "NUTRITION",
@@ -9690,7 +9706,7 @@
           "id": "M8JEjR",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 266,
+          "y": 226,
           "name": "Nutrition goals entry",
           "context": "Tap this card to open Nutrition goals.",
           "width": 350,
@@ -9902,7 +9918,7 @@
           "id": "cpSeh",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 510,
+          "y": 470,
           "name": "Preferences section label",
           "fill": "$white",
           "content": "PREFERENCES",
@@ -9917,7 +9933,7 @@
           "ref": "X21uS",
           "name": "Units setting",
           "x": 20,
-          "y": 534,
+          "y": 494,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -9937,7 +9953,7 @@
           "ref": "X21uS",
           "name": "Reminders setting",
           "x": 20,
-          "y": 594,
+          "y": 554,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -9957,7 +9973,7 @@
           "ref": "X21uS",
           "name": "Appearance setting",
           "x": 20,
-          "y": 654,
+          "y": 614,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -9977,7 +9993,7 @@
           "ref": "X21uS",
           "name": "Account and privacy setting",
           "x": 20,
-          "y": 778,
+          "y": 738,
           "layoutPosition": "absolute",
           "strokeWidth": 0,
           "descendants": {
@@ -10000,6 +10016,7 @@
           "x": 135,
           "y": 866,
           "name": "Home indicator",
+          "enabled": false,
           "fill": "$home-indicator",
           "width": 120,
           "height": 4
@@ -10010,7 +10027,7 @@
           "ref": "X21uS",
           "name": "Connected apps entry",
           "x": 20,
-          "y": 714,
+          "y": 674,
           "layoutPosition": "absolute",
           "context": "Open Connected apps.",
           "descendants": {
@@ -10022,6 +10039,36 @@
             },
             "t87um": {
               "enabled": false
+            }
+          }
+        },
+        {
+          "id": "Bc7zt",
+          "type": "ref",
+          "ref": "Vk7kD",
+          "name": "Navigation with Profile active",
+          "x": 16,
+          "y": 808,
+          "width": 358,
+          "height": 64,
+          "descendants": {
+            "p5Kczt": {
+              "fill": "$transparent"
+            },
+            "CNfxc": {
+              "fill": "$muted"
+            },
+            "ud2qP": {
+              "fill": "$muted"
+            },
+            "j8KJO": {
+              "fill": "$accent-soft"
+            },
+            "lhiVg": {
+              "fill": "$lime"
+            },
+            "WgGVI": {
+              "fill": "$lime"
             }
           }
         }
@@ -10079,30 +10126,14 @@
           "fontStyle": "$style-display"
         },
         {
-          "type": "text",
-          "id": "EfaQp",
-          "layoutPosition": "absolute",
-          "x": 20,
-          "y": 128,
-          "name": "Goals introduction",
-          "fill": "$muted",
-          "textGrowth": "fixed-width",
-          "width": 350,
-          "content": "Set your daily calories and how you want to split them.",
-          "lineHeight": 1.5,
-          "fontFamily": "$font-body",
-          "fontSize": "$type-size-13",
-          "fontWeight": "normal"
-        },
-        {
           "id": "JOSQV",
           "type": "ref",
           "ref": "otmLK",
           "name": "Daily calorie goal input",
           "x": 20,
-          "y": 190,
+          "y": 128,
           "width": 350,
-          "height": 96,
+          "height": 68,
           "layoutPosition": "absolute",
           "descendants": {
             "z035fQ": {
@@ -10114,24 +10145,25 @@
             },
             "GlEIs": {
               "width": 350,
-              "height": 72,
+              "height": 44,
               "fill": "$surface",
               "y": 24,
-              "cornerRadius": "$radius-12"
+              "cornerRadius": "$radius-8"
             },
             "d7DH51": {
               "content": "2,000",
-              "fontFamily": "$font-display",
-              "fontSize": "$type-size-35",
-              "fontStyle": "$style-display",
-              "x": 16,
-              "y": 14
+              "fontFamily": "$font-body",
+              "fontSize": 14,
+              "fontStyle": "normal",
+              "x": 12,
+              "y": 13,
+              "fontWeight": "normal"
             },
             "fSrv9": {
               "type": "text",
               "id": "T6S9v9",
               "x": 271,
-              "y": 30,
+              "y": 15,
               "name": "Daily calorie unit",
               "fill": "$muted",
               "content": "kcal / day",
@@ -10146,7 +10178,7 @@
           "id": "OUKTf",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 314,
+          "y": 224,
           "name": "Macro section title",
           "fill": "$white",
           "content": "MACRO DISTRIBUTION",
@@ -10161,7 +10193,7 @@
           "ref": "pmc8D",
           "name": "Percentage or gram editing mode",
           "x": 20,
-          "y": 340,
+          "y": 250,
           "layoutPosition": "absolute"
         },
         {
@@ -10169,7 +10201,7 @@
           "id": "NaAE9",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 401,
+          "y": 311,
           "name": "Macro editing guidance",
           "fill": "$muted",
           "content": "Set percentages. Daily grams update automatically.",
@@ -10183,7 +10215,7 @@
           "ref": "SNAF9",
           "name": "Protein daily target",
           "x": 20,
-          "y": 432,
+          "y": 342,
           "layoutPosition": "absolute",
           "descendants": {
             "XFoSa": {
@@ -10209,7 +10241,7 @@
           "ref": "SNAF9",
           "name": "Carbs daily target",
           "x": 20,
-          "y": 510,
+          "y": 420,
           "layoutPosition": "absolute",
           "descendants": {
             "XFoSa": {
@@ -10235,7 +10267,7 @@
           "ref": "SNAF9",
           "name": "Fat daily target",
           "x": 20,
-          "y": 588,
+          "y": 498,
           "layoutPosition": "absolute",
           "descendants": {
             "XFoSa": {
@@ -10260,7 +10292,7 @@
           "id": "USmbc",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 688,
+          "y": 598,
           "name": "Macro distribution visualization",
           "clip": true,
           "width": 350,
@@ -10308,7 +10340,7 @@
           "id": "s30hc7",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 712,
+          "y": 622,
           "name": "Distribution valid icon",
           "width": 16,
           "height": 16,
@@ -10321,42 +10353,13 @@
           "id": "NIZLw",
           "layoutPosition": "absolute",
           "x": 43,
-          "y": 713,
+          "y": 623,
           "name": "Distribution validation",
           "fill": "$lime",
           "content": "100% allocated",
           "fontFamily": "$font-body",
           "fontSize": "$type-size-11",
           "fontWeight": "$weight-semibold"
-        },
-        {
-          "type": "text",
-          "id": "ex7D0",
-          "layoutPosition": "absolute",
-          "x": 20,
-          "y": 741,
-          "name": "Rounding explanation",
-          "fill": "$muted",
-          "content": "Gram targets are rounded to the nearest gram.",
-          "fontFamily": "$font-body",
-          "fontSize": "$type-size-10",
-          "fontWeight": "normal"
-        },
-        {
-          "type": "text",
-          "id": "Vrlft",
-          "layoutPosition": "absolute",
-          "x": 20,
-          "y": 771,
-          "name": "Goal effective date",
-          "fill": "$muted",
-          "textGrowth": "fixed-width",
-          "width": 350,
-          "content": "From today. Previous days stay unchanged.",
-          "textAlign": "center",
-          "fontFamily": "$font-body",
-          "fontSize": "$type-size-10",
-          "fontWeight": "normal"
         },
         {
           "id": "m4u0x7",
@@ -10397,8 +10400,8 @@
     {
       "type": "frame",
       "id": "JYuHO",
-      "x": 940,
-      "y": 2200,
+      "x": 0,
+      "y": 3300,
       "name": "Calwise · Scan barcode",
       "context": "Ready-to-scan state. Back returns to search. Manual-entry and name-search fallback actions are intentionally omitted for now. A barcode match pauses the camera and opens the portion-review bottom sheet; scanning never logs food automatically.",
       "clip": true,
@@ -10575,8 +10578,8 @@
     {
       "type": "frame",
       "id": "m9pbN",
-      "x": 1410,
-      "y": 2200,
+      "x": 470,
+      "y": 3300,
       "name": "Calwise · Barcode matched · Review portion",
       "context": "Barcode match pauses scanning and presents this modal bottom sheet. Close or Scan again dismisses it and resumes the camera. The serving amount and unit are editable; calories and macros update before the explicit Add to lunch action. Demo product values are illustrative.",
       "clip": true,
@@ -13483,15 +13486,6 @@
           "fontStyle": "$style-display"
         },
         {
-          "id": "ipym6",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Open profile",
-          "x": 326,
-          "y": 62,
-          "layoutPosition": "absolute"
-        },
-        {
           "type": "frame",
           "id": "FLXMQ",
           "layoutPosition": "absolute",
@@ -13831,15 +13825,6 @@
           "fontSize": "$type-size-30",
           "fontWeight": "$weight-bold",
           "fontStyle": "$style-display"
-        },
-        {
-          "id": "zWwDU",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Open profile",
-          "x": 326,
-          "y": 62,
-          "layoutPosition": "absolute"
         },
         {
           "type": "frame",
@@ -14280,15 +14265,6 @@
           "fontStyle": "$style-display"
         },
         {
-          "id": "JhXhd",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Open profile",
-          "x": 326,
-          "y": 62,
-          "layoutPosition": "absolute"
-        },
-        {
           "type": "frame",
           "id": "fTohH",
           "layoutPosition": "absolute",
@@ -14664,24 +14640,10 @@
           "layoutPosition": "absolute"
         },
         {
-          "id": "bIlv8",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Back to Today",
-          "x": 20,
-          "y": 62,
-          "layoutPosition": "absolute",
-          "descendants": {
-            "hY2Br": {
-              "icon": "arrow-left"
-            }
-          }
-        },
-        {
           "type": "text",
           "id": "SjpNV",
           "layoutPosition": "absolute",
-          "x": 78,
+          "x": 20,
           "y": 66,
           "name": "Profile screen title",
           "fill": "$white",
@@ -14696,7 +14658,7 @@
           "id": "bHM2i",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 138,
+          "y": 98,
           "name": "Profile avatar",
           "width": 64,
           "height": 64,
@@ -14727,7 +14689,7 @@
           "id": "iPFt8",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 146,
+          "y": 106,
           "name": "Display name",
           "fill": "$white",
           "content": "Alex Morgan",
@@ -14740,7 +14702,7 @@
           "id": "V45zS",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 175,
+          "y": 135,
           "name": "Account email",
           "fill": "$muted",
           "content": "alex@example.com",
@@ -14754,7 +14716,7 @@
           "ref": "qBN7s",
           "name": "Edit profile",
           "x": 326,
-          "y": 148,
+          "y": 108,
           "layoutPosition": "absolute",
           "descendants": {
             "hY2Br": {
@@ -14771,7 +14733,7 @@
           "id": "GtRb8",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 240,
+          "y": 200,
           "name": "Nutrition section label",
           "fill": "$white",
           "content": "NUTRITION",
@@ -14785,7 +14747,7 @@
           "id": "o3qoN",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 266,
+          "y": 226,
           "name": "Nutrition goals entry",
           "context": "Tap this card to open Nutrition goals.",
           "width": 350,
@@ -14997,7 +14959,7 @@
           "id": "Ff0qk",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 510,
+          "y": 470,
           "name": "Preferences section label",
           "fill": "$white",
           "content": "PREFERENCES",
@@ -15012,7 +14974,7 @@
           "ref": "X21uS",
           "name": "Units setting",
           "x": 20,
-          "y": 534,
+          "y": 494,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -15032,7 +14994,7 @@
           "ref": "X21uS",
           "name": "Reminders setting",
           "x": 20,
-          "y": 594,
+          "y": 554,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -15052,7 +15014,7 @@
           "ref": "X21uS",
           "name": "Appearance setting",
           "x": 20,
-          "y": 654,
+          "y": 614,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -15072,7 +15034,7 @@
           "ref": "X21uS",
           "name": "Account and privacy setting",
           "x": 20,
-          "y": 778,
+          "y": 738,
           "layoutPosition": "absolute",
           "strokeWidth": 0,
           "descendants": {
@@ -15095,6 +15057,7 @@
           "x": 135,
           "y": 866,
           "name": "Home indicator",
+          "enabled": false,
           "fill": "$home-indicator",
           "width": 120,
           "height": 4
@@ -15105,7 +15068,7 @@
           "ref": "X21uS",
           "name": "Connected apps entry",
           "x": 20,
-          "y": 714,
+          "y": 674,
           "layoutPosition": "absolute",
           "context": "Open Connected apps.",
           "descendants": {
@@ -15117,6 +15080,36 @@
             },
             "t87um": {
               "enabled": false
+            }
+          }
+        },
+        {
+          "id": "T3XQmX",
+          "type": "ref",
+          "ref": "Vk7kD",
+          "name": "Navigation with Profile active",
+          "x": 16,
+          "y": 808,
+          "width": 358,
+          "height": 64,
+          "descendants": {
+            "p5Kczt": {
+              "fill": "$transparent"
+            },
+            "CNfxc": {
+              "fill": "$muted"
+            },
+            "ud2qP": {
+              "fill": "$muted"
+            },
+            "j8KJO": {
+              "fill": "$accent-soft"
+            },
+            "lhiVg": {
+              "fill": "$lime"
+            },
+            "WgGVI": {
+              "fill": "$lime"
             }
           }
         },
@@ -15168,24 +15161,10 @@
           "layoutPosition": "absolute"
         },
         {
-          "id": "k1UA8O",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Back to Today",
-          "x": 20,
-          "y": 62,
-          "layoutPosition": "absolute",
-          "descendants": {
-            "hY2Br": {
-              "icon": "arrow-left"
-            }
-          }
-        },
-        {
           "type": "text",
           "id": "x6NFM",
           "layoutPosition": "absolute",
-          "x": 78,
+          "x": 20,
           "y": 66,
           "name": "Profile screen title",
           "fill": "$white",
@@ -15200,7 +15179,7 @@
           "id": "gJKMb",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 138,
+          "y": 98,
           "name": "Profile avatar",
           "width": 64,
           "height": 64,
@@ -15231,7 +15210,7 @@
           "id": "WS85Q",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 146,
+          "y": 106,
           "name": "Display name",
           "fill": "$white",
           "content": "Alex Morgan",
@@ -15244,7 +15223,7 @@
           "id": "kemYm",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 175,
+          "y": 135,
           "name": "Account email",
           "fill": "$muted",
           "content": "alex@example.com",
@@ -15258,7 +15237,7 @@
           "ref": "qBN7s",
           "name": "Edit profile",
           "x": 326,
-          "y": 148,
+          "y": 108,
           "layoutPosition": "absolute",
           "descendants": {
             "hY2Br": {
@@ -15275,7 +15254,7 @@
           "id": "r24UZ",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 240,
+          "y": 200,
           "name": "Nutrition section label",
           "fill": "$white",
           "content": "NUTRITION",
@@ -15289,7 +15268,7 @@
           "id": "LAnZF",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 266,
+          "y": 226,
           "name": "Nutrition goals entry",
           "context": "Tap this card to open Nutrition goals.",
           "width": 350,
@@ -15501,7 +15480,7 @@
           "id": "D6h8T",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 510,
+          "y": 470,
           "name": "Preferences section label",
           "fill": "$white",
           "content": "PREFERENCES",
@@ -15516,7 +15495,7 @@
           "ref": "X21uS",
           "name": "Units setting",
           "x": 20,
-          "y": 534,
+          "y": 494,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -15536,7 +15515,7 @@
           "ref": "X21uS",
           "name": "Reminders setting",
           "x": 20,
-          "y": 594,
+          "y": 554,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -15556,7 +15535,7 @@
           "ref": "X21uS",
           "name": "Appearance setting",
           "x": 20,
-          "y": 654,
+          "y": 614,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -15576,7 +15555,7 @@
           "ref": "X21uS",
           "name": "Account and privacy setting",
           "x": 20,
-          "y": 778,
+          "y": 738,
           "layoutPosition": "absolute",
           "strokeWidth": 0,
           "descendants": {
@@ -15599,6 +15578,7 @@
           "x": 135,
           "y": 866,
           "name": "Home indicator",
+          "enabled": false,
           "fill": "$home-indicator",
           "width": 120,
           "height": 4
@@ -15609,7 +15589,7 @@
           "ref": "X21uS",
           "name": "Connected apps entry",
           "x": 20,
-          "y": 714,
+          "y": 674,
           "layoutPosition": "absolute",
           "context": "Open Connected apps.",
           "descendants": {
@@ -15621,6 +15601,36 @@
             },
             "t87um": {
               "enabled": false
+            }
+          }
+        },
+        {
+          "id": "DAZiN",
+          "type": "ref",
+          "ref": "Vk7kD",
+          "name": "Navigation with Profile active",
+          "x": 16,
+          "y": 808,
+          "width": 358,
+          "height": 64,
+          "descendants": {
+            "p5Kczt": {
+              "fill": "$transparent"
+            },
+            "CNfxc": {
+              "fill": "$muted"
+            },
+            "ud2qP": {
+              "fill": "$muted"
+            },
+            "j8KJO": {
+              "fill": "$accent-soft"
+            },
+            "lhiVg": {
+              "fill": "$lime"
+            },
+            "WgGVI": {
+              "fill": "$lime"
             }
           }
         },
@@ -16782,7 +16792,7 @@
       "type": "frame",
       "id": "xzLuT",
       "x": 0,
-      "y": 4400,
+      "y": 6600,
       "name": "Calwise · Today · Loading",
       "context": "Loading variant. Keep navigation and known labels visible. Skeletons replace unknown server data, never meaningful zeros or empty states. Disable actions that require these values. Preserve existing data during background refresh; these skeletons are for the first load or a new query with no cached data. Honor reduced motion and announce loading once.",
       "clip": true,
@@ -16839,17 +16849,6 @@
                   "fontWeight": "$weight-heavy",
                   "letterSpacing": -0.8,
                   "fontStyle": "$style-display"
-                },
-                {
-                  "id": "QoCaZ",
-                  "type": "ref",
-                  "ref": "qBN7s",
-                  "name": "Profile button",
-                  "x": 306,
-                  "y": 0,
-                  "width": 44,
-                  "height": 44,
-                  "layoutPosition": "absolute"
                 }
               ]
             },
@@ -16947,20 +16946,6 @@
                       "fontSize": "$type-size-11",
                       "fontWeight": "$weight-bold",
                       "letterSpacing": 1.1
-                    },
-                    {
-                      "type": "text",
-                      "id": "Bu6Bm",
-                      "layoutPosition": "absolute",
-                      "x": 304,
-                      "y": 0,
-                      "name": "Meals count",
-                      "enabled": false,
-                      "fill": "$muted",
-                      "content": "3 logged",
-                      "fontFamily": "$font-body",
-                      "fontSize": "$type-size-11",
-                      "fontWeight": "$weight-regular"
                     }
                   ]
                 },
@@ -17161,18 +17146,6 @@
           "layoutPosition": "absolute"
         },
         {
-          "id": "qCCkD",
-          "type": "ref",
-          "ref": "R528RS",
-          "name": "Loading logged meal count",
-          "x": 318,
-          "y": 453,
-          "width": 52,
-          "height": 10,
-          "cornerRadius": "$radius-8",
-          "layoutPosition": "absolute"
-        },
-        {
           "id": "d4qZv3",
           "type": "ref",
           "ref": "pluHU",
@@ -17279,8 +17252,8 @@
     {
       "type": "frame",
       "id": "eYqVQ",
-      "x": 940,
-      "y": 4400,
+      "x": 470,
+      "y": 6600,
       "name": "Calwise · Search · Loading",
       "context": "Loading variant. Keep navigation and known labels visible. Skeletons replace unknown server data, never meaningful zeros or empty states. Disable actions that require these values. Preserve existing data during background refresh; these skeletons are for the first load or a new query with no cached data. Honor reduced motion and announce loading once.",
       "clip": true,
@@ -17801,24 +17774,10 @@
           "layoutPosition": "absolute"
         },
         {
-          "id": "T1a7tg",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Back to Today",
-          "x": 20,
-          "y": 62,
-          "layoutPosition": "absolute",
-          "descendants": {
-            "hY2Br": {
-              "icon": "arrow-left"
-            }
-          }
-        },
-        {
           "type": "text",
           "id": "Lx8n7",
           "layoutPosition": "absolute",
-          "x": 78,
+          "x": 20,
           "y": 66,
           "name": "Profile screen title",
           "fill": "$white",
@@ -17833,7 +17792,7 @@
           "id": "y1W5iO",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 138,
+          "y": 98,
           "name": "Profile avatar",
           "enabled": false,
           "width": 64,
@@ -17865,7 +17824,7 @@
           "id": "MGP95",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 146,
+          "y": 106,
           "name": "Display name",
           "enabled": false,
           "fill": "$white",
@@ -17879,7 +17838,7 @@
           "id": "uX8yX",
           "layoutPosition": "absolute",
           "x": 100,
-          "y": 175,
+          "y": 135,
           "name": "Account email",
           "enabled": false,
           "fill": "$muted",
@@ -17895,7 +17854,7 @@
           "opacity": 0.35,
           "name": "Edit profile",
           "x": 326,
-          "y": 148,
+          "y": 108,
           "layoutPosition": "absolute",
           "descendants": {
             "hY2Br": {
@@ -17912,7 +17871,7 @@
           "id": "HIp9V",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 240,
+          "y": 200,
           "name": "Nutrition section label",
           "fill": "$white",
           "content": "NUTRITION",
@@ -17926,7 +17885,7 @@
           "id": "hcd5t",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 266,
+          "y": 226,
           "name": "Nutrition goals entry",
           "context": "Tap this card to open Nutrition goals.",
           "width": 350,
@@ -18146,7 +18105,7 @@
           "id": "VLRbH",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 510,
+          "y": 470,
           "name": "Preferences section label",
           "fill": "$white",
           "content": "PREFERENCES",
@@ -18161,7 +18120,7 @@
           "ref": "X21uS",
           "name": "Units setting",
           "x": 20,
-          "y": 534,
+          "y": 494,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -18182,7 +18141,7 @@
           "ref": "X21uS",
           "name": "Reminders setting",
           "x": 20,
-          "y": 594,
+          "y": 554,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -18203,7 +18162,7 @@
           "ref": "X21uS",
           "name": "Appearance setting",
           "x": 20,
-          "y": 654,
+          "y": 614,
           "layoutPosition": "absolute",
           "descendants": {
             "P9E3Ki": {
@@ -18224,7 +18183,7 @@
           "ref": "X21uS",
           "name": "Account and privacy setting",
           "x": 20,
-          "y": 778,
+          "y": 738,
           "layoutPosition": "absolute",
           "strokeWidth": 0,
           "descendants": {
@@ -18247,6 +18206,7 @@
           "x": 135,
           "y": 866,
           "name": "Home indicator",
+          "enabled": false,
           "fill": "$home-indicator",
           "width": 120,
           "height": 4
@@ -18257,7 +18217,7 @@
           "ref": "X21uS",
           "name": "Connected apps entry",
           "x": 20,
-          "y": 714,
+          "y": 674,
           "layoutPosition": "absolute",
           "context": "Open Connected apps.",
           "descendants": {
@@ -18278,7 +18238,7 @@
           "ref": "R528RS",
           "name": "Loading avatar",
           "x": 20,
-          "y": 138,
+          "y": 98,
           "width": 64,
           "height": 64,
           "cornerRadius": "$radius-32",
@@ -18290,7 +18250,7 @@
           "ref": "R528RS",
           "name": "Loading display name",
           "x": 100,
-          "y": 148,
+          "y": 108,
           "width": 146,
           "height": 18,
           "cornerRadius": "$radius-8",
@@ -18302,7 +18262,7 @@
           "ref": "R528RS",
           "name": "Loading email",
           "x": 100,
-          "y": 178,
+          "y": 138,
           "width": 168,
           "height": 10,
           "cornerRadius": "$radius-8",
@@ -18314,7 +18274,7 @@
           "ref": "R528RS",
           "name": "Loading calorie target",
           "x": 36,
-          "y": 326,
+          "y": 286,
           "width": 124,
           "height": 30,
           "cornerRadius": "$radius-8",
@@ -18326,7 +18286,7 @@
           "ref": "R528RS",
           "name": "Loading macro percent 0",
           "x": 36,
-          "y": 418,
+          "y": 378,
           "width": 58,
           "height": 18,
           "cornerRadius": "$radius-8",
@@ -18338,7 +18298,7 @@
           "ref": "R528RS",
           "name": "Loading macro grams 0",
           "x": 36,
-          "y": 447,
+          "y": 407,
           "width": 42,
           "height": 9,
           "cornerRadius": "$radius-8",
@@ -18350,7 +18310,7 @@
           "ref": "R528RS",
           "name": "Loading macro percent 1",
           "x": 144,
-          "y": 418,
+          "y": 378,
           "width": 58,
           "height": 18,
           "cornerRadius": "$radius-8",
@@ -18362,7 +18322,7 @@
           "ref": "R528RS",
           "name": "Loading macro grams 1",
           "x": 144,
-          "y": 447,
+          "y": 407,
           "width": 42,
           "height": 9,
           "cornerRadius": "$radius-8",
@@ -18374,7 +18334,7 @@
           "ref": "R528RS",
           "name": "Loading macro percent 2",
           "x": 252,
-          "y": 418,
+          "y": 378,
           "width": 58,
           "height": 18,
           "cornerRadius": "$radius-8",
@@ -18386,7 +18346,7 @@
           "ref": "R528RS",
           "name": "Loading macro grams 2",
           "x": 252,
-          "y": 447,
+          "y": 407,
           "width": 42,
           "height": 9,
           "cornerRadius": "$radius-8",
@@ -18398,7 +18358,7 @@
           "ref": "R528RS",
           "name": "Loading preference at 559",
           "x": 276,
-          "y": 559,
+          "y": 519,
           "width": 54,
           "height": 10,
           "cornerRadius": "$radius-8",
@@ -18410,7 +18370,7 @@
           "ref": "R528RS",
           "name": "Loading preference at 619",
           "x": 296,
-          "y": 619,
+          "y": 579,
           "width": 34,
           "height": 10,
           "cornerRadius": "$radius-8",
@@ -18422,11 +18382,41 @@
           "ref": "R528RS",
           "name": "Loading preference at 679",
           "x": 287,
-          "y": 679,
+          "y": 639,
           "width": 43,
           "height": 10,
           "cornerRadius": "$radius-8",
           "layoutPosition": "absolute"
+        },
+        {
+          "id": "rbn5X",
+          "type": "ref",
+          "ref": "Vk7kD",
+          "name": "Navigation with Profile active",
+          "x": 16,
+          "y": 808,
+          "width": 358,
+          "height": 64,
+          "descendants": {
+            "p5Kczt": {
+              "fill": "$transparent"
+            },
+            "CNfxc": {
+              "fill": "$muted"
+            },
+            "ud2qP": {
+              "fill": "$muted"
+            },
+            "j8KJO": {
+              "fill": "$accent-soft"
+            },
+            "lhiVg": {
+              "fill": "$lime"
+            },
+            "WgGVI": {
+              "fill": "$lime"
+            }
+          }
         }
       ]
     },
@@ -18482,30 +18472,14 @@
           "fontStyle": "$style-display"
         },
         {
-          "type": "text",
-          "id": "i4EGQf",
-          "layoutPosition": "absolute",
-          "x": 20,
-          "y": 128,
-          "name": "Goals introduction",
-          "fill": "$muted",
-          "textGrowth": "fixed-width",
-          "width": 350,
-          "content": "Set your daily calories and how you want to split them.",
-          "lineHeight": 1.5,
-          "fontFamily": "$font-body",
-          "fontSize": "$type-size-13",
-          "fontWeight": "normal"
-        },
-        {
           "id": "LlPVF",
           "type": "ref",
           "ref": "otmLK",
           "name": "Daily calorie goal input",
           "x": 20,
-          "y": 190,
+          "y": 128,
           "width": 350,
-          "height": 96,
+          "height": 68,
           "layoutPosition": "absolute",
           "descendants": {
             "z035fQ": {
@@ -18517,25 +18491,26 @@
             },
             "GlEIs": {
               "width": 350,
-              "height": 72,
+              "height": 44,
               "fill": "$surface",
               "y": 24,
-              "cornerRadius": "$radius-12"
+              "cornerRadius": "$radius-8"
             },
             "d7DH51": {
               "enabled": false,
               "content": "2,000",
-              "fontFamily": "$font-display",
-              "fontSize": "$type-size-35",
-              "fontStyle": "$style-display",
-              "x": 16,
-              "y": 14
+              "fontFamily": "$font-body",
+              "fontSize": 14,
+              "fontStyle": "normal",
+              "x": 12,
+              "y": 13,
+              "fontWeight": "normal"
             },
             "fSrv9": {
               "type": "text",
               "id": "eLxyw",
               "x": 271,
-              "y": 30,
+              "y": 15,
               "name": "Daily calorie unit",
               "fill": "$muted",
               "content": "kcal / day",
@@ -18550,7 +18525,7 @@
           "id": "onaSz",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 314,
+          "y": 224,
           "name": "Macro section title",
           "fill": "$white",
           "content": "MACRO DISTRIBUTION",
@@ -18565,7 +18540,7 @@
           "ref": "pmc8D",
           "name": "Percentage or gram editing mode",
           "x": 20,
-          "y": 340,
+          "y": 250,
           "layoutPosition": "absolute"
         },
         {
@@ -18573,7 +18548,7 @@
           "id": "L1Kdj",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 401,
+          "y": 311,
           "name": "Macro editing guidance",
           "fill": "$muted",
           "content": "Set percentages. Daily grams update automatically.",
@@ -18587,7 +18562,7 @@
           "ref": "SNAF9",
           "name": "Protein daily target",
           "x": 20,
-          "y": 432,
+          "y": 342,
           "layoutPosition": "absolute",
           "descendants": {
             "XFoSa": {
@@ -18615,7 +18590,7 @@
           "ref": "SNAF9",
           "name": "Carbs daily target",
           "x": 20,
-          "y": 510,
+          "y": 420,
           "layoutPosition": "absolute",
           "descendants": {
             "XFoSa": {
@@ -18643,7 +18618,7 @@
           "ref": "SNAF9",
           "name": "Fat daily target",
           "x": 20,
-          "y": 588,
+          "y": 498,
           "layoutPosition": "absolute",
           "descendants": {
             "XFoSa": {
@@ -18670,7 +18645,7 @@
           "id": "W6Gsa",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 688,
+          "y": 598,
           "name": "Macro distribution visualization",
           "enabled": false,
           "clip": true,
@@ -18719,7 +18694,7 @@
           "id": "v9tcUU",
           "layoutPosition": "absolute",
           "x": 20,
-          "y": 712,
+          "y": 622,
           "name": "Distribution valid icon",
           "enabled": false,
           "width": 16,
@@ -18733,7 +18708,7 @@
           "id": "e80rB",
           "layoutPosition": "absolute",
           "x": 43,
-          "y": 713,
+          "y": 623,
           "name": "Distribution validation",
           "enabled": false,
           "fill": "$lime",
@@ -18741,35 +18716,6 @@
           "fontFamily": "$font-body",
           "fontSize": "$type-size-11",
           "fontWeight": "$weight-semibold"
-        },
-        {
-          "type": "text",
-          "id": "fWUfw",
-          "layoutPosition": "absolute",
-          "x": 20,
-          "y": 741,
-          "name": "Rounding explanation",
-          "fill": "$muted",
-          "content": "Gram targets are rounded to the nearest gram.",
-          "fontFamily": "$font-body",
-          "fontSize": "$type-size-10",
-          "fontWeight": "normal"
-        },
-        {
-          "type": "text",
-          "id": "h1jSR",
-          "layoutPosition": "absolute",
-          "x": 20,
-          "y": 771,
-          "name": "Goal effective date",
-          "fill": "$muted",
-          "textGrowth": "fixed-width",
-          "width": 350,
-          "content": "From today. Previous days stay unchanged.",
-          "textAlign": "center",
-          "fontFamily": "$font-body",
-          "fontSize": "$type-size-10",
-          "fontWeight": "normal"
         },
         {
           "id": "CLDE3",
@@ -18816,9 +18762,9 @@
           "ref": "R528RS",
           "name": "Loading daily calorie goal",
           "x": 36,
-          "y": 234,
+          "y": 165,
           "width": 114,
-          "height": 32,
+          "height": 16,
           "cornerRadius": "$radius-8",
           "layoutPosition": "absolute"
         },
@@ -18828,7 +18774,7 @@
           "ref": "R528RS",
           "name": "Loading macro percentage 0",
           "x": 296,
-          "y": 447,
+          "y": 357,
           "width": 34,
           "height": 18,
           "cornerRadius": "$radius-8",
@@ -18840,7 +18786,7 @@
           "ref": "R528RS",
           "name": "Loading macro daily grams 0",
           "x": 296,
-          "y": 490,
+          "y": 400,
           "width": 74,
           "height": 9,
           "cornerRadius": "$radius-8",
@@ -18852,7 +18798,7 @@
           "ref": "R528RS",
           "name": "Loading macro percentage 1",
           "x": 296,
-          "y": 525,
+          "y": 435,
           "width": 34,
           "height": 18,
           "cornerRadius": "$radius-8",
@@ -18864,7 +18810,7 @@
           "ref": "R528RS",
           "name": "Loading macro daily grams 1",
           "x": 296,
-          "y": 568,
+          "y": 478,
           "width": 74,
           "height": 9,
           "cornerRadius": "$radius-8",
@@ -18876,7 +18822,7 @@
           "ref": "R528RS",
           "name": "Loading macro percentage 2",
           "x": 296,
-          "y": 603,
+          "y": 513,
           "width": 34,
           "height": 18,
           "cornerRadius": "$radius-8",
@@ -18888,7 +18834,7 @@
           "ref": "R528RS",
           "name": "Loading macro daily grams 2",
           "x": 296,
-          "y": 646,
+          "y": 556,
           "width": 74,
           "height": 9,
           "cornerRadius": "$radius-8",
@@ -18900,7 +18846,7 @@
           "ref": "R528RS",
           "name": "Loading macro allocation bar",
           "x": 20,
-          "y": 688,
+          "y": 598,
           "width": 350,
           "height": 8,
           "cornerRadius": "$radius-8",
@@ -18912,7 +18858,7 @@
           "ref": "R528RS",
           "name": "Loading allocation status",
           "x": 20,
-          "y": 714,
+          "y": 624,
           "width": 120,
           "height": 10,
           "cornerRadius": "$radius-8",
@@ -18956,15 +18902,6 @@
           "fontSize": "$type-size-30",
           "fontWeight": "$weight-bold",
           "fontStyle": "$style-display"
-        },
-        {
-          "id": "fhddS",
-          "type": "ref",
-          "ref": "qBN7s",
-          "name": "Open profile",
-          "x": 326,
-          "y": 62,
-          "layoutPosition": "absolute"
         },
         {
           "type": "frame",
@@ -21099,8 +21036,8 @@
     {
       "type": "frame",
       "id": "LxZ8J",
-      "x": 1410,
-      "y": 4400,
+      "x": 940,
+      "y": 6600,
       "name": "Calwise · Barcode lookup · Loading",
       "context": "Barcode lookup uses an indeterminate segmented loader instead of skeletons. Forty segments fill and empty in a 2.4-second loop. It does not represent request completion. No percentage is displayed. Reduced-motion mode shows a static arc. Close and Scan again remain available and cancel or ignore the pending request. Success opens product review; failure must become a distinct error/not-found state.",
       "clip": true,
@@ -22298,7 +22235,7 @@
       "type": "frame",
       "id": "EdUAt",
       "x": 0,
-      "y": 5500,
+      "y": 7700,
       "name": "Calwise · Auth · Sign in",
       "context": "Email and password sign-in. Sign in submits the form. Forgot password opens recovery. Sign up opens the sign-up screen. Eye toggles password visibility.",
       "clip": true,
@@ -22531,7 +22468,7 @@
       "type": "frame",
       "id": "YyQam",
       "x": 470,
-      "y": 5500,
+      "y": 7700,
       "name": "Calwise · Auth · Sign up",
       "context": "Create an account with email and password. Eye toggles password visibility. Sign in returns to sign-in. Terms and Privacy policy open legal pages.",
       "clip": true,
@@ -22804,7 +22741,7 @@
       "type": "frame",
       "id": "RFweb",
       "x": 940,
-      "y": 5500,
+      "y": 7700,
       "name": "Calwise · Auth · Forgot password",
       "context": "Password recovery request. Send reset link submits the email address. Back to sign in returns to sign-in. After submission show a neutral confirmation regardless of whether an account exists.",
       "clip": true,
@@ -25494,8 +25431,8 @@
     {
       "type": "frame",
       "id": "V5lM8",
-      "x": 470,
-      "y": 3300,
+      "x": 0,
+      "y": 5500,
       "name": "Calwise · Logged food · Edit and move",
       "clip": true,
       "width": 390,
@@ -25667,8 +25604,8 @@
     {
       "type": "frame",
       "id": "ypbXH",
-      "x": 940,
-      "y": 3300,
+      "x": 470,
+      "y": 5500,
       "name": "Calwise · Logged food · Move destination",
       "clip": true,
       "width": 390,
@@ -26224,8 +26161,8 @@
     {
       "type": "frame",
       "id": "vyj3z",
-      "x": 1410,
-      "y": 3300,
+      "x": 940,
+      "y": 5500,
       "name": "Calwise · Logged food · Moved with undo",
       "clip": true,
       "width": 390,
@@ -26473,7 +26410,7 @@
               "id": "RylAW",
               "name": "Meal date",
               "fill": "$lime",
-              "content": "TODAY · MON, JUN 15",
+              "content": "15th June, 2026",
               "fontFamily": "$font-body",
               "fontSize": 11,
               "fontWeight": "600",
@@ -26534,7 +26471,6 @@
                   "id": "QsIzK",
                   "name": "Meal macro totals",
                   "width": "fill_container",
-                  "height": "fit_content(0)",
                   "gap": 20,
                   "children": [
                     {
@@ -26542,7 +26478,7 @@
                       "type": "ref",
                       "ref": "gJ9EN",
                       "name": "PROTEIN meal total",
-                      "width": "fill_container(0)",
+                      "width": "fill_container",
                       "descendants": {
                         "U8xBiA": {
                           "content": "PROTEIN"
@@ -26557,7 +26493,7 @@
                       "type": "ref",
                       "ref": "gJ9EN",
                       "name": "CARBS meal total",
-                      "width": "fill_container(0)",
+                      "width": "fill_container",
                       "descendants": {
                         "U8xBiA": {
                           "content": "CARBS"
@@ -26572,7 +26508,7 @@
                       "type": "ref",
                       "ref": "gJ9EN",
                       "name": "FAT meal total",
-                      "width": "fill_container(0)",
+                      "width": "fill_container",
                       "descendants": {
                         "U8xBiA": {
                           "content": "FAT"
@@ -26756,16 +26692,6 @@
                       }
                     }
                   ]
-                },
-                {
-                  "type": "text",
-                  "id": "oJ4de",
-                  "name": "Food interaction hint",
-                  "fill": "$muted",
-                  "content": "Tap a food to edit its portion or move it.",
-                  "fontFamily": "$font-body",
-                  "fontSize": 12,
-                  "fontWeight": "normal"
                 }
               ]
             }
@@ -26877,7 +26803,7 @@
       "type": "frame",
       "id": "hm0R1",
       "x": 0,
-      "y": 2074,
+      "y": 3174,
       "name": "Flow guide · Scan a food",
       "width": 1800,
       "height": 86,
@@ -26902,7 +26828,7 @@
           "fill": "$muted",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "From search: tap the barcode icon → scan → review portion → add to the selected meal",
+          "content": "Scan barcode → found: review portion and add to meal · Not found: choose how to create a product",
           "fontFamily": "$font-body",
           "fontSize": 14,
           "fontWeight": "normal"
@@ -26913,7 +26839,7 @@
       "type": "frame",
       "id": "sADcb",
       "x": 0,
-      "y": 3174,
+      "y": 5374,
       "name": "Flow guide · Edit or move a food",
       "width": 1800,
       "height": 86,
@@ -26949,7 +26875,7 @@
       "type": "frame",
       "id": "EH2S5",
       "x": 0,
-      "y": 4274,
+      "y": 6474,
       "name": "Flow guide · Food loading states",
       "width": 1800,
       "height": 86,
@@ -26985,7 +26911,7 @@
       "type": "frame",
       "id": "nwC4D",
       "x": 0,
-      "y": 5374,
+      "y": 7574,
       "name": "Flow guide · Account entry",
       "width": 1800,
       "height": 86,
@@ -27290,16 +27216,6 @@
                   "fontWeight": "$weight-heavy",
                   "letterSpacing": -0.8,
                   "fontStyle": "$style-display"
-                },
-                {
-                  "id": "g5k9Qh",
-                  "type": "ref",
-                  "ref": "qBN7s",
-                  "name": "Profile button",
-                  "x": 306,
-                  "y": 0,
-                  "width": 44,
-                  "height": 44
                 }
               ]
             },
@@ -27503,18 +27419,6 @@
                       "fontSize": "$type-size-11",
                       "fontWeight": "$weight-bold",
                       "letterSpacing": 1.1
-                    },
-                    {
-                      "type": "text",
-                      "id": "GljPR",
-                      "x": 304,
-                      "y": 0,
-                      "name": "Meals count",
-                      "fill": "$muted",
-                      "content": "3 logged",
-                      "fontFamily": "$font-body",
-                      "fontSize": "$type-size-11",
-                      "fontWeight": "$weight-regular"
                     }
                   ]
                 },
@@ -27612,27 +27516,33 @@
               "height": 64,
               "descendants": {
                 "p5Kczt": {
-                  "width": 170
+                  "width": 111.333
                 },
                 "CNfxc": {
-                  "x": 75
+                  "x": 45.167
                 },
                 "ud2qP": {
                   "content": "Overview",
-                  "x": 62
+                  "x": 0,
+                  "width": 111.333,
+                  "textGrowth": "fixed-width",
+                  "textAlign": "center"
                 },
                 "c53xz2": {
                   "enabled": false
                 },
                 "d8veD": {
-                  "x": 182,
-                  "width": 170
+                  "x": 123.333,
+                  "width": 111.333
                 },
                 "F7Qt5": {
-                  "x": 75
+                  "x": 45.167
                 },
                 "w0FnH": {
-                  "x": 68
+                  "x": 0,
+                  "width": 111.333,
+                  "textGrowth": "fixed-width",
+                  "textAlign": "center"
                 }
               }
             }
@@ -28968,6 +28878,2930 @@
               "fontWeight": "normal"
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "F9fEqa",
+      "x": 940,
+      "y": 4400,
+      "name": "Calwise · Create product · 1 Product details",
+      "context": "Design only. Three-step form aligned with stored OFF product fields. Name and nutrition kcal/fat/carbs/protein required. Barcode optional for user products, requiring a storage change because OFF catalog requires a unique barcode. Source URL, timestamps, internal ID and data quality errors are system-managed. Photo upload yields image_url and thumbnail_url. Package quantity and serving size preserve entered text and units. Nutrition basis is explicit in the UI but needs a persistence decision. Back and Continue preserve draft. No product is saved until step 3; saving does not log a meal. Manual and scanned products use this same form. Scan values prefill their fields and remain editable here. Preserve manual corrections; never overwrite them silently on a later scan. Keep unknown fields blank. Review all steps before explicit Save.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "x1jti8",
+          "type": "ref",
+          "ref": "TWYkK",
+          "name": "Status bar",
+          "width": "fill_container",
+          "height": 54
+        },
+        {
+          "type": "frame",
+          "id": "lGAeU",
+          "name": "Create product form",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "padding": [
+            8,
+            20,
+            0,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "sau7l",
+              "name": "Screen header",
+              "width": "fill_container",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "FSqfU",
+                  "type": "ref",
+                  "ref": "qBN7s",
+                  "name": "Back to product search",
+                  "descendants": {
+                    "hY2Br": {
+                      "icon": "arrow-left"
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "W3YTyL",
+                  "name": "Create product title",
+                  "fill": "$white",
+                  "content": "CREATE PRODUCT",
+                  "fontFamily": "$font-display",
+                  "fontSize": "$type-size-30",
+                  "fontWeight": "$weight-bold",
+                  "fontStyle": "$style-display"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "Q0Zst8",
+              "name": "Create product introduction",
+              "fill": "$lime",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "STEP 1 OF 3 · PRODUCT DETAILS",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "pvdch",
+              "name": "Product details",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "id": "V1dfWr",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Product name field",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Product name"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "Oat drink",
+                      "fill": "$white"
+                    }
+                  }
+                },
+                {
+                  "id": "g78OA",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Brand · optional field",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Brand · optional"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "Oatly",
+                      "fill": "$white"
+                    }
+                  }
+                },
+                {
+                  "id": "bhkPZ",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Barcode · optional field",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Barcode · optional"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        0,
+                        0,
+                        0,
+                        12
+                      ],
+                      "gap": 8
+                    },
+                    "X085XM": {
+                      "content": "Enter barcode number"
+                    },
+                    "P9lPm9": {
+                      "type": "frame",
+                      "id": "x4T4vY",
+                      "name": "Scan barcode button",
+                      "context": "Tap to open the barcode scanner. A successful scan fills the barcode input and returns to this form without discarding other entered values. Cancel returns unchanged. Manual typing remains available, including when camera permission is denied.",
+                      "width": 44,
+                      "height": 44,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "g6ErwI",
+                          "name": "Scan barcode icon",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "scan-barcode",
+                          "library": "lucide",
+                          "fill": "$lime"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "FWIah",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Package quantity · optional field",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Package quantity · optional"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "e.g. 1 L or 500 g"
+                    }
+                  }
+                },
+                {
+                  "id": "zTSC4",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Serving size · optional field",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Serving size · optional"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "e.g. 250 ml or 1 slice (30 g)"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "vd4Uv",
+              "name": "Required and optional fields guidance",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Product name is required. Add a barcode if the product has one.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "q9sPL",
+          "name": "Save product footer",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            12,
+            20,
+            14,
+            20
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "c1cKzn",
+              "name": "Save destination explanation",
+              "fill": "$muted",
+              "content": "Next, enter the nutrition values from the label.",
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "oRFjv",
+              "type": "ref",
+              "ref": "reSam",
+              "name": "Continue to nutrition",
+              "width": "fill_container",
+              "descendants": {
+                "aHGLi": {
+                  "enabled": false
+                },
+                "ft2op": {
+                  "content": "CONTINUE",
+                  "x": 0,
+                  "width": 350,
+                  "textGrowth": "fixed-width",
+                  "textAlign": "center"
+                }
+              }
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": "$radius-2",
+              "id": "BdHLi",
+              "name": "Home indicator",
+              "fill": "$home-indicator",
+              "width": 120,
+              "height": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "fX4Nv",
+      "x": 1410,
+      "y": 4400,
+      "name": "Calwise · Create product · 2 Nutrition",
+      "context": "Step 2. Required kcal, protein, carbohydrate and fat values. All other nutrients nullable. Blank optional fields mean unknown, never zero. Accept decimals and zero; reject negative numbers. Do not silently convert or derive missing kcal/kJ or salt/sodium values. If both salt and sodium are supplied and inconsistent, ask the user to check them. Basis g/ml needs explicit persistence since current catalog only has _100g columns. Continue preserves draft; back returns to product details. Manual and scanned products use this same form. Scan values prefill their fields and remain editable here. Preserve manual corrections; never overwrite them silently on a later scan. Keep unknown fields blank. Review all steps before explicit Save.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "lNPkC",
+          "type": "ref",
+          "ref": "TWYkK",
+          "name": "Status bar",
+          "width": "fill_container",
+          "height": 54
+        },
+        {
+          "type": "frame",
+          "id": "zzFBd",
+          "name": "Create product form",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "padding": [
+            8,
+            20,
+            0,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "pZMAU",
+              "name": "Screen header",
+              "width": "fill_container",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "bAuOc",
+                  "type": "ref",
+                  "ref": "qBN7s",
+                  "name": "Back to product search",
+                  "descendants": {
+                    "hY2Br": {
+                      "icon": "arrow-left"
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "CUaA6",
+                  "name": "Create product title",
+                  "fill": "$white",
+                  "content": "CREATE PRODUCT",
+                  "fontFamily": "$font-display",
+                  "fontSize": "$type-size-30",
+                  "fontWeight": "$weight-bold",
+                  "fontStyle": "$style-display"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "OxcOC",
+              "name": "Create product introduction",
+              "fill": "$lime",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "STEP 2 OF 3 · NUTRITION",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "jXI0G",
+              "name": "Nutrition from the label",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "JXxdA",
+                  "name": "Nutrition section heading",
+                  "fill": "$white",
+                  "content": "VALUES FROM THE LABEL",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "$weight-bold",
+                  "letterSpacing": 1
+                },
+                {
+                  "id": "aPUxg",
+                  "type": "ref",
+                  "ref": "pmc8D",
+                  "name": "Nutrition basis selector",
+                  "width": "fill_container",
+                  "descendants": {
+                    "fYTnI": {
+                      "x": 177
+                    },
+                    "PoUDu": {
+                      "content": "Per 100 g",
+                      "fill": "$muted"
+                    },
+                    "vv8wN": {
+                      "content": "Per 100 ml",
+                      "fill": "$bg"
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "hFylg",
+                  "name": "Nutrition entry guidance",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Calories, protein, carbs and fat are required.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "$font-body",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "qlIvF",
+                  "name": "Calories and Protein fields",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "MeYKn",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Calories per 100 ml",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Calories"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "46",
+                          "fill": "$white"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "ugpIo",
+                          "name": "Calories unit",
+                          "fill": "$muted",
+                          "content": "kcal",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    },
+                    {
+                      "id": "D6LRNw",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Protein per 100 ml",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Protein"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "1.0",
+                          "fill": "$white"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "n9rfH",
+                          "name": "Protein unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "A44Vr",
+                  "name": "Carbs and Fat fields",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "JBEKY",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Carbs per 100 ml",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Carbs"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "6.7",
+                          "fill": "$white"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "H685fV",
+                          "name": "Carbs unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    },
+                    {
+                      "id": "AWyA9",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Fat per 100 ml",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Fat"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "1.5",
+                          "fill": "$white"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "DYTJj",
+                          "name": "Fat unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "fDL8K",
+                  "name": "Optional nutrition heading",
+                  "fill": "$muted",
+                  "content": "OPTIONAL NUTRIENTS",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "$weight-bold",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "uqlfg",
+                  "name": "Energy and Saturated fat fields",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "MOlDj",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Energy optional field",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Energy"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "Not provided",
+                          "fontSize": 12,
+                          "fill": "$muted"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "J4RRKV",
+                          "name": "Energy unit",
+                          "fill": "$muted",
+                          "content": "kJ",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    },
+                    {
+                      "id": "R2Thy",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Saturated fat optional field",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Saturated fat"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "Not provided",
+                          "fontSize": 12,
+                          "fill": "$muted"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "rnLtb",
+                          "name": "Saturated fat unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "l2b5W",
+                  "name": "Sugars and Fibre fields",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "pYmT2",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Sugars optional field",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Sugars"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "Not provided",
+                          "fontSize": 12,
+                          "fill": "$muted"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "BKKk2",
+                          "name": "Sugars unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    },
+                    {
+                      "id": "BHnf0",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Fibre optional field",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Fibre"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "Not provided",
+                          "fontSize": 12,
+                          "fill": "$muted"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "aAkBe",
+                          "name": "Fibre unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "z5ORcR",
+                  "name": "Salt and Sodium fields",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "AHrVr",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Salt optional field",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Salt"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "Not provided",
+                          "fontSize": 12,
+                          "fill": "$muted"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "M1vH0i",
+                          "name": "Salt unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    },
+                    {
+                      "id": "d7GXh",
+                      "type": "ref",
+                      "ref": "r178Ta",
+                      "name": "Sodium optional field",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "descendants": {
+                        "dHfRN": {
+                          "content": "Sodium"
+                        },
+                        "vrMFt": {
+                          "height": 44,
+                          "cornerRadius": "$radius-8",
+                          "padding": [
+                            10,
+                            12
+                          ]
+                        },
+                        "X085XM": {
+                          "content": "Not provided",
+                          "fontSize": 12,
+                          "fill": "$muted"
+                        },
+                        "P9lPm9": {
+                          "type": "text",
+                          "id": "cXZpG",
+                          "name": "Sodium unit",
+                          "fill": "$muted",
+                          "content": "g",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GXVxk",
+          "name": "Save product footer",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            12,
+            20,
+            14,
+            20
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "L7IO8X",
+              "name": "Save destination explanation",
+              "fill": "$muted",
+              "content": "Blank means unknown, not zero.",
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "OnYJL",
+              "type": "ref",
+              "ref": "reSam",
+              "name": "Continue to optional details",
+              "width": "fill_container",
+              "descendants": {
+                "aHGLi": {
+                  "enabled": false
+                },
+                "ft2op": {
+                  "content": "CONTINUE",
+                  "x": 0,
+                  "width": 350,
+                  "textGrowth": "fixed-width",
+                  "textAlign": "center"
+                }
+              }
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": "$radius-2",
+              "id": "g7f6U",
+              "name": "Home indicator",
+              "fill": "$home-indicator",
+              "width": 120,
+              "height": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "APCWG",
+      "x": 1880,
+      "y": 4400,
+      "name": "Calwise · Create product · 3 More details",
+      "context": "Step 3. All fields optional. Categories, countries, allergens and traces are searchable multi-select controls serialized as tag arrays, not comma-separated text. Countries are markets sold in, not origin. Allergens are explicitly listed ingredients; traces are label may-contain warnings. Empty selection means unspecified, not allergen-free. Image picker supports camera or library, preview, replace and remove; produces image_url and thumbnail_url without manual URL entry. Internal ID, source URL, source modification time and data quality errors are system-managed and not user inputs. Save validates all steps, retains draft on failure and returns to My foods on success. It does not log food. Manual and scanned products use this same form. Scan values prefill their fields and remain editable here. Preserve manual corrections; never overwrite them silently on a later scan. Keep unknown fields blank. Review all steps before explicit Save.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "Yxfp1",
+          "type": "ref",
+          "ref": "TWYkK",
+          "name": "Status bar",
+          "width": "fill_container",
+          "height": 54
+        },
+        {
+          "type": "frame",
+          "id": "e7iec",
+          "name": "Create product form",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 18,
+          "padding": [
+            8,
+            20,
+            0,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "HTbru",
+              "name": "Screen header",
+              "width": "fill_container",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "r5DMWZ",
+                  "type": "ref",
+                  "ref": "qBN7s",
+                  "name": "Back to product search",
+                  "descendants": {
+                    "hY2Br": {
+                      "icon": "arrow-left"
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "wc3pG",
+                  "name": "Create product title",
+                  "fill": "$white",
+                  "content": "CREATE PRODUCT",
+                  "fontFamily": "$font-display",
+                  "fontSize": "$type-size-30",
+                  "fontWeight": "$weight-bold",
+                  "fontStyle": "$style-display"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "grUen",
+              "name": "Create product introduction",
+              "fill": "$lime",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "STEP 3 OF 3 · MORE DETAILS",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "jmDE9",
+              "name": "Optional details guidance",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "All optional. Add only what the label tells you.",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "OsyXz",
+              "name": "Product classification",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "id": "Xql2A",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Categories multi-select",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Categories"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "Choose categories"
+                    },
+                    "P9lPm9": {
+                      "enabled": true,
+                      "icon": "chevron-down",
+                      "width": 18,
+                      "height": 18
+                    }
+                  }
+                },
+                {
+                  "id": "V7NLR",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Countries sold in multi-select",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Countries sold in"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "Choose countries"
+                    },
+                    "P9lPm9": {
+                      "enabled": true,
+                      "icon": "chevron-down",
+                      "width": 18,
+                      "height": 18
+                    }
+                  }
+                },
+                {
+                  "id": "hzs8r",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "Allergens multi-select",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "Allergens"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "Choose listed allergens"
+                    },
+                    "P9lPm9": {
+                      "enabled": true,
+                      "icon": "chevron-down",
+                      "width": 18,
+                      "height": 18
+                    }
+                  }
+                },
+                {
+                  "id": "SlAUl",
+                  "type": "ref",
+                  "ref": "r178Ta",
+                  "name": "May contain multi-select",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "descendants": {
+                    "dHfRN": {
+                      "content": "May contain"
+                    },
+                    "vrMFt": {
+                      "height": 44,
+                      "cornerRadius": "$radius-8",
+                      "padding": [
+                        10,
+                        12
+                      ]
+                    },
+                    "X085XM": {
+                      "content": "Choose possible traces"
+                    },
+                    "P9lPm9": {
+                      "enabled": true,
+                      "icon": "chevron-down",
+                      "width": 18,
+                      "height": 18
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "NZZXh",
+              "name": "Allergen omission guidance",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "No selection means unspecified, not allergen-free.",
+              "lineHeight": 1.4,
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "V2rtr",
+              "name": "Add product photo button",
+              "width": "fill_container",
+              "height": 76,
+              "fill": "$surface",
+              "cornerRadius": "$radius-12",
+              "stroke": "$line",
+              "strokeWidth": 1,
+              "gap": 14,
+              "padding": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "lLBSp",
+                  "name": "Product camera icon",
+                  "width": 24,
+                  "height": 24,
+                  "icon": "camera",
+                  "library": "lucide",
+                  "fill": "$lime"
+                },
+                {
+                  "type": "frame",
+                  "id": "G1kZ0H",
+                  "name": "Photo upload copy",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "rorRx",
+                      "name": "Add product photo label",
+                      "fill": "$white",
+                      "content": "Add product photo",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rULdU",
+                      "name": "Photo upload source",
+                      "fill": "$muted",
+                      "content": "Take a photo or choose from library",
+                      "fontFamily": "$font-body",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "kzf7j",
+          "name": "Save product footer",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            12,
+            20,
+            14,
+            20
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "PW31K",
+              "name": "Save destination explanation",
+              "fill": "$muted",
+              "content": "Saved to My foods. Not added to a meal yet.",
+              "fontFamily": "$font-body",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "y7CUkl",
+              "type": "ref",
+              "ref": "reSam",
+              "name": "Save product",
+              "width": "fill_container",
+              "descendants": {
+                "aHGLi": {
+                  "enabled": false
+                },
+                "ft2op": {
+                  "content": "SAVE PRODUCT",
+                  "x": 0,
+                  "width": 350,
+                  "textGrowth": "fixed-width",
+                  "textAlign": "center"
+                }
+              }
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": "$radius-2",
+              "id": "UpGf6",
+              "name": "Home indicator",
+              "fill": "$home-indicator",
+              "width": 120,
+              "height": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "nUSAW",
+      "x": 0,
+      "y": 2200,
+      "name": "Calwise · Search · My foods · Create product entry",
+      "context": "Permanent entry: Add food > My foods > Create product opens HoM73 method chooser. Preserve target meal/date and current search when returning. Empty search opens a blank draft. Save returns to My foods with the created product selected for portion review; no automatic food logging. Both manual and camera methods are available through HoM73; retain all entry-point prefills.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "none",
+      "children": [
+        {
+          "id": "lO5Gl",
+          "type": "ref",
+          "ref": "TWYkK",
+          "name": "Status bar",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "HwAOo",
+          "type": "ref",
+          "ref": "qBN7s",
+          "name": "Back to today",
+          "x": 20,
+          "y": 62,
+          "descendants": {
+            "hY2Br": {
+              "icon": "arrow-left"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "i9LW6",
+          "x": 78,
+          "y": 66,
+          "name": "Search screen title",
+          "fill": "$white",
+          "content": "ADD FOOD",
+          "fontFamily": "$font-display",
+          "fontSize": "$type-size-30",
+          "fontWeight": "$weight-bold",
+          "fontStyle": "$style-display"
+        },
+        {
+          "id": "myDKG",
+          "type": "ref",
+          "ref": "qBN7s",
+          "name": "Scan barcode",
+          "x": 326,
+          "y": 62,
+          "descendants": {
+            "hY2Br": {
+              "icon": "scan-barcode",
+              "fill": "$lime"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "F8VMP",
+          "x": 20,
+          "y": 128,
+          "name": "Target meal",
+          "width": 350,
+          "height": 28,
+          "layout": "none",
+          "children": [
+            {
+              "type": "text",
+              "id": "SnEBP",
+              "x": 0,
+              "y": 6,
+              "name": "Adding to label",
+              "fill": "$muted",
+              "content": "ADDING TO",
+              "fontFamily": "$font-body",
+              "fontSize": "$type-size-10",
+              "fontWeight": "$weight-semibold",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "dZyka",
+              "x": 85,
+              "y": 3,
+              "name": "Selected meal",
+              "fill": "$lime",
+              "content": "Lunch",
+              "fontFamily": "$font-body",
+              "fontSize": "$type-size-14",
+              "fontWeight": "$weight-semibold"
+            },
+            {
+              "type": "icon",
+              "id": "z6DvJ8",
+              "x": 130,
+              "y": 3,
+              "name": "Change meal",
+              "width": 18,
+              "height": 18,
+              "icon": "chevron-down",
+              "library": "lucide",
+              "fill": "$lime"
+            },
+            {
+              "type": "text",
+              "id": "X0rto2",
+              "x": 278,
+              "y": 6,
+              "name": "Logging date",
+              "fill": "$muted",
+              "content": "Today, 12:30",
+              "fontFamily": "$font-body",
+              "fontSize": "$type-size-10",
+              "fontWeight": "$weight-regular"
+            }
+          ]
+        },
+        {
+          "id": "s7BC5",
+          "type": "ref",
+          "ref": "zW82W",
+          "name": "Recipes filter",
+          "x": 248,
+          "y": 230,
+          "fill": "$surface",
+          "stroke": "$line",
+          "descendants": {
+            "hDN4y": {
+              "content": "Recipes",
+              "fill": "$muted"
+            }
+          }
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": "$radius-2",
+          "id": "PWax4",
+          "x": 135,
+          "y": 866,
+          "name": "Home indicator",
+          "fill": "$home-indicator",
+          "width": 120,
+          "height": 4
+        },
+        {
+          "id": "o7BEb",
+          "type": "ref",
+          "ref": "X4bli",
+          "name": "Search products",
+          "x": 20,
+          "y": 162,
+          "descendants": {
+            "S0axBE": {
+              "content": "Search my foods",
+              "fill": "$muted"
+            },
+            "vNpKT": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "id": "H7yzYj",
+          "type": "ref",
+          "ref": "zW82W",
+          "fill": "$surface",
+          "stroke": "$line",
+          "name": "All foods filter",
+          "x": 20,
+          "y": 230,
+          "descendants": {
+            "hDN4y": {
+              "fill": "$muted",
+              "content": "All foods"
+            }
+          }
+        },
+        {
+          "id": "nZ6r9",
+          "type": "ref",
+          "ref": "zW82W",
+          "fill": "$lime",
+          "stroke": "$lime",
+          "name": "My foods filter",
+          "x": 134,
+          "y": 230,
+          "descendants": {
+            "hDN4y": {
+              "fill": "$bg",
+              "content": "My foods"
+            }
+          }
+        },
+        {
+          "id": "Xymja",
+          "type": "ref",
+          "ref": "reSam",
+          "name": "Create product from My foods",
+          "x": 20,
+          "y": 290,
+          "context": "Open HoM73 method chooser. Start with a blank draft. Scan label opens zivyR; Enter manually opens F9fEqa. Both paths share the same draft and preserve the selected meal/date. Scanning opens the prefilled three-step form directly for review and editing. No separate scan-review screen. Save never automatically logs a meal.",
+          "descendants": {
+            "aHGLi": {
+              "x": 88
+            },
+            "ft2op": {
+              "content": "CREATE PRODUCT",
+              "x": 120
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "V5g3Dh",
+          "x": 20,
+          "y": 377,
+          "name": "My foods heading",
+          "fill": "$white",
+          "content": "YOUR PRODUCTS",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "$weight-bold",
+          "letterSpacing": 1
+        },
+        {
+          "type": "text",
+          "id": "WGuv0",
+          "x": 323,
+          "y": 377,
+          "name": "My foods count",
+          "fill": "$muted",
+          "content": "2 foods",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        },
+        {
+          "id": "e4NO2",
+          "type": "ref",
+          "ref": "LTntv",
+          "name": "Oat drink user product",
+          "x": 20,
+          "y": 404,
+          "descendants": {
+            "pd6yD": {
+              "icon": "milk"
+            },
+            "vmqII": {
+              "content": "Oat drink"
+            },
+            "G7qwv": {
+              "content": "Oatly · Your product"
+            },
+            "mVwho": {
+              "content": "46 kcal  ·  100 ml"
+            }
+          }
+        },
+        {
+          "id": "NTBlV",
+          "type": "ref",
+          "ref": "LTntv",
+          "name": "Yellow cheese user product",
+          "x": 20,
+          "y": 488,
+          "descendants": {
+            "pd6yD": {
+              "icon": "sandwich"
+            },
+            "vmqII": {
+              "content": "Yellow cheese"
+            },
+            "G7qwv": {
+              "content": "Calwise Test · Your product"
+            },
+            "mVwho": {
+              "content": "350 kcal  ·  100 g"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "G90wYA",
+          "x": 20,
+          "y": 596,
+          "name": "Product selection guidance",
+          "fill": "$muted",
+          "textGrowth": "fixed-width",
+          "width": 350,
+          "content": "Tap a product to review the portion before adding.",
+          "lineHeight": 1.5,
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "p89iwH",
+      "x": 470,
+      "y": 2200,
+      "name": "Calwise · Search · No results · Create product entry",
+      "context": "A successful search with zero matches, not a request failure. Create product opens HoM73 method chooser with product name prefilled from the trimmed search query Oat drink vanilla. All other fields remain blank. Preserve meal/date. On save return with the new product selected for portion review without logging it. Network errors should show Retry instead of claiming no products exist. Both manual and camera methods are available through HoM73; retain all entry-point prefills.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "none",
+      "children": [
+        {
+          "id": "XUvbU",
+          "type": "ref",
+          "ref": "TWYkK",
+          "name": "Status bar",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "mAUiU",
+          "type": "ref",
+          "ref": "qBN7s",
+          "name": "Back to today",
+          "x": 20,
+          "y": 62,
+          "descendants": {
+            "hY2Br": {
+              "icon": "arrow-left"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "e2x5K",
+          "x": 78,
+          "y": 66,
+          "name": "Search screen title",
+          "fill": "$white",
+          "content": "ADD FOOD",
+          "fontFamily": "$font-display",
+          "fontSize": "$type-size-30",
+          "fontWeight": "$weight-bold",
+          "fontStyle": "$style-display"
+        },
+        {
+          "id": "jb6fI",
+          "type": "ref",
+          "ref": "qBN7s",
+          "name": "Scan barcode",
+          "x": 326,
+          "y": 62,
+          "descendants": {
+            "hY2Br": {
+              "icon": "scan-barcode",
+              "fill": "$lime"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "TKr6s",
+          "x": 20,
+          "y": 128,
+          "name": "Target meal",
+          "width": 350,
+          "height": 28,
+          "layout": "none",
+          "children": [
+            {
+              "type": "text",
+              "id": "I4dcWP",
+              "x": 0,
+              "y": 6,
+              "name": "Adding to label",
+              "fill": "$muted",
+              "content": "ADDING TO",
+              "fontFamily": "$font-body",
+              "fontSize": "$type-size-10",
+              "fontWeight": "$weight-semibold",
+              "letterSpacing": 1
+            },
+            {
+              "type": "text",
+              "id": "VCLOn",
+              "x": 85,
+              "y": 3,
+              "name": "Selected meal",
+              "fill": "$lime",
+              "content": "Lunch",
+              "fontFamily": "$font-body",
+              "fontSize": "$type-size-14",
+              "fontWeight": "$weight-semibold"
+            },
+            {
+              "type": "icon",
+              "id": "M1I8Pu",
+              "x": 130,
+              "y": 3,
+              "name": "Change meal",
+              "width": 18,
+              "height": 18,
+              "icon": "chevron-down",
+              "library": "lucide",
+              "fill": "$lime"
+            },
+            {
+              "type": "text",
+              "id": "vd6mA",
+              "x": 278,
+              "y": 6,
+              "name": "Logging date",
+              "fill": "$muted",
+              "content": "Today, 12:30",
+              "fontFamily": "$font-body",
+              "fontSize": "$type-size-10",
+              "fontWeight": "$weight-regular"
+            }
+          ]
+        },
+        {
+          "id": "HKmbW",
+          "type": "ref",
+          "ref": "zW82W",
+          "name": "All foods filter",
+          "x": 20,
+          "y": 230,
+          "fill": "$lime",
+          "stroke": "$lime",
+          "descendants": {
+            "hDN4y": {
+              "content": "All foods",
+              "fill": "$bg"
+            }
+          }
+        },
+        {
+          "id": "SCxoL",
+          "type": "ref",
+          "ref": "zW82W",
+          "name": "My foods filter",
+          "x": 134,
+          "y": 230,
+          "fill": "$surface",
+          "stroke": "$line",
+          "descendants": {
+            "hDN4y": {
+              "content": "My foods",
+              "fill": "$muted"
+            }
+          }
+        },
+        {
+          "id": "W71qR",
+          "type": "ref",
+          "ref": "zW82W",
+          "name": "Recipes filter",
+          "x": 248,
+          "y": 230,
+          "fill": "$surface",
+          "stroke": "$line",
+          "descendants": {
+            "hDN4y": {
+              "content": "Recipes",
+              "fill": "$muted"
+            }
+          }
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": "$radius-2",
+          "id": "O6Xdj",
+          "x": 135,
+          "y": 866,
+          "name": "Home indicator",
+          "fill": "$home-indicator",
+          "width": 120,
+          "height": 4
+        },
+        {
+          "id": "chz4o",
+          "type": "ref",
+          "ref": "X4bli",
+          "name": "Search products",
+          "x": 20,
+          "y": 162,
+          "descendants": {
+            "S0axBE": {
+              "content": "Oat drink vanilla"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "W6SX6",
+          "x": 20,
+          "y": 287,
+          "name": "No results count",
+          "fill": "$muted",
+          "content": "0 RESULTS",
+          "fontFamily": "$font-body",
+          "fontSize": 11,
+          "fontWeight": "$weight-bold",
+          "letterSpacing": 1
+        },
+        {
+          "type": "frame",
+          "id": "WOfKh",
+          "x": 20,
+          "y": 366,
+          "name": "No matching products",
+          "width": 350,
+          "layout": "vertical",
+          "gap": 18,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "Y0wcUR",
+              "name": "No search matches icon",
+              "width": 36,
+              "height": 36,
+              "icon": "search-x",
+              "library": "lucide",
+              "fill": "$muted"
+            },
+            {
+              "type": "text",
+              "id": "N3J8S",
+              "name": "No results title",
+              "fill": "$white",
+              "content": "NO PRODUCTS FOUND",
+              "fontFamily": "$font-display",
+              "fontSize": 30,
+              "fontWeight": "$weight-bold",
+              "fontStyle": "$style-display"
+            },
+            {
+              "type": "text",
+              "id": "g2heb",
+              "name": "No results explanation",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Try another name or scan the barcode.\nStill missing? Create your own product.",
+              "lineHeight": 1.5,
+              "textAlign": "center",
+              "fontFamily": "$font-body",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "QB65k",
+              "type": "ref",
+              "ref": "reSam",
+              "name": "Create product from search query",
+              "width": "fill_container",
+              "context": "Open HoM73 method chooser. Preserve search query Oat drink vanilla as proposed product name. Scan label opens zivyR; Enter manually opens F9fEqa. Both paths share the same draft and preserve the selected meal/date. Scanning opens the prefilled three-step form directly for review and editing. No separate scan-review screen. Save never automatically logs a meal.",
+              "descendants": {
+                "aHGLi": {
+                  "x": 88
+                },
+                "ft2op": {
+                  "content": "CREATE PRODUCT",
+                  "x": 120
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "aQL9d",
+              "name": "Scan barcode alternative",
+              "context": "Open JYuHO barcode scanner, preserving target meal/date.",
+              "width": "fill_container",
+              "height": 44,
+              "gap": 10,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "HEn3A",
+                  "name": "Scan alternative icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "scan-barcode",
+                  "library": "lucide",
+                  "fill": "$lime"
+                },
+                {
+                  "type": "text",
+                  "id": "vu57S",
+                  "name": "Scan alternative label",
+                  "fill": "$lime",
+                  "content": "Scan barcode",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Xh0pw",
+      "x": 940,
+      "y": 3300,
+      "name": "Calwise · Barcode not found · Create product entry",
+      "context": "Successful barcode lookup with no match, not a connection failure. Pause scanning and open this sheet. Create product opens HoM73 method chooser with barcode 5901234123457 prefilled and other fields blank. Preserve target meal/date. Scan again or Close resumes camera. Save returns to product search with the new product selected for portion review, never automatically logs food. The scanner opened from the creation form itself only captures a code and returns to the existing draft. Both manual and camera methods are available through HoM73; retain all entry-point prefills.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "none",
+      "children": [
+        {
+          "id": "s7MWT",
+          "type": "ref",
+          "ref": "TWYkK",
+          "name": "Status bar",
+          "x": 0,
+          "y": 0,
+          "layoutPosition": "absolute"
+        },
+        {
+          "id": "D5Y6KU",
+          "type": "ref",
+          "ref": "qBN7s",
+          "name": "Back to product search",
+          "x": 20,
+          "y": 62,
+          "layoutPosition": "absolute",
+          "descendants": {
+            "hY2Br": {
+              "icon": "arrow-left"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "GmPwh",
+          "layoutPosition": "absolute",
+          "x": 78,
+          "y": 66,
+          "name": "Barcode screen title",
+          "fill": "$white",
+          "content": "SCAN BARCODE",
+          "fontFamily": "$font-display",
+          "fontSize": "$type-size-30",
+          "fontWeight": "$weight-bold",
+          "fontStyle": "$style-display"
+        },
+        {
+          "type": "text",
+          "id": "LsYe2",
+          "layoutPosition": "absolute",
+          "x": 20,
+          "y": 139,
+          "name": "Adding to label",
+          "fill": "$muted",
+          "content": "ADDING TO",
+          "fontFamily": "$font-body",
+          "fontSize": "$type-size-10",
+          "fontWeight": "$weight-semibold",
+          "letterSpacing": 1
+        },
+        {
+          "type": "text",
+          "id": "y5DvDy",
+          "layoutPosition": "absolute",
+          "x": 105,
+          "y": 135,
+          "name": "Target meal",
+          "fill": "$lime",
+          "content": "Lunch",
+          "fontFamily": "$font-body",
+          "fontSize": "$type-size-14",
+          "fontWeight": "$weight-semibold"
+        },
+        {
+          "type": "icon",
+          "id": "NBPJg",
+          "layoutPosition": "absolute",
+          "x": 151,
+          "y": 136,
+          "name": "Change target meal",
+          "width": 18,
+          "height": 18,
+          "icon": "chevron-down",
+          "library": "lucide",
+          "fill": "$lime"
+        },
+        {
+          "type": "text",
+          "id": "SUEdp",
+          "layoutPosition": "absolute",
+          "x": 290,
+          "y": 139,
+          "name": "Target date",
+          "fill": "$muted",
+          "textGrowth": "fixed-width",
+          "width": 80,
+          "content": "Today, 12:30",
+          "textAlign": "right",
+          "fontFamily": "$font-body",
+          "fontSize": "$type-size-10",
+          "fontWeight": "normal"
+        },
+        {
+          "id": "uWMcu",
+          "type": "ref",
+          "ref": "y4JtrB",
+          "name": "Live barcode camera",
+          "x": 20,
+          "y": 176,
+          "layoutPosition": "absolute",
+          "height": 548,
+          "descendants": {
+            "O7b97": {
+              "y": 164
+            },
+            "gLZ9l": {
+              "y": 368
+            },
+            "n1Cc4": {
+              "y": 452
+            },
+            "O0J4GY": {
+              "y": 506
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "j9Oupm",
+          "layoutPosition": "absolute",
+          "x": 20,
+          "y": 753,
+          "name": "Scan instruction heading",
+          "fill": "$white",
+          "textGrowth": "fixed-width",
+          "width": 350,
+          "content": "Scan the barcode on the packaging.",
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": "$type-size-14",
+          "fontWeight": "$weight-semibold"
+        },
+        {
+          "type": "text",
+          "id": "LYWwm",
+          "layoutPosition": "absolute",
+          "x": 30,
+          "y": 783,
+          "name": "Review before adding explanation",
+          "fill": "$muted",
+          "textGrowth": "fixed-width",
+          "width": 330,
+          "content": "You can review the food and portion\nbefore adding it to your meal.",
+          "lineHeight": 1.5,
+          "textAlign": "center",
+          "fontFamily": "$font-body",
+          "fontSize": "$type-size-12",
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": "$radius-2",
+          "id": "S0C95",
+          "layoutPosition": "absolute",
+          "x": 135,
+          "y": 866,
+          "name": "Home indicator",
+          "fill": "$home-indicator",
+          "width": 120,
+          "height": 4
+        },
+        {
+          "type": "rectangle",
+          "id": "DT8Dn",
+          "x": 0,
+          "y": 0,
+          "name": "Paused scanner scrim",
+          "opacity": 0.8,
+          "fill": "$bg",
+          "width": 390,
+          "height": 884
+        },
+        {
+          "type": "frame",
+          "id": "QWiqr",
+          "x": 0,
+          "y": 414,
+          "name": "Barcode not found sheet",
+          "width": 390,
+          "height": 470,
+          "fill": "$bg",
+          "cornerRadius": [
+            20,
+            20,
+            0,
+            0
+          ],
+          "stroke": "$line",
+          "strokeWidth": {
+            "top": 1
+          },
+          "layout": "vertical",
+          "gap": 18,
+          "padding": [
+            12,
+            20,
+            14,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "VB0DR",
+              "name": "Sheet handle inset",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 2,
+                  "id": "nQuz3",
+                  "name": "Sheet drag handle",
+                  "fill": "$line",
+                  "width": 40,
+                  "height": 4
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WXyjm",
+              "name": "No match sheet header",
+              "width": "fill_container",
+              "height": 44,
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "vTmbt",
+                  "name": "Barcode not found title",
+                  "fill": "$white",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "PRODUCT NOT FOUND",
+                  "fontFamily": "$font-display",
+                  "fontSize": 30,
+                  "fontWeight": "$weight-bold",
+                  "fontStyle": "$style-display"
+                },
+                {
+                  "id": "AZz5Z",
+                  "type": "ref",
+                  "ref": "qBN7s",
+                  "name": "Close and resume scanner",
+                  "context": "Dismiss sheet and resume scanner without creating a product.",
+                  "x": 306,
+                  "y": 0,
+                  "descendants": {
+                    "hY2Br": {
+                      "icon": "x"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "N2kIB8",
+              "name": "Scanned barcode",
+              "width": "fill_container",
+              "height": 58,
+              "fill": "$surface",
+              "cornerRadius": 8,
+              "gap": 12,
+              "padding": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "b9DBf",
+                  "name": "Scanned barcode icon",
+                  "width": 24,
+                  "height": 24,
+                  "icon": "barcode",
+                  "library": "lucide",
+                  "fill": "$muted"
+                },
+                {
+                  "type": "text",
+                  "id": "CwTQB",
+                  "name": "Captured barcode value",
+                  "fill": "$white",
+                  "content": "5901234123457",
+                  "fontFamily": "$font-body",
+                  "fontSize": 17,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "tvSSL",
+              "name": "No barcode match explanation",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "This barcode is not in our catalog yet.\nAdd the product details from the label.\nWe will fill in the barcode for you.",
+              "lineHeight": 1.5,
+              "textAlign": "center",
+              "fontFamily": "$font-body",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "qa6WK",
+              "type": "ref",
+              "ref": "reSam",
+              "name": "Create product from scanned barcode",
+              "width": "fill_container",
+              "context": "Open HoM73 method chooser. Preserve scanned barcode 5901234123457. Scan label opens zivyR; Enter manually opens F9fEqa. Both paths share the same draft and preserve the selected meal/date. Scanning opens the prefilled three-step form directly for review and editing. No separate scan-review screen. Save never automatically logs a meal.",
+              "layout": "none",
+              "alignItems": "center",
+              "justifyContent": "center",
+              "gap": 10,
+              "descendants": {
+                "aHGLi": {
+                  "x": 88
+                },
+                "ft2op": {
+                  "content": "CREATE PRODUCT",
+                  "x": 120,
+                  "textGrowth": "auto"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "G1D4ma",
+              "name": "Scan again button",
+              "context": "Dismiss this sheet and resume scanning.",
+              "width": "fill_container",
+              "height": 44,
+              "gap": 10,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "l2pb1",
+                  "name": "Scan again icon",
+                  "width": 20,
+                  "height": 20,
+                  "icon": "scan-barcode",
+                  "library": "lucide",
+                  "fill": "$lime"
+                },
+                {
+                  "type": "text",
+                  "id": "SFZ76",
+                  "name": "Scan again label",
+                  "fill": "$lime",
+                  "content": "Scan again",
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "u5UEu",
+              "name": "Sheet bottom flexible space",
+              "width": "fill_container",
+              "height": "fill_container"
+            },
+            {
+              "type": "frame",
+              "id": "iQCHt",
+              "name": "Home indicator inset",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 2,
+                  "id": "j4bBhJ",
+                  "name": "Home indicator",
+                  "fill": "$home-indicator",
+                  "width": 120,
+                  "height": 4
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "HoM73",
+      "x": 0,
+      "y": 4400,
+      "name": "Calwise · Create product · Choose method",
+      "context": "All Create product entry points open this chooser. Both paths share one draft. Preserve source search text as proposed name, scanned barcode, meal/date and return location. Manual opens F9fEqa. Scan label opens automatic camera recognition, followed directly by the same prefilled editable form for review. No saving or meal logging on recognition.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "none",
+      "children": [
+        {
+          "id": "x3fZf",
+          "type": "ref",
+          "ref": "TWYkK",
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "name": "Status bar",
+          "height": 54
+        },
+        {
+          "type": "frame",
+          "id": "cy8Oa",
+          "x": 20,
+          "y": 62,
+          "name": "Screen header",
+          "width": 350,
+          "gap": 14,
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "VLCNx",
+              "type": "ref",
+              "ref": "qBN7s",
+              "name": "Back to product search",
+              "descendants": {
+                "hY2Br": {
+                  "icon": "arrow-left"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "G9Wjou",
+              "name": "Create product title",
+              "fill": "$white",
+              "content": "CREATE PRODUCT",
+              "fontFamily": "$font-display",
+              "fontSize": "$type-size-30",
+              "fontWeight": "$weight-bold",
+              "fontStyle": "$style-display"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MfgZ4",
+          "x": 20,
+          "y": 140,
+          "name": "Creation methods",
+          "width": 350,
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "type": "frame",
+              "id": "NVFCh",
+              "name": "Scan label method",
+              "context": "Open zivyR automatic label scanner. Preserve name/barcode from the entry point. Camera scans when held steady, no capture button required.",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 14,
+              "stroke": "$success-border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wTkIw",
+                  "name": "SCAN LABEL heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "dRpey",
+                      "name": "SCAN LABEL icon",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "scan-text",
+                      "library": "lucide",
+                      "fill": "$lime"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XIh9d",
+                      "name": "SCAN LABEL title",
+                      "fill": "$lime",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "SCAN LABEL",
+                      "fontFamily": "$font-display",
+                      "fontSize": 25,
+                      "fontWeight": "$weight-bold",
+                      "fontStyle": "$style-display"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "A3KlLR",
+                      "name": "SCAN LABEL navigation",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "$lime"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "ns3vN",
+                  "name": "SCAN LABEL description",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Hold the camera steady. We will read the label and fill in the form.",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vzR16",
+              "name": "Manual entry method",
+              "context": "Open F9fEqa manual form. Preserve entry-point name and barcode; retain any scan draft when switching methods.",
+              "width": "fill_container",
+              "fill": "$surface",
+              "cornerRadius": 14,
+              "stroke": "$line",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "c2SXMW",
+                  "name": "ENTER MANUALLY heading",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "cBFbW",
+                      "name": "ENTER MANUALLY icon",
+                      "width": 24,
+                      "height": 24,
+                      "icon": "pencil",
+                      "library": "lucide",
+                      "fill": "$white"
+                    },
+                    {
+                      "type": "text",
+                      "id": "veCGO",
+                      "name": "ENTER MANUALLY title",
+                      "fill": "$white",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "ENTER MANUALLY",
+                      "fontFamily": "$font-display",
+                      "fontSize": 25,
+                      "fontWeight": "$weight-bold",
+                      "fontStyle": "$style-display"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "h1H6b",
+                      "name": "ENTER MANUALLY navigation",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "$white"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "sIq4r",
+                  "name": "ENTER MANUALLY description",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Type the product details and nutrition values from the packaging.",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$font-body",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": "$radius-2",
+          "id": "qro4I",
+          "x": 135,
+          "y": 866,
+          "name": "Home indicator",
+          "fill": "$home-indicator",
+          "width": 120,
+          "height": 4
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "zivyR",
+      "x": 470,
+      "y": 4400,
+      "name": "Calwise · Create product · Scan label automatically",
+      "context": "Schematic live camera. Begin recognition automatically after camera permission and a stable readable frame; no shutter or press-and-hold interaction. Only show captured values after stable repeated readings, not on every frame. Accumulate across sides of the same package; preserve prior captures and user edits, flag conflicting readings rather than overwriting. Separate per-100 g/ml and per-serving columns. Never infer absent nutrition as zero. Guidance states: Aim at nutrition table, Hold steady, Reading label, Reduce glare, Move closer, and Values captured. Open the shared prefilled product form after any capture, even partial. Pause capture when entering the form or when the app backgrounds. There is no intermediate review screen. Camera denied or unreadable label offers manual entry with draft retained. Camera processing/upload privacy policy must be specified before implementation.",
+      "clip": true,
+      "width": 390,
+      "height": 884,
+      "fill": "$bg",
+      "cornerRadius": "$radius-36",
+      "layout": "none",
+      "children": [
+        {
+          "id": "OLewf",
+          "type": "ref",
+          "ref": "TWYkK",
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "name": "Status bar",
+          "height": 54
+        },
+        {
+          "type": "frame",
+          "id": "uH1TO",
+          "x": 20,
+          "y": 62,
+          "name": "Screen header",
+          "width": 350,
+          "gap": 14,
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "m4JNbl",
+              "type": "ref",
+              "ref": "qBN7s",
+              "name": "Back to product search",
+              "descendants": {
+                "hY2Br": {
+                  "icon": "arrow-left"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "j4aQpK",
+              "name": "Create product title",
+              "fill": "$white",
+              "content": "SCAN LABEL",
+              "fontFamily": "$font-display",
+              "fontSize": "$type-size-30",
+              "fontWeight": "$weight-bold",
+              "fontStyle": "$style-display"
+            }
+          ]
+        },
+        {
+          "id": "rtJts",
+          "type": "ref",
+          "ref": "y4JtrB",
+          "name": "Live nutrition label camera",
+          "x": 20,
+          "y": 184,
+          "height": 360,
+          "context": "Schematic preview; replace with actual camera feed. The scan-text glyph is a guide, not recognised text.",
+          "descendants": {
+            "daRhk": {
+              "content": "AUTO READ"
+            },
+            "O7b97": {
+              "y": 68
+            },
+            "a2Ezt": {
+              "icon": "scan-text",
+              "width": 64,
+              "height": 64,
+              "x": 115,
+              "y": 55
+            },
+            "DbMLf": {
+              "enabled": false
+            },
+            "gLZ9l": {
+              "y": 259,
+              "content": "Keep the nutrition table in view."
+            },
+            "n1Cc4": {
+              "y": 282
+            },
+            "O0J4GY": {
+              "y": 336
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "Z6WWG1",
+          "x": 20,
+          "y": 568,
+          "name": "Live captured nutrition",
+          "width": 350,
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Jt2TM",
+              "name": "Capture status",
+              "width": "fill_container",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "uqqgJ",
+                  "name": "Values captured icon",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "circle-check",
+                  "library": "lucide",
+                  "fill": "$lime"
+                },
+                {
+                  "type": "text",
+                  "id": "YugWY",
+                  "name": "Captured fields count",
+                  "fill": "$lime",
+                  "content": "4 VALUES CAPTURED",
+                  "fontFamily": "$font-body",
+                  "fontSize": 11,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "T5ePJ",
+              "name": "Captured macro summary",
+              "width": "fill_container",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "jcaq2",
+                  "name": "Energy captured value",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "p1lxTB",
+                      "name": "Energy label",
+                      "fill": "$muted",
+                      "content": "Energy",
+                      "fontFamily": "$font-body",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ed9pb",
+                      "name": "Energy value",
+                      "fill": "$white",
+                      "content": "46 kcal",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "puL8b",
+                  "name": "Protein captured value",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "w0RZo",
+                      "name": "Protein label",
+                      "fill": "$muted",
+                      "content": "Protein",
+                      "fontFamily": "$font-body",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "m63GR",
+                      "name": "Protein value",
+                      "fill": "$white",
+                      "content": "1.0 g",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E3jTvJ",
+                  "name": "Carbs captured value",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KPjEC",
+                      "name": "Carbs label",
+                      "fill": "$muted",
+                      "content": "Carbs",
+                      "fontFamily": "$font-body",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "bowoJ",
+                      "name": "Carbs value",
+                      "fill": "$white",
+                      "content": "6.7 g",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Hsilo",
+                  "name": "Fat captured value",
+                  "width": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RW18h",
+                      "name": "Fat label",
+                      "fill": "$muted",
+                      "content": "Fat",
+                      "fontFamily": "$font-body",
+                      "fontSize": 10,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "h1TN2",
+                      "name": "Fat value",
+                      "fill": "$white",
+                      "content": "1.5 g",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "P8jEsR",
+          "type": "ref",
+          "ref": "reSam",
+          "name": "Review and edit in product form",
+          "x": 20,
+          "y": 750,
+          "context": "Pause camera and open F9fEqa directly, then fX4Nv and APCWG. Prefill all captured values, preserve incoming name/barcode and uncertainty flags. Partial captures allowed. Review and edit only in this shared form. No separate review screen, no automatic save or meal logging.",
+          "descendants": {
+            "aHGLi": {
+              "enabled": false
+            },
+            "ft2op": {
+              "content": "REVIEW & EDIT PRODUCT",
+              "x": 0,
+              "width": 350,
+              "textGrowth": "fixed-width",
+              "textAlign": "center"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "Qoc2g",
+          "x": 20,
+          "y": 811,
+          "name": "Enter manually instead",
+          "context": "Open F9fEqa retaining all captured and prefilled fields.",
+          "width": 350,
+          "height": 44,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "zbzJ7",
+              "name": "Manual fallback label",
+              "fill": "$muted",
+              "content": "Enter manually instead",
+              "fontFamily": "$font-body",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": "$radius-2",
+          "id": "Ja2Hg",
+          "x": 135,
+          "y": 866,
+          "name": "Home indicator",
+          "fill": "$home-indicator",
+          "width": 120,
+          "height": 4
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "OhzJI",
+      "x": 0,
+      "y": 2074,
+      "name": "Flow guide · Search and custom product entry",
+      "width": 1800,
+      "height": 86,
+      "layout": "vertical",
+      "gap": 10,
+      "children": [
+        {
+          "type": "text",
+          "id": "x9QSY",
+          "name": "Custom product entry heading",
+          "fill": "$lime",
+          "content": "SEARCH · CREATE PRODUCT ENTRY",
+          "fontFamily": "$font-display",
+          "fontSize": 28,
+          "fontWeight": "700",
+          "fontStyle": "$style-display"
+        },
+        {
+          "type": "text",
+          "id": "F4SDU",
+          "name": "Custom product entry navigation",
+          "fill": "$muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "My foods or no search results → Create product → choose scan label or manual entry",
+          "fontFamily": "$font-body",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "pmPIG",
+      "x": 0,
+      "y": 4274,
+      "name": "Flow guide · Create a product",
+      "width": 2270,
+      "height": 86,
+      "layout": "vertical",
+      "gap": 10,
+      "children": [
+        {
+          "type": "text",
+          "id": "vwbuH",
+          "name": "Product creation flow heading",
+          "fill": "$lime",
+          "content": "CREATE A PRODUCT",
+          "fontFamily": "$font-display",
+          "fontSize": 28,
+          "fontWeight": "700",
+          "fontStyle": "$style-display"
+        },
+        {
+          "type": "text",
+          "id": "n322m",
+          "name": "Product creation flow navigation",
+          "fill": "$muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Choose method → scan label or enter manually → product details → nutrition → more details → Save to My foods\nManual entry skips the scanner. Scanning prefills the same form for review and editing; saving does not log a meal.",
+          "lineHeight": 1.4,
+          "fontFamily": "$font-body",
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     }
