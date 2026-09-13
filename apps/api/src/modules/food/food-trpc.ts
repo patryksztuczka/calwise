@@ -1,3 +1,4 @@
+import { PersonalProductCreateSchema } from "@calwise/food-rules/personal-product";
 import { TRPCError } from "@trpc/server";
 import { Schema } from "effect";
 import {
@@ -12,7 +13,6 @@ import { FoodBarcodeInput, FoodSearchInput, FoodService } from "./food-service.t
 import {
   decodePersonalProductCursor,
   foldPersonalProductText,
-  PersonalProductCreateSchema,
   PersonalProductGetSchema,
   PersonalProductListSchema,
   type PersonalProductCursor,

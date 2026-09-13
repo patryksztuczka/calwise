@@ -1,57 +1,22 @@
 import { Database, personalProducts, type PersonalProductRow } from "@calwise/database";
-import { BARCODE_PATTERN } from "@calwise/food-rules";
 import {
-  NUTRITION_BASES,
+  PERSONAL_PRODUCT_CURSOR_MAX_LENGTH,
   PERSONAL_PRODUCT_PAGE_SIZE,
   PERSONAL_PRODUCT_TEXT_MAX_LENGTH,
   type PersonalProduct,
+  type PersonalProductCreateInput,
 } from "@calwise/food-rules/personal-product";
 import { and, asc, desc, eq, gt, like, lt, or, type SQL } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Context, Effect, Layer, Option, Schema } from "effect";
 
 const Id = Schema.String.check(Schema.isUUID());
-const RequiredText = Schema.Trim.check(
-  Schema.isMinLength(1),
-  Schema.isMaxLength(PERSONAL_PRODUCT_TEXT_MAX_LENGTH),
-);
-const OptionalText = Schema.optional(
-  Schema.Trim.check(Schema.isMaxLength(PERSONAL_PRODUCT_TEXT_MAX_LENGTH)),
-);
-const OptionalBarcode = Schema.optional(
-  Schema.Trim.check(
-    Schema.makeFilter((value) => value === "" || BARCODE_PATTERN.test(value), {
-      title: "Enter 4 to 24 digits or leave the barcode blank",
-    }),
-  ),
-);
-const Nutrient = Schema.Number.check(Schema.isFinite(), Schema.isGreaterThanOrEqualTo(0));
-const OptionalNutrient = Schema.optional(Nutrient);
-
-export const PersonalProductCreateSchema = Schema.Struct({
-  requestId: Id,
-  name: RequiredText,
-  brand: OptionalText,
-  barcode: OptionalBarcode,
-  packageQuantity: OptionalText,
-  servingSize: OptionalText,
-  nutritionBasis: Schema.Literals(NUTRITION_BASES),
-  energyKcal100: Nutrient,
-  energyKj100: OptionalNutrient,
-  protein100: Nutrient,
-  carbohydrates100: Nutrient,
-  fat100: Nutrient,
-  saturatedFat100: OptionalNutrient,
-  sugars100: OptionalNutrient,
-  fiber100: OptionalNutrient,
-  salt100: OptionalNutrient,
-  sodium100: OptionalNutrient,
-});
-export type PersonalProductCreateInput = typeof PersonalProductCreateSchema.Type;
 
 export const PersonalProductListSchema = Schema.Struct({
   query: Schema.optional(Schema.Trim.check(Schema.isMaxLength(PERSONAL_PRODUCT_TEXT_MAX_LENGTH))),
-  cursor: Schema.optional(Schema.String.check(Schema.isMaxLength(2_000))),
+  cursor: Schema.optional(
+    Schema.String.check(Schema.isMaxLength(PERSONAL_PRODUCT_CURSOR_MAX_LENGTH)),
+  ),
 });
 
 export const PersonalProductGetSchema = Schema.Struct({ id: Id });

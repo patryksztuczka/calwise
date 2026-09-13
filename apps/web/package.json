@@ -26,6 +26,7 @@
     "@calwise/api": "workspace:*",
     "@playwright/test": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@trpc/server": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

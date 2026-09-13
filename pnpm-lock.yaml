@@ -220,6 +220,9 @@ importers:
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.3(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.12)(yaml@2.9.0))
+      '@trpc/server':
+        specifier: 'catalog:'
+        version: 11.18.0(typescript@7.0.2)
       '@types/node':
         specifier: 'catalog:'
         version: 26.3.0
@@ -280,6 +283,10 @@ importers:
         version: 4.5.4
 
   packages/food-rules:
+    dependencies:
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.112
     devDependencies:
       typescript:
         specifier: 'catalog:'

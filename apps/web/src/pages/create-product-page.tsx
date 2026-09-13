@@ -1,4 +1,9 @@
-import { BARCODE_PATTERN } from "@calwise/food-rules";
+import {
+  personalProductDraftToCreateValues,
+  type PersonalProductDraft,
+  type PersonalProductDraftErrors,
+  type PersonalProductDraftField,
+} from "@calwise/food-rules/personal-product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Barcode, CircleAlert, ScanBarcode } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
@@ -12,29 +17,9 @@ import { useLogDestination } from "../modules/food-log/destination";
 import { ProductIdentity } from "../modules/food/product-details";
 import { BarcodeScanner } from "../modules/scanner/barcode-scanner";
 
-const MAX_TEXT_LENGTH = 200;
-const DECIMAL_PATTERN = /^(?:\d+(?:[.,]\d*)?|[.,]\d+)$/;
-
-type NutritionBasis = "g" | "ml";
-type FieldName =
-  | "name"
-  | "brand"
-  | "barcode"
-  | "packageQuantity"
-  | "servingSize"
-  | "energyKcal100"
-  | "energyKj100"
-  | "protein100"
-  | "carbohydrates100"
-  | "fat100"
-  | "saturatedFat100"
-  | "sugars100"
-  | "fiber100"
-  | "salt100"
-  | "sodium100";
-
-type Draft = Readonly<Record<FieldName, string>> & { readonly nutritionBasis: NutritionBasis };
-type Errors = Partial<Record<FieldName, string>>;
+type FieldName = PersonalProductDraftField;
+type Draft = PersonalProductDraft;
+type Errors = PersonalProductDraftErrors;
 
 const emptyDraft: Draft = {
   name: "",
@@ -120,9 +105,16 @@ export default function CreateProductPage() {
   }, [dirty]);
 
   function update(field: FieldName, value: string) {
+    if (save.isPending) return;
     setDraft((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
-    save.reset();
+    if (save.isError) save.reset();
+  }
+
+  function updateBasis(nutritionBasis: Draft["nutritionBasis"]) {
+    if (save.isPending) return;
+    setDraft((current) => ({ ...current, nutritionBasis }));
+    if (save.isError) save.reset();
   }
 
   function goBack() {
@@ -141,17 +133,28 @@ export default function CreateProductPage() {
 
   function nextStep(event: FormEvent) {
     event.preventDefault();
-    const nextErrors = validateDetails(draft);
+    const result = personalProductDraftToCreateValues(draft);
+    const detailFields = ["name", "brand", "barcode", "packageQuantity", "servingSize"] as const;
+    const nextErrors = result.ok
+      ? {}
+      : Object.fromEntries(
+          detailFields.flatMap((field) =>
+            result.errors[field] ? [[field, result.errors[field]]] : [],
+          ),
+        );
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length === 0) setStep(2);
   }
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    const nextErrors = { ...validateDetails(draft), ...validateNutrition(draft) };
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
-    const payload = createPayload(draft);
+    const result = personalProductDraftToCreateValues(draft);
+    if (!result.ok) {
+      setErrors(result.errors);
+      return;
+    }
+    setErrors({});
+    const payload = result.input;
     const serialized = JSON.stringify(payload);
     const activeRequest =
       request.current?.payload === serialized
@@ -184,6 +187,7 @@ export default function CreateProductPage() {
         <IconButton
           aria-label={step === 1 ? "Back to My foods" : "Back to product details"}
           onClick={goBack}
+          disabled={save.isPending}
         >
           <ArrowLeft size={21} aria-hidden="true" />
         </IconButton>
@@ -200,6 +204,7 @@ export default function CreateProductPage() {
             value={draft.name}
             error={errors.name}
             required
+            disabled={save.isPending}
             onChange={update}
           />
           <TextField
@@ -207,6 +212,7 @@ export default function CreateProductPage() {
             label="Brand (optional)"
             value={draft.brand}
             error={errors.brand}
+            disabled={save.isPending}
             onChange={update}
           />
           <TextField
@@ -215,11 +221,13 @@ export default function CreateProductPage() {
             value={draft.barcode}
             error={errors.barcode}
             inputMode="numeric"
+            disabled={save.isPending}
             onChange={update}
             trailing={
               <button
                 type="button"
                 aria-label="Open barcode scanner"
+                disabled={save.isPending}
                 onClick={() => setScanning(true)}
                 className="flex size-11 shrink-0 items-center justify-center text-lime"
               >
@@ -233,6 +241,7 @@ export default function CreateProductPage() {
             placeholder="e.g. 1 L or 500 g"
             value={draft.packageQuantity}
             error={errors.packageQuantity}
+            disabled={save.isPending}
             onChange={update}
           />
           <TextField
@@ -241,6 +250,7 @@ export default function CreateProductPage() {
             placeholder="e.g. 250 ml or 1 slice (30 g)"
             value={draft.servingSize}
             error={errors.servingSize}
+            disabled={save.isPending}
             onChange={update}
           />
           <p className="text-11 leading-relaxed text-muted">
@@ -264,10 +274,8 @@ export default function CreateProductPage() {
                   role="radio"
                   aria-checked={draft.nutritionBasis === basis}
                   aria-label={`Per 100 ${basis}`}
-                  onClick={() => {
-                    setDraft((current) => ({ ...current, nutritionBasis: basis }));
-                    save.reset();
-                  }}
+                  disabled={save.isPending}
+                  onClick={() => updateBasis(basis)}
                   className={`h-9 rounded-8 text-12 font-semibold ${
                     draft.nutritionBasis === basis ? "bg-lime text-bg" : "text-muted"
                   }`}
@@ -293,6 +301,7 @@ export default function CreateProductPage() {
                 required={required}
                 value={draft[field]}
                 error={errors[field]}
+                disabled={save.isPending}
                 onChange={update}
               />
             ))}
@@ -308,6 +317,7 @@ export default function CreateProductPage() {
                 required={required}
                 value={draft[field]}
                 error={errors[field]}
+                disabled={save.isPending}
                 onChange={update}
               />
             ))}
@@ -460,6 +470,7 @@ function TextField({
   placeholder,
   inputMode,
   trailing,
+  disabled = false,
   onChange,
 }: {
   readonly field: FieldName;
@@ -470,6 +481,7 @@ function TextField({
   readonly placeholder?: string | undefined;
   readonly inputMode?: "text" | "numeric" | undefined;
   readonly trailing?: ReactNode;
+  readonly disabled?: boolean | undefined;
   readonly onChange: (field: FieldName, value: string) => void;
 }) {
   const errorId = `${field}-error`;
@@ -485,6 +497,7 @@ function TextField({
           inputMode={inputMode}
           placeholder={placeholder}
           autoComplete="off"
+          disabled={disabled}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
           onChange={(event) => onChange(field, event.target.value)}
@@ -508,6 +521,7 @@ function NutritionField({
   value,
   error,
   required,
+  disabled = false,
   onChange,
 }: {
   readonly field: FieldName;
@@ -516,6 +530,7 @@ function NutritionField({
   readonly value: string;
   readonly error?: string | undefined;
   readonly required: boolean;
+  readonly disabled?: boolean | undefined;
   readonly onChange: (field: FieldName, value: string) => void;
 }) {
   const errorId = `${field}-error`;
@@ -533,6 +548,7 @@ function NutritionField({
           required={required}
           inputMode="decimal"
           autoComplete="off"
+          disabled={disabled}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
           onChange={(event) => onChange(field, event.target.value)}
@@ -547,65 +563,4 @@ function NutritionField({
       )}
     </label>
   );
-}
-
-function validateDetails(draft: Draft): Errors {
-  const errors: Errors = {};
-  if (!draft.name.trim()) errors.name = "Enter a product name.";
-  for (const field of ["name", "brand", "packageQuantity", "servingSize"] as const) {
-    if (draft[field].trim().length > MAX_TEXT_LENGTH)
-      errors[field] = "Use 200 characters or fewer.";
-  }
-  const barcode = draft.barcode.trim();
-  if (barcode && !BARCODE_PATTERN.test(barcode)) errors.barcode = "Enter 4 to 24 digits only.";
-  return errors;
-}
-
-function validateNutrition(draft: Draft): Errors {
-  const errors: Errors = {};
-  for (const [field, label, , required] of nutritionFields) {
-    const value = draft[field].trim();
-    if (!value) {
-      if (required) errors[field] = `${label} is required.`;
-      continue;
-    }
-    const parsed = parseDecimal(value);
-    if (parsed === null) errors[field] = `Enter a nonnegative number for ${label.toLowerCase()}.`;
-  }
-  return errors;
-}
-
-function parseDecimal(value: string): number | null {
-  if (!DECIMAL_PATTERN.test(value)) return null;
-  const parsed = Number(value.replace(",", "."));
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
-}
-
-function optionalText(value: string): string | undefined {
-  return value.trim() || undefined;
-}
-
-function optionalNumber(value: string): number | undefined {
-  return value.trim() ? (parseDecimal(value.trim()) ?? undefined) : undefined;
-}
-
-function createPayload(draft: Draft) {
-  return {
-    name: draft.name.trim(),
-    brand: optionalText(draft.brand),
-    barcode: optionalText(draft.barcode),
-    packageQuantity: optionalText(draft.packageQuantity),
-    servingSize: optionalText(draft.servingSize),
-    nutritionBasis: draft.nutritionBasis,
-    energyKcal100: parseDecimal(draft.energyKcal100.trim())!,
-    energyKj100: optionalNumber(draft.energyKj100),
-    protein100: parseDecimal(draft.protein100.trim())!,
-    carbohydrates100: parseDecimal(draft.carbohydrates100.trim())!,
-    fat100: parseDecimal(draft.fat100.trim())!,
-    saturatedFat100: optionalNumber(draft.saturatedFat100),
-    sugars100: optionalNumber(draft.sugars100),
-    fiber100: optionalNumber(draft.fiber100),
-    salt100: optionalNumber(draft.salt100),
-    sodium100: optionalNumber(draft.sodium100),
-  };
 }

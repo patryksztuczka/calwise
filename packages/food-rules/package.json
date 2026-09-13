@@ -11,6 +11,9 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
   },
+  "dependencies": {
+    "effect": "catalog:"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "vitest": "catalog:"
