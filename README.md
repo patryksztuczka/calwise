@@ -89,8 +89,8 @@ Same-repository pull requests deploy after both check jobs pass. Fork pull reque
 
 Each preview uses Cloudflare's native deployment URLs:
 
-- Pages Direct Upload publishes the built site on the stable `pr-<number>.calwise.pages.dev` branch alias.
-- `wrangler versions upload --preview-alias pr-<number>` uploads an API Worker version without promoting it or changing production routes. `preview_urls: true` is explicit because `workers_dev` remains disabled. Worker preview URLs are public and only available on the account's `workers.dev` subdomain.
+- Pages Direct Upload publishes the built site on its stable `pr-<number>.<pages-subdomain>.pages.dev` branch alias. The Pages project name is `calwise`, but Cloudflare assigned it the `calwise-auf.pages.dev` subdomain, so the workflow reads the alias from Wrangler instead of constructing it.
+- `wrangler versions upload --preview-alias pr-<number>` uploads an API Worker version without promoting it or changing production routes. `preview_urls: true` is explicit because `workers_dev` remains disabled. Worker preview URLs are public and only available on the account's `workers.dev` subdomain. Wrangler version uploads read this shared setting but do not apply it.
 - Two D1 databases named `calwise-pr-<number>` and `calwise-food-pr-<number>` isolate accounts and catalog data from production. Updates reuse them, apply pending migrations, and upsert two synthetic foods. This keeps test accounts and sessions until the PR closes.
 
 The Pages deployment contains a generated advanced-mode `_worker.js`. It proxies `/api/auth`, `/trpc`, and `/health` to that PR's Worker. Authentication therefore uses first-party cookies on the Pages hostname. The proxy replaces the browser Origin header with the Worker preview origin, so the production API does not need a wildcard `pages.dev` allowlist.
@@ -101,10 +101,11 @@ One-time setup:
 
 1. Add `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `PREVIEW_BETTER_AUTH_SECRET` as GitHub repository secrets. Use a random value of at least 32 bytes for the preview auth secret. It must differ from `BETTER_AUTH_SECRET`.
 2. Give the Cloudflare token Account D1 Edit, Workers Scripts Edit, and Cloudflare Pages Edit permissions. Scope it to the Calwise account. The workflow never runs Terraform and keeps preview resources outside production Terraform state.
-3. Confirm the Pages project is named `calwise` and the Worker is already deployed as `calwise-api`. Worker version uploads cannot create a Worker for the first time.
-4. Optionally protect both projects' preview URLs with Cloudflare Access. Access setup is a dashboard setting and is not managed by this repository.
+3. In Workers & Pages, open `calwise-api`, then enable **Preview URLs** under **Settings > Domains & Routes**. Keep the regular `workers.dev` route disabled. A successful production API deploy also reconciles these values from `wrangler.jsonc`, but `wrangler versions upload` does not. The preview job checks the live values before it creates or migrates D1 databases and explains this setup step if they are wrong.
+4. Confirm the Pages project is named `calwise` and the Worker is already deployed as `calwise-api`. Worker version uploads cannot create a Worker for the first time.
+5. Optionally protect both projects' preview URLs with Cloudflare Access. Access setup is a dashboard setting and is not managed by this repository.
 
-A pull request comment points to the stable Pages alias and updates on every deployment. The first preview for this workflow can run only after GitHub recognizes the workflow on the default branch. Until then, verify it with a follow-up same-repository PR after merging this change.
+The workflow reads Wrangler's structured output to get the URL Cloudflare created, then smoke-tests the Worker URL before publishing Pages. It never constructs a URL when Cloudflare says previews are unavailable. A pull request comment points to the stable Pages alias and updates on every deployment.
 
 ## Effect typechecking
 

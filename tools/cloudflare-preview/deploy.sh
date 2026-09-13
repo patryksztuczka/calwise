@@ -14,12 +14,16 @@ food_database="calwise-food-${alias}"
 root=$(cd "$(dirname "$0")/../.." && pwd)
 config="$root/apps/api/wrangler.preview-${pr_number}.json"
 secrets_file=$(mktemp)
-upload_log=$(mktemp)
-trap 'rm -f "$config" "$secrets_file" "$upload_log"' EXIT
+wrangler_output=$(mktemp)
+trap 'rm -f "$config" "$secrets_file" "$wrangler_output"' EXIT
 
 wrangler() {
   pnpm --dir "$root" --filter @calwise/api exec wrangler "$@"
 }
+
+# versions upload reads this shared setting but does not apply preview_urls from
+# its config. Fail before creating or migrating D1 databases if setup is missing.
+node "$root/tools/cloudflare-preview/check-worker-preview.mjs"
 
 database_id() {
   local name=$1
@@ -85,28 +89,25 @@ printf '%s:%s' "$PREVIEW_BETTER_AUTH_SECRET" "$pr_number" \
   | jq -Rs '{BETTER_AUTH_SECRET: rtrimstr("\n")}' >"$secrets_file"
 chmod 600 "$secrets_file"
 
-wrangler versions upload \
+WRANGLER_OUTPUT_FILE_PATH="$wrangler_output" wrangler versions upload \
   --config "$config" \
   --preview-alias "$alias" \
   --message "PR #${pr_number} at ${commit_sha}" \
-  --secrets-file "$secrets_file" 2>&1 | tee "$upload_log"
+  --secrets-file "$secrets_file"
 
-api_url=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.workers\.dev' "$upload_log" \
-  | grep -E "^https://${alias}-calwise-api\." \
-  | tail -1 || true)
-if [[ -z $api_url ]]; then
-  echo "Wrangler did not report the expected aliased Worker preview URL" >&2
-  exit 1
-fi
+api_url=$(node "$root/tools/cloudflare-preview/read-version-output.mjs" "$wrangler_output" "$alias")
+curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors \
+  "$api_url/health" >/dev/null
 
 node "$root/tools/cloudflare-preview/write-proxy.mjs" "$api_url" "$root/apps/web/dist/_worker.js"
-pages_output=$(pnpm --dir "$root" --filter @calwise/web exec wrangler pages deploy dist \
+WRANGLER_OUTPUT_FILE_PATH="$wrangler_output" \
+  pnpm --dir "$root" --filter @calwise/web exec wrangler pages deploy dist \
   --project-name calwise \
   --branch "$alias" \
-  --commit-hash "$commit_sha" 2>&1)
-printf '%s\n' "$pages_output"
+  --commit-hash "$commit_sha" \
+  --commit-dirty=true
 
-web_url="https://${alias}.calwise.pages.dev"
+web_url=$(node "$root/tools/cloudflare-preview/read-pages-output.mjs" "$wrangler_output" "$alias")
 curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-all-errors \
   "$web_url/health" >/dev/null
 

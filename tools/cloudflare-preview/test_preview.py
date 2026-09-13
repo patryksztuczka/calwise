@@ -54,6 +54,70 @@ class PreviewProxyTest(unittest.TestCase):
             subprocess.run(["node", "--input-type=module", "--eval", script], check=True)
 
 
+class WorkerPreviewSettingsTest(unittest.TestCase):
+    def run_module(self, script):
+        return subprocess.run(
+            ["node", "--input-type=module", "--eval", script],
+            capture_output=True,
+            text=True,
+        )
+
+    def test_disabled_shared_setting_is_reported_before_deployment(self):
+        module = (PREVIEW / "check-worker-preview.mjs").as_uri()
+        result = self.run_module(
+            f"""
+              import {{ validatePreviewSettings }} from {module!r};
+              validatePreviewSettings({{ success: true, result: {{ enabled: false, previews_enabled: false }} }});
+            """,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("expected workers_dev=false and preview_urls=true", result.stderr)
+
+    def test_expected_shared_setting_is_accepted(self):
+        module = (PREVIEW / "check-worker-preview.mjs").as_uri()
+        result = self.run_module(
+            f"""
+              import {{ validatePreviewSettings }} from {module!r};
+              validatePreviewSettings({{ success: true, result: {{ enabled: false, previews_enabled: true }} }});
+            """,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_pages_url_comes_from_structured_output_not_the_project_name(self):
+        module = (PREVIEW / "read-pages-output.mjs").as_uri()
+        output = '{"type":"pages-deploy-detailed","pages_project":"calwise","environment":"preview","alias":"https://pr-18.calwise-auf.pages.dev"}'
+        result = self.run_module(
+            f"""
+              import {{ getPagesAliasUrl }} from {module!r};
+              const url = getPagesAliasUrl({output!r}, 'pr-18');
+              if (url !== 'https://pr-18.calwise-auf.pages.dev') throw new Error(url);
+            """,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_structured_wrangler_output_requires_a_real_alias_url(self):
+        module = (PREVIEW / "read-version-output.mjs").as_uri()
+        missing_url = '{"type":"version-upload","worker_name":"calwise-api","version_id":"315d20b7-dc62-400f-b20d-16eb61207c0a","preview_alias_url":null}'
+        result = self.run_module(
+            f"""
+              import {{ getPreviewAliasUrl }} from {module!r};
+              getPreviewAliasUrl({missing_url!r}, 'pr-18');
+            """,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("did not create an aliased preview URL", result.stderr)
+
+        valid_url = '{"type":"version-upload","worker_name":"calwise-api","preview_alias_url":"https://pr-18-calwise-api.example.workers.dev"}'
+        result = self.run_module(
+            f"""
+              import {{ getPreviewAliasUrl }} from {module!r};
+              const url = getPreviewAliasUrl({valid_url!r}, 'pr-18');
+              if (url !== 'https://pr-18-calwise-api.example.workers.dev') throw new Error(url);
+            """,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
 class PreviewDataTest(unittest.TestCase):
     def test_food_fixture_is_synthetic_and_idempotent(self):
         database = sqlite3.connect(":memory:")
@@ -92,6 +156,16 @@ class PreviewWorkflowTest(unittest.TestCase):
         self.assertIn("workers_dev: false", generated_config)
         self.assertNotIn("routes:", generated_config)
         self.assertNotIn("calwise-api.lastlab.win", generated_config)
+
+    def test_shared_setting_preflight_runs_before_database_work(self):
+        deploy_script = (PREVIEW / "deploy.sh").read_text()
+        self.assertLess(
+            deploy_script.index("check-worker-preview.mjs"),
+            deploy_script.index("user_database_id=$(ensure_database"),
+        )
+        self.assertNotIn("triggers deploy", deploy_script)
+        self.assertNotIn(".calwise.pages.dev", deploy_script)
+        self.assertIn("read-pages-output.mjs", deploy_script)
 
 
 if __name__ == "__main__":
