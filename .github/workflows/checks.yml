@@ -34,6 +34,7 @@ jobs:
               - 'apps/api/**'
               - 'packages/database/**'
               - 'packages/food-rules/**'
+              - 'tools/cloudflare-production/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
