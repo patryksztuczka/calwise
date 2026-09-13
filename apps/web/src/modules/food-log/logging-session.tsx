@@ -4,7 +4,13 @@ import { CircleCheck } from "lucide-react";
 import { createContext, useContext, useMemo, useRef, useState } from "react";
 import { Link, Outlet } from "react-router";
 import { useTRPC } from "../../lib/trpc";
-import type { Product, RenderProduct } from "../food/food-types";
+import {
+  isPersonalProduct,
+  productLockedUnit,
+  productNutritionBasis,
+  type Product,
+  type RenderProduct,
+} from "../food/food-types";
 import { DestinationControl } from "./destination-picker";
 import { mealUrl, useLogDestination } from "./destination";
 import type { FoodEntry } from "./food-log-types";
@@ -93,14 +99,17 @@ function AddToMeal({
   });
   return (
     <PortionEditor
-      basis={product}
+      basis={productNutritionBasis(product)}
+      lockedUnit={productLockedUnit(product)}
       label={`ADD TO ${MEAL_NAMES[destination.meal].toUpperCase()}`}
       pending={add.isPending}
       error={add.isError ? "Could not add food. Check your connection and try again." : undefined}
       onSave={(portion) =>
         add.mutate({
           id: requestId.current,
-          barcode: product.barcode,
+          productReference: isPersonalProduct(product)
+            ? { source: "personal", id: product.id }
+            : { source: "catalog", barcode: product.barcode },
           ...destination,
           ...portion,
         })

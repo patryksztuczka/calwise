@@ -45,7 +45,7 @@ test("logs, reloads, edits, moves, undoes and removes food through the designed 
   await page.reload();
   await page.getByRole("link", { name: /Żółty ser testowy/ }).click();
   await page.getByLabel("AMOUNT", { exact: true }).fill("50.5");
-  await page.getByRole("combobox", { name: "UNIT", exact: true }).selectOption("ml");
+  await page.getByRole("combobox", { name: "Unit", exact: true }).selectOption("ml");
   await expect(page.getByText("176.8", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "SAVE CHANGES" }).click();
   await expect(page.getByText("Changes saved", { exact: true })).toBeVisible();
@@ -65,7 +65,7 @@ test("logs, reloads, edits, moves, undoes and removes food through the designed 
   await expect(page.getByText("Move undone", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("AMOUNT", { exact: true })).toHaveValue("50.5");
-  await expect(page.getByRole("combobox", { name: "UNIT", exact: true })).toHaveValue("ml");
+  await expect(page.getByRole("combobox", { name: "Unit", exact: true })).toHaveValue("ml");
   await page.getByRole("button", { name: "Remove food", exact: true }).click();
   await page.getByRole("button", { name: "Confirm removal" }).click();
   await expect(page.getByText("No food logged yet.", { exact: true })).toBeVisible();

@@ -91,6 +91,9 @@ function EntryEditor({ entry }: { readonly entry: FoodEntry }) {
           key={`${entry.id}:${entry.amount}:${entry.unit}`}
           basis={entry}
           initial={entry}
+          lockedUnit={
+            entry.productSource === "personal" ? (entry.nutritionBasis ?? undefined) : undefined
+          }
           label="SAVE CHANGES"
           pending={pending}
           onSave={(portion) =>

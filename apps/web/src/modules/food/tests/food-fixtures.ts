@@ -1,6 +1,7 @@
 import type { FoodBarcodeResult, FoodSearchResult, Product } from "../food-types";
 
 const product: Product = {
+  source: "catalog",
   barcode: "0000000000001",
   name: "Żółty ser testowy",
   brands: "Calwise Test",
@@ -33,4 +34,4 @@ const attribution = {
   license: "ODbL-1.0",
 };
 export const searchResult: FoodSearchResult = { products: [product], attribution };
-export const barcodeResult: FoodBarcodeResult = { product, attribution };
+export const barcodeResult: FoodBarcodeResult = { source: "catalog", product, attribution };
