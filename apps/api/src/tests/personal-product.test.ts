@@ -3,7 +3,7 @@ import type { PersonalProduct } from "@calwise/food-rules/personal-product";
 import { Effect, Layer, Schema } from "effect";
 import type { inferRouterError } from "@trpc/server";
 import { beforeAll, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
-import type { PersonalProductConflictData } from "../modules/food/personal-product-conflict.ts";
+import { PersonalProductConflict } from "../modules/food/personal-product-conflict.ts";
 import type { AppRouter } from "../trpc-router.ts";
 import { app } from "../app.ts";
 import { FoodService } from "../modules/food/food-service.ts";
@@ -75,8 +75,8 @@ const createInput = {
   fat100: 25,
 } as const;
 
-const create = vi.fn(() =>
-  Effect.succeed<CreateResult>({ kind: "created", product: personalProduct }),
+const create = vi.fn((): Effect.Effect<CreateResult, PersonalProductConflict> =>
+  Effect.succeed({ kind: "created", product: personalProduct }),
 );
 const list = vi.fn(() =>
   Effect.succeed<{
@@ -157,9 +157,9 @@ beforeEach(() => {
 
 describe("personal product API", () => {
   it("infers the Food conflict payload in router errors", () => {
-    expectTypeOf<
-      inferRouterError<AppRouter>["data"]["conflict"]
-    >().toEqualTypeOf<PersonalProductConflictData | null>();
+    expectTypeOf<inferRouterError<AppRouter>["data"]["conflict"]>().toEqualTypeOf<
+      PersonalProductConflict["conflict"] | null
+    >();
   });
 
   it("does not attach a conflict to unrelated errors", async () => {
@@ -241,24 +241,38 @@ describe("personal product API", () => {
     "returns typed %s conflicts",
     async (kind) => {
       create.mockReturnValueOnce(
-        Effect.succeed({
-          kind: "conflict",
-          conflict: { kind, existingProductId: personalProduct.id },
-        }),
+        Effect.fail(
+          new PersonalProductConflict({
+            conflict: { kind, existingProductId: personalProduct.id },
+          }),
+        ),
       );
       const response = await mutate("food.personalCreate", createInput);
       expect(response.status).toBe(409);
-      expect(await response.json()).toMatchObject({
-        error: {
-          data: {
+      expect(await response.json()).toEqual({
+        error: expect.objectContaining({
+          message: kind,
+          data: expect.objectContaining({
             code: "CONFLICT",
             httpStatus: 409,
             conflict: { kind, existingProductId: personalProduct.id },
-          },
-        },
+          }),
+        }),
       });
     },
   );
+
+  it("keeps unexpected creation failures as internal errors without conflict data", async () => {
+    create.mockReturnValueOnce(Effect.die(new Error("unexpected failure")));
+    const response = await mutate("food.personalCreate", createInput);
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: {
+        message: "internal server error",
+        data: { code: "INTERNAL_SERVER_ERROR", conflict: null },
+      },
+    });
+  });
 
   it("lists and retrieves only through owner-scoped service calls", async () => {
     expect((await query("food.personalList", { query: "  zol laka  " })).status).toBe(200);

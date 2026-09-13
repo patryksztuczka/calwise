@@ -1,13 +1,11 @@
-export interface PersonalProductConflictData {
-  readonly kind: "DUPLICATE_BARCODE" | "IDEMPOTENCY_KEY_REUSED";
-  readonly existingProductId: string;
-}
+import { Schema } from "effect";
 
-export class PersonalProductConflictCause extends Error {
-  readonly conflict: PersonalProductConflictData;
-
-  constructor(conflict: PersonalProductConflictData) {
-    super(conflict.kind);
-    this.conflict = conflict;
-  }
-}
+export class PersonalProductConflict extends Schema.TaggedError<PersonalProductConflict>()(
+  "PersonalProductConflict",
+  {
+    conflict: Schema.Struct({
+      kind: Schema.Literals(["DUPLICATE_BARCODE", "IDEMPOTENCY_KEY_REUSED"]),
+      existingProductId: Schema.String,
+    }),
+  },
+) {}

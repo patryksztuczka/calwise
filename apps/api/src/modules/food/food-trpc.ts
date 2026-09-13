@@ -1,10 +1,10 @@
 import { PersonalProductCreateSchema } from "@calwise/food-rules/personal-product";
 import { TRPCError } from "@trpc/server";
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { protectedProcedure, publicProcedure, router, runTrpc } from "../../http/trpc.ts";
 import type { Product } from "@calwise/database/food-schema";
 import { FoodBarcodeInput, FoodSearchInput, FoodService } from "./food-service.ts";
-import { PersonalProductConflictCause } from "./personal-product-conflict.ts";
+import { PersonalProductConflict } from "./personal-product-conflict.ts";
 import {
   decodePersonalProductCursor,
   foldPersonalProductText,
@@ -52,13 +52,15 @@ export const foodRouter = router({
     .mutation(async ({ ctx, input }) => {
       const result = await runTrpc(
         ctx,
-        PersonalProductService.use((service) => service.create(ctx.session.user.id, input)),
+        PersonalProductService.use((service) => service.create(ctx.session.user.id, input)).pipe(
+          Effect.catchTag("PersonalProductConflict", (conflict) => Effect.succeed(conflict)),
+        ),
       );
-      if (result.kind === "conflict")
+      if (result instanceof PersonalProductConflict)
         throw new TRPCError({
           code: "CONFLICT",
           message: result.conflict.kind,
-          cause: new PersonalProductConflictCause(result.conflict),
+          cause: result,
         });
       return { product: result.product, created: result.kind === "created" };
     }),

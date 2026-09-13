@@ -9,7 +9,7 @@ import {
 import { and, asc, desc, eq, gt, like, lt, or, type SQL } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Context, Effect, Layer, Option, Schema } from "effect";
-import type { PersonalProductConflictData } from "./personal-product-conflict.ts";
+import { PersonalProductConflict } from "./personal-product-conflict.ts";
 
 const Id = Schema.String.check(Schema.isUUID());
 
@@ -43,11 +43,7 @@ interface NormalizedCreate {
 
 export type CreateResult =
   | { readonly kind: "created"; readonly product: PersonalProduct }
-  | { readonly kind: "replayed"; readonly product: PersonalProduct }
-  | {
-      readonly kind: "conflict";
-      readonly conflict: PersonalProductConflictData;
-    };
+  | { readonly kind: "replayed"; readonly product: PersonalProduct };
 
 const BrowseCursorSchema = Schema.Struct({
   v: Schema.Literal(1),
@@ -150,7 +146,7 @@ export class PersonalProductService extends Context.Service<
     readonly create: (
       userId: string,
       input: PersonalProductCreateInput,
-    ) => Effect.Effect<CreateResult, EffectDrizzleQueryError>;
+    ) => Effect.Effect<CreateResult, EffectDrizzleQueryError | PersonalProductConflict>;
     readonly list: (
       userId: string,
       query: string | undefined,
@@ -223,12 +219,11 @@ export class PersonalProductService extends Context.Service<
           .limit(1);
         const replay = requestRows[0];
         if (replay) {
-          return replay.requestFingerprint === requestFingerprint
-            ? ({ kind: "replayed", product: toProduct(replay) } as const)
-            : ({
-                kind: "conflict",
-                conflict: { kind: "IDEMPOTENCY_KEY_REUSED", existingProductId: replay.id },
-              } as const);
+          if (replay.requestFingerprint === requestFingerprint)
+            return { kind: "replayed", product: toProduct(replay) } as const;
+          return yield* new PersonalProductConflict({
+            conflict: { kind: "IDEMPOTENCY_KEY_REUSED", existingProductId: replay.id },
+          });
         }
 
         if (values.barcode !== null) {
@@ -243,10 +238,9 @@ export class PersonalProductService extends Context.Service<
             )
             .limit(1);
           if (barcodeRows[0])
-            return {
-              kind: "conflict",
+            return yield* new PersonalProductConflict({
               conflict: { kind: "DUPLICATE_BARCODE", existingProductId: barcodeRows[0].id },
-            } as const;
+            });
         }
 
         return yield* Effect.die("personal product insert conflicted without an owning row");

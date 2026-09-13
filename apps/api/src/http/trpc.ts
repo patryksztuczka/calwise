@@ -2,7 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { Effect } from "effect";
 import type { AppServices } from "../layers.ts";
 import type { Session } from "../modules/auth/auth-service.ts";
-import { PersonalProductConflictCause } from "../modules/food/personal-product-conflict.ts";
+import { PersonalProductConflict } from "../modules/food/personal-product-conflict.ts";
 
 /** Runs an Effect against the Worker's runtime; supplied per request by the Worker entrypoint. */
 export type RunEffect = <A, E>(effect: Effect.Effect<A, E, AppServices>) => Promise<A>;
@@ -21,7 +21,7 @@ const t = initTRPC.context<TrpcContext>().create({
       data: {
         ...response.data,
         conflict:
-          options.error.cause instanceof PersonalProductConflictCause
+          options.error.cause instanceof PersonalProductConflict
             ? options.error.cause.conflict
             : null,
       },
