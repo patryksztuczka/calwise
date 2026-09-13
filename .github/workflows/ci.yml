@@ -7,12 +7,28 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # Never interrupt a production migration or deployment with a newer push.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # A PR run may already be migrating its preview databases. Queue newer commits
+  # instead of interrupting a migration or racing a close event.
+  cancel-in-progress: false
 
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
+
+  deploy-preview:
+    needs: checks
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/deploy-preview.yml
+    with:
+      pull_request_number: ${{ github.event.pull_request.number }}
+      commit_sha: ${{ github.event.pull_request.head.sha }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BETTER_AUTH_SECRET: ${{ secrets.PREVIEW_BETTER_AUTH_SECRET }}
 
   deploy-api:
     needs: checks

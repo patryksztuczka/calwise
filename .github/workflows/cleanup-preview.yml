@@ -1,0 +1,47 @@
+name: Clean up pull request preview
+
+on:
+  pull_request:
+    types: [closed]
+
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    name: Delete preview databases
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # Closed-PR cleanup runs trusted default-branch code, never the PR checkout.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Delete isolated D1 databases
+        run: bash tools/cloudflare-preview/cleanup.sh '${{ github.event.pull_request.number }}'
+      - name: Mark preview as removed
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          marker='<!-- calwise-cloudflare-preview -->'
+          comment_id=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq ".[] | select(.body | contains(\"${marker}\")) | .id" | head -1)
+          if [[ -n $comment_id ]]; then
+            printf '%s\nPreview databases were deleted when the pull request closed. The native Cloudflare URLs may remain, but the API can no longer access PR data.\n' "$marker" >/tmp/preview-comment.md
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" -F body=@/tmp/preview-comment.md
+          fi
