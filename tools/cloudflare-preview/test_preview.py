@@ -1,4 +1,7 @@
+import json
+import os
 import sqlite3
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -129,6 +132,98 @@ class PreviewDataTest(unittest.TestCase):
         rows = database.execute("SELECT barcode, source_url FROM products ORDER BY barcode").fetchall()
         self.assertEqual(len(rows), 2)
         self.assertTrue(all(url.startswith("https://example.invalid/") for _, url in rows))
+
+
+class ProductionDeployTest(unittest.TestCase):
+    def test_production_code_config_bindings_and_secret_are_one_deployment(self):
+        commit_sha = "0123456789abcdef0123456789abcdef01234567"
+        production_secret = "production-only secret with a newline\n"
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            capture = temp / "capture"
+            capture.mkdir()
+            bin_dir = temp / "bin"
+            bin_dir.mkdir()
+            fake_pnpm = bin_dir / "pnpm"
+            fake_pnpm.write_text(
+                """#!/usr/bin/env python3
+import json
+import os
+import stat
+import sys
+from pathlib import Path
+
+capture = Path(os.environ["CAPTURE"])
+args = sys.argv[1:]
+(capture / "args.json").write_text(json.dumps(args))
+secrets_path = Path(args[args.index("--secrets-file") + 1])
+(capture / "secrets.json").write_text(secrets_path.read_text())
+(capture / "secrets-mode").write_text(oct(stat.S_IMODE(secrets_path.stat().st_mode)))
+(capture / "secrets-path").write_text(str(secrets_path))
+(capture / "secret-env").write_text(str("BETTER_AUTH_SECRET" in os.environ))
+""",
+            )
+            fake_pnpm.chmod(0o755)
+            env = os.environ | {
+                "BETTER_AUTH_SECRET": production_secret,
+                "CAPTURE": str(capture),
+                "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+            }
+            subprocess.run(
+                [
+                    "bash",
+                    str(ROOT / "tools" / "cloudflare-production" / "deploy.sh"),
+                    commit_sha,
+                ],
+                check=True,
+                env=env,
+            )
+
+            args = json.loads((capture / "args.json").read_text())
+            secrets_path = (capture / "secrets-path").read_text()
+            self.assertEqual(
+                args[:7],
+                [
+                    "--dir",
+                    str(ROOT),
+                    "--filter",
+                    "@calwise/api",
+                    "exec",
+                    "wrangler",
+                    "deploy",
+                ],
+            )
+            self.assertEqual(
+                args[args.index("--config") + 1],
+                str(ROOT / "apps" / "api" / "wrangler.jsonc"),
+            )
+            self.assertEqual(
+                args[args.index("--message") + 1],
+                f"Production at {commit_sha}",
+            )
+            self.assertNotIn("versions", args)
+            self.assertEqual(
+                json.loads((capture / "secrets.json").read_text()),
+                {"BETTER_AUTH_SECRET": production_secret},
+            )
+            self.assertEqual((capture / "secrets-mode").read_text(), oct(stat.S_IRUSR | stat.S_IWUSR))
+            self.assertEqual((capture / "secret-env").read_text(), "False")
+            self.assertFalse(Path(secrets_path).exists())
+
+    def test_production_workflow_never_edits_or_copies_the_latest_version(self):
+        workflow = (ROOT / ".github" / "workflows" / "deploy-api.yml").read_text()
+        self.assertIn("tools/cloudflare-production/deploy.sh", workflow)
+        self.assertNotIn("wrangler secret", workflow)
+        self.assertNotIn("versions secret", workflow)
+        self.assertNotIn("versions deploy", workflow)
+        checks = (ROOT / ".github" / "workflows" / "checks.yml").read_text()
+        self.assertIn("tools/cloudflare-production/**", checks)
+
+        production_config = (ROOT / "apps" / "api" / "wrangler.jsonc").read_text()
+        self.assertIn('"pattern": "calwise-api.lastlab.win"', production_config)
+        self.assertIn('"database_name": "calwise"', production_config)
+        self.assertIn('"database_name": "calwise-food"', production_config)
+        self.assertNotIn("pr-${", production_config)
 
 
 class PreviewWorkflowTest(unittest.TestCase):

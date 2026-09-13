@@ -68,7 +68,7 @@ The app opens on the sign-in screen; create an account on the sign-up screen (em
 
 Inside `packages/database`: `pnpm db:generate` diffs `src/schema.ts` and writes to `migrations/`; `pnpm db:generate:food` diffs `src/food-schema.ts` and writes to `migrations-food/`. Add `--custom --name <x>` to either command to create an empty migration for hand-written SQL.
 
-Inside `apps/api`: `pnpm db:migrate:remote` and `pnpm deploy` are what CD runs; they need `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+Inside `apps/api`, `pnpm db:migrate:remote` applies production migrations. Production Worker deployment runs through `tools/cloudflare-production/deploy.sh`; it also needs `BETTER_AUTH_SECRET`.
 
 ## Deployment
 
@@ -76,7 +76,7 @@ Infrastructure must exist before the first application deployment. See [infra/RE
 
 After that, `CI` runs `checks.yml` once per pull request update or push to `master`: formatting, lint, typecheck, unit tests, builds, and the Playwright end-to-end test against emulated Cloudflare services. On pushes to `master`, both check jobs must pass before CI calls the applicable production deployment workflows:
 
-- **Deploy API** (`.github/workflows/deploy-api.yml`): changes under `apps/api` or `packages/database` trigger remote migrations for both D1 databases, a push of the `BETTER_AUTH_SECRET` repository secret to the Worker, then a Worker deploy. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
+- **Deploy API** (`.github/workflows/deploy-api.yml`): changes under `apps/api`, the database packages, or `tools/cloudflare-production` trigger remote migrations for both D1 databases. One `wrangler deploy --secrets-file` invocation uploads the checked-out production code, `wrangler.jsonc` bindings, and `BETTER_AUTH_SECRET`, then deploys that uploaded version. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
 - **Deploy Web** (`.github/workflows/deploy-web.yml`): changes under `apps/web` or the api's router types trigger a build with `VITE_API_URL=https://calwise-api.lastlab.win`, then publish `dist` to the `calwise` Pages project.
 
 Shared package configuration, the lockfile, root TypeScript configuration, and the CI/checks workflows trigger both deployments. Each deployment workflow also triggers its own deployment when changed. Path matching covers all commits in the push.
@@ -90,7 +90,7 @@ Same-repository pull requests deploy after both check jobs pass. Fork pull reque
 Each preview uses Cloudflare's native deployment URLs:
 
 - Pages Direct Upload publishes the built site on its stable `pr-<number>.<pages-subdomain>.pages.dev` branch alias. The Pages project name is `calwise`, but Cloudflare assigned it the `calwise-auf.pages.dev` subdomain, so the workflow reads the alias from Wrangler instead of constructing it.
-- `wrangler versions upload --preview-alias pr-<number>` uploads an API Worker version without promoting it or changing production routes. `preview_urls: true` is explicit because `workers_dev` remains disabled. Worker preview URLs are public and only available on the account's `workers.dev` subdomain. Wrangler version uploads read this shared setting but do not apply it.
+- `wrangler versions upload --preview-alias pr-<number>` uploads an API Worker version without promoting it or changing production routes. `preview_urls: true` is explicit because `workers_dev` remains disabled. Worker preview URLs are public and only available on the account's `workers.dev` subdomain. Wrangler version uploads read this shared setting but do not apply it. Production does not edit or deploy the latest uploaded version. Its single deploy command uses the version ID returned by its own upload, so a concurrent PR upload cannot select preview code or bindings for production.
 - Two D1 databases named `calwise-pr-<number>` and `calwise-food-pr-<number>` isolate accounts and catalog data from production. Updates reuse them, apply pending migrations, and upsert two synthetic foods. This keeps test accounts and sessions until the PR closes.
 
 The Pages deployment contains a generated advanced-mode `_worker.js`. It proxies `/api/auth`, `/trpc`, and `/health` to that PR's Worker. Authentication therefore uses first-party cookies on the Pages hostname. The proxy replaces the browser Origin header with the Worker preview origin, so the production API does not need a wildcard `pages.dev` allowlist.

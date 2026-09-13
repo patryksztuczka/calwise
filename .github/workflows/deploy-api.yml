@@ -33,11 +33,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Apply D1 migrations
         run: pnpm --filter @calwise/api db:migrate:remote
-      - name: Set the session signing secret
-        run: printf '%s' "$BETTER_AUTH_SECRET" | pnpm --filter @calwise/api exec wrangler secret put BETTER_AUTH_SECRET
+      - name: Deploy Worker with production session signing secret
+        run: bash tools/cloudflare-production/deploy.sh '${{ github.sha }}'
         env:
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-      - name: Deploy Worker
-        run: pnpm --filter @calwise/api run deploy
       - name: Smoke test
         run: curl --fail --silent --show-error --retry 5 --retry-delay 5 --retry-all-errors https://calwise-api.lastlab.win/health
