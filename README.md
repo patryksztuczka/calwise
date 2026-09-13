@@ -74,14 +74,37 @@ Inside `apps/api`: `pnpm db:migrate:remote` and `pnpm deploy` are what CD runs; 
 
 Infrastructure must exist before the first application deployment. See [infra/README.md](./infra/README.md) for the one-time bootstrap (state bucket, API tokens, repository secrets) and the manual **Infrastructure** workflow.
 
-After that, `CI` runs `checks.yml` once per pull request update or push to `master`: formatting, lint, typecheck, unit tests, builds, and the Playwright end-to-end test against emulated Cloudflare services. Pull requests never deploy. On pushes to `master`, both check jobs must pass before CI calls the applicable deployment workflows:
+After that, `CI` runs `checks.yml` once per pull request update or push to `master`: formatting, lint, typecheck, unit tests, builds, and the Playwright end-to-end test against emulated Cloudflare services. On pushes to `master`, both check jobs must pass before CI calls the applicable production deployment workflows:
 
 - **Deploy API** (`.github/workflows/deploy-api.yml`): changes under `apps/api` or `packages/database` trigger remote migrations for both D1 databases, a push of the `BETTER_AUTH_SECRET` repository secret to the Worker, then a Worker deploy. The custom domain `calwise-api.lastlab.win` is declared in `wrangler.jsonc` and created on the first deploy.
 - **Deploy Web** (`.github/workflows/deploy-web.yml`): changes under `apps/web` or the api's router types trigger a build with `VITE_API_URL=https://calwise-api.lastlab.win`, then publish `dist` to the `calwise` Pages project.
 
 Shared package configuration, the lockfile, root TypeScript configuration, and the CI/checks workflows trigger both deployments. Each deployment workflow also triggers its own deployment when changed. Path matching covers all commits in the push.
 
-Neither deployment waits for the other, and neither reruns the checks. A push affecting both apps runs four jobs total: two check jobs and two deployment jobs. New pull request updates cancel outdated CI runs; master runs do not cancel in-progress migrations or deployments. A failed deployment is a normal failed GitHub Actions run; there is no automatic rollback.
+Neither production deployment waits for the other, and neither reruns the checks. A push affecting both apps runs four jobs total: two check jobs and two deployment jobs. CI queues newer commits behind an active run so it never interrupts migrations or deployments. A failed deployment is a normal failed GitHub Actions run; there is no automatic rollback.
+
+### Pull request previews
+
+Same-repository pull requests deploy after both check jobs pass. Fork pull requests only run checks because GitHub must not expose Cloudflare credentials to fork code. Preview lifecycle jobs share a per-PR concurrency key and do not cancel in progress, so a new commit or close event cannot interrupt a D1 migration.
+
+Each preview uses Cloudflare's native deployment URLs:
+
+- Pages Direct Upload publishes the built site on the stable `pr-<number>.calwise.pages.dev` branch alias.
+- `wrangler versions upload --preview-alias pr-<number>` uploads an API Worker version without promoting it or changing production routes. `preview_urls: true` is explicit because `workers_dev` remains disabled. Worker preview URLs are public and only available on the account's `workers.dev` subdomain.
+- Two D1 databases named `calwise-pr-<number>` and `calwise-food-pr-<number>` isolate accounts and catalog data from production. Updates reuse them, apply pending migrations, and upsert two synthetic foods. This keeps test accounts and sessions until the PR closes.
+
+The Pages deployment contains a generated advanced-mode `_worker.js`. It proxies `/api/auth`, `/trpc`, and `/health` to that PR's Worker. Authentication therefore uses first-party cookies on the Pages hostname. The proxy replaces the browser Origin header with the Worker preview origin, so the production API does not need a wildcard `pages.dev` allowlist.
+
+The close workflow deletes both D1 databases. Cloudflare does not provide deletion for Worker preview aliases, and Pages does not allow deletion of a branch's latest deployment. Those native URLs can remain after close, but the Worker version loses access to the deleted databases. Cloudflare retains only the 1,000 newest Worker aliases. Enable Cloudflare Access for Pages and Worker previews in the dashboard if previews must not be public.
+
+One-time setup:
+
+1. Add `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `PREVIEW_BETTER_AUTH_SECRET` as GitHub repository secrets. Use a random value of at least 32 bytes for the preview auth secret. It must differ from `BETTER_AUTH_SECRET`.
+2. Give the Cloudflare token Account D1 Edit, Workers Scripts Edit, and Cloudflare Pages Edit permissions. Scope it to the Calwise account. The workflow never runs Terraform and keeps preview resources outside production Terraform state.
+3. Confirm the Pages project is named `calwise` and the Worker is already deployed as `calwise-api`. Worker version uploads cannot create a Worker for the first time.
+4. Optionally protect both projects' preview URLs with Cloudflare Access. Access setup is a dashboard setting and is not managed by this repository.
+
+A pull request comment points to the stable Pages alias and updates on every deployment. The first preview for this workflow can run only after GitHub recognizes the workflow on the default branch. Until then, verify it with a follow-up same-repository PR after merging this change.
 
 ## Effect typechecking
 

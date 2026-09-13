@@ -4,6 +4,7 @@
   "main": "src/worker.ts",
   "compatibility_date": "2026-08-25",
   "workers_dev": false,
+  "preview_urls": true,
   "routes": [{ "pattern": "calwise-api.lastlab.win", "custom_domain": true }],
   "observability": { "enabled": true },
   "d1_databases": [

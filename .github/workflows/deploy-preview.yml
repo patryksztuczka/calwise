@@ -1,0 +1,68 @@
+name: Deploy pull request preview
+
+on:
+  workflow_call:
+    inputs:
+      pull_request_number:
+        required: true
+        type: number
+      commit_sha:
+        required: true
+        type: string
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+      PREVIEW_BETTER_AUTH_SECRET:
+        required: true
+
+concurrency:
+  group: preview-pr-${{ inputs.pull_request_number }}
+  # Database migrations and cleanup must finish before another lifecycle action starts.
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Create isolated full-stack preview
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PREVIEW_BETTER_AUTH_SECRET: ${{ secrets.PREVIEW_BETTER_AUTH_SECRET }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.commit_sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build web app
+        run: pnpm --filter @calwise/web build
+      - name: Deploy API, databases, and web app
+        id: preview
+        run: bash tools/cloudflare-preview/deploy.sh '${{ inputs.pull_request_number }}' '${{ inputs.commit_sha }}'
+      - name: Add preview URL to pull request
+        env:
+          WEB_URL: ${{ steps.preview.outputs.web_url }}
+          API_URL: ${{ steps.preview.outputs.api_url }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
+        run: |
+          marker='<!-- calwise-cloudflare-preview -->'
+          cat > /tmp/preview-comment.md <<EOF
+          ${marker}
+          Cloudflare preview: [open Calwise](${WEB_URL})
+
+          The preview uses two isolated D1 databases. The Worker endpoint is ${API_URL}.
+          EOF
+          comment_id=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq ".[] | select(.body | contains(\"${marker}\")) | .id" | head -1)
+          if [[ -n $comment_id ]]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" -F body=@/tmp/preview-comment.md
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -F body=@/tmp/preview-comment.md
+          fi
