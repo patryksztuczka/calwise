@@ -7,6 +7,7 @@
     "build": "vp build",
     "preview": "vp preview",
     "e2e": "playwright test",
+    "ocr:smoke": "vp exec tsx scripts/ocr-smoke.ts",
     "deploy": "wrangler pages deploy dist --project-name calwise",
     "typecheck": "tsc -p tsconfig.json"
   },
@@ -20,6 +21,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:",
+    "tesseract.js": "catalog:",
     "zxing-wasm": "catalog:"
   },
   "devDependencies": {

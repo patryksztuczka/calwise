@@ -1,4 +1,5 @@
 import type { AppRouter } from "@calwise/api/trpc";
+import type { ParsedNutritionLabel } from "../src/modules/scanner/nutrition-label-parser.ts";
 import {
   expect,
   test as base,
@@ -96,20 +97,50 @@ interface BarcodeScannerFixture {
   readonly capture: (code: string) => Promise<void>;
 }
 
+interface NutritionScannerFixture {
+  readonly denyCamera: () => Promise<void>;
+  readonly setReading: (reading: ParsedNutritionLabel) => Promise<void>;
+}
+
 declare global {
   interface Window {
     calwiseTestCaptureBarcode?: (code: string) => void;
+    calwiseTestDenyCamera?: () => void;
+    calwiseTestSetNutritionReading?: (reading: ParsedNutritionLabel) => void;
   }
 }
 
-export const test = base.extend<{ readonly barcodeScanner: BarcodeScannerFixture }>({
+export const test = base.extend<{
+  readonly barcodeScanner: BarcodeScannerFixture;
+  readonly nutritionScanner: NutritionScannerFixture;
+}>({
   barcodeScanner: [
     async ({ page }, use) => {
       await page.addInitScript(() => {
         let capturedCode: string | undefined;
+        let denyCamera = false;
         window.calwiseTestCaptureBarcode = (code) => {
           capturedCode = code;
         };
+        window.calwiseTestDenyCamera = () => {
+          denyCamera = true;
+        };
+        let nutritionReading: ParsedNutritionLabel = {
+          basis: "ml",
+          canPrefill: true,
+          issues: [],
+          values: {
+            energyKcal100: "40",
+            protein100: "0",
+            carbohydrates100: "9.5",
+            fat100: "0",
+            sugars100: "9.5",
+          },
+        };
+        window.calwiseTestSetNutritionReading = (reading) => {
+          nutritionReading = reading;
+        };
+        window.calwiseTestNutritionRecognize = () => nutritionReading;
 
         class TestBarcodeDetector {
           private initialized = false;
@@ -145,7 +176,12 @@ export const test = base.extend<{ readonly barcodeScanner: BarcodeScannerFixture
         Object.defineProperty(window, "isSecureContext", { configurable: true, value: true });
         Object.defineProperty(navigator, "mediaDevices", {
           configurable: true,
-          value: { getUserMedia: async () => stream },
+          value: {
+            getUserMedia: async () => {
+              if (denyCamera) throw new DOMException("denied in browser test", "NotAllowedError");
+              return stream;
+            },
+          },
         });
         Object.defineProperty(window, "BarcodeDetector", {
           configurable: true,
@@ -194,6 +230,27 @@ export const test = base.extend<{ readonly barcodeScanner: BarcodeScannerFixture
             if (!capture) throw new Error("Barcode scanner fixture was not installed");
             capture(value);
           }, code);
+        },
+      });
+    },
+    { auto: true },
+  ],
+  nutritionScanner: [
+    async ({ page }, use) => {
+      await use({
+        denyCamera: async () => {
+          await page.evaluate(() => {
+            const deny = window.calwiseTestDenyCamera;
+            if (!deny) throw new Error("Nutrition scanner fixture was not installed");
+            deny();
+          });
+        },
+        setReading: async (reading) => {
+          await page.evaluate((nextReading) => {
+            const setReading = window.calwiseTestSetNutritionReading;
+            if (!setReading) throw new Error("Nutrition scanner fixture was not installed");
+            setReading(nextReading);
+          }, reading);
         },
       });
     },

@@ -5,7 +5,7 @@ import {
   type PersonalProductDraftField,
 } from "@calwise/food-rules/personal-product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Barcode, CircleAlert, ScanBarcode } from "lucide-react";
+import { ArrowLeft, Barcode, CircleAlert, PenLine, ScanBarcode, ScanText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useBlocker, useNavigate, useSearchParams } from "react-router";
 import { BottomSheet } from "../components/bottom-sheet";
@@ -16,6 +16,12 @@ import { useTRPC } from "../lib/trpc";
 import { useLogDestination } from "../modules/food-log/destination";
 import { ProductIdentity } from "../modules/food/product-details";
 import { BarcodeScanner } from "../modules/scanner/barcode-scanner";
+import { NutritionLabelScanner } from "../modules/scanner/nutrition-label-scanner";
+import {
+  countCopiedNutritionValues,
+  mergeNutritionCapture,
+  type TouchedProductField,
+} from "../modules/scanner/nutrition-scan-state";
 
 type FieldName = PersonalProductDraftField;
 type Draft = PersonalProductDraft;
@@ -64,8 +70,15 @@ export default function CreateProductPage() {
     [params],
   );
   const [draft, setDraft] = useState<Draft>(initialDraft);
+  const [mode, setMode] = useState<"choose" | "manual" | "scan">("choose");
   const [step, setStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<Errors>({});
+  const [basisConfirmed, setBasisConfirmed] = useState(false);
+  const [basisError, setBasisError] = useState<string | null>(null);
+  const [scanNotice, setScanNotice] = useState<{
+    readonly kind: "info" | "error";
+    readonly text: string;
+  } | null>(null);
   const [scanning, setScanning] = useState(false);
   const [existingProductId, setExistingProductId] = useState<string | null>(null);
   const destination = useLogDestination();
@@ -74,6 +87,8 @@ export default function CreateProductPage() {
   const navigate = useNavigate();
   const leaving = useRef(false);
   const request = useRef<{ payload: string; id: string } | null>(null);
+  const touched = useRef(new Set<TouchedProductField>());
+  const scanAttempted = useRef(false);
   const dirty = JSON.stringify(draft) !== JSON.stringify(emptyDraft);
   const blocker = useBlocker(() => dirty && !leaving.current);
   const save = useMutation(trpc.food.personalCreate.mutationOptions());
@@ -106,6 +121,7 @@ export default function CreateProductPage() {
 
   function update(field: FieldName, value: string) {
     if (save.isPending) return;
+    touched.current.add(field);
     setDraft((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
     if (save.isError) save.reset();
@@ -113,13 +129,20 @@ export default function CreateProductPage() {
 
   function updateBasis(nutritionBasis: Draft["nutritionBasis"]) {
     if (save.isPending) return;
+    touched.current.add("nutritionBasis");
+    setBasisConfirmed(true);
+    setBasisError(null);
     setDraft((current) => ({ ...current, nutritionBasis }));
     if (save.isError) save.reset();
   }
 
   function goBack() {
-    if (step === 2) {
+    if (mode === "manual" && step === 2) {
       setStep(1);
+      return;
+    }
+    if (mode !== "choose") {
+      setMode("choose");
       return;
     }
     leaveForMyFoods();
@@ -149,6 +172,11 @@ export default function CreateProductPage() {
   function submit(event: FormEvent) {
     event.preventDefault();
     const result = personalProductDraftToCreateValues(draft);
+    if (!basisConfirmed) {
+      setBasisError("Choose whether these values are per 100 g or per 100 ml.");
+      if (!result.ok) setErrors(result.errors);
+      return;
+    }
     if (!result.ok) {
       setErrors(result.errors);
       return;
@@ -185,186 +213,302 @@ export default function CreateProductPage() {
     <div className="flex min-h-[calc(100dvh-40px)] flex-col gap-4">
       <header className="flex h-11 items-center gap-3.5">
         <IconButton
-          aria-label={step === 1 ? "Back to My foods" : "Back to product details"}
+          aria-label={
+            mode === "choose"
+              ? "Back to My foods"
+              : mode === "manual" && step === 2
+                ? "Back to product details"
+                : "Back to creation options"
+          }
           onClick={goBack}
           disabled={save.isPending}
         >
           <ArrowLeft size={21} aria-hidden="true" />
         </IconButton>
-        <h1 className="font-display text-30 font-bold italic">CREATE PRODUCT</h1>
+        <h1 className="font-display text-30 font-bold italic">
+          {mode === "scan" ? "SCAN NUTRITION" : "CREATE PRODUCT"}
+        </h1>
       </header>
-      <p className="text-11 font-semibold text-lime">
-        STEP {step} OF 2 · {step === 1 ? "PRODUCT DETAILS" : "NUTRITION"}
-      </p>
-      {step === 1 ? (
-        <form className="flex flex-1 flex-col gap-4" onSubmit={nextStep} noValidate>
-          <TextField
-            field="name"
-            label="Product name"
-            value={draft.name}
-            error={errors.name}
-            required
-            disabled={save.isPending}
-            onChange={update}
-          />
-          <TextField
-            field="brand"
-            label="Brand (optional)"
-            value={draft.brand}
-            error={errors.brand}
-            disabled={save.isPending}
-            onChange={update}
-          />
-          <TextField
-            field="barcode"
-            label="Barcode (optional)"
-            value={draft.barcode}
-            error={errors.barcode}
-            inputMode="numeric"
-            disabled={save.isPending}
-            onChange={update}
-            trailing={
-              <button
-                type="button"
-                aria-label="Open barcode scanner"
-                disabled={save.isPending}
-                onClick={() => setScanning(true)}
-                className="flex size-11 shrink-0 items-center justify-center text-lime"
-              >
-                <ScanBarcode size={21} aria-hidden="true" />
-              </button>
-            }
-          />
-          <TextField
-            field="packageQuantity"
-            label="Package quantity (optional)"
-            placeholder="e.g. 1 L or 500 g"
-            value={draft.packageQuantity}
-            error={errors.packageQuantity}
-            disabled={save.isPending}
-            onChange={update}
-          />
-          <TextField
-            field="servingSize"
-            label="Serving size (optional)"
-            placeholder="e.g. 250 ml or 1 slice (30 g)"
-            value={draft.servingSize}
-            error={errors.servingSize}
-            disabled={save.isPending}
-            onChange={update}
-          />
-          <p className="text-11 leading-relaxed text-muted">
-            Product name is required. Add a barcode only when the product has one.
-          </p>
-          <div className="sticky bottom-0 mt-auto bg-bg pt-3 pb-2">
-            <PrimaryAction type="submit" size="compact">
-              NEXT: NUTRITION
-            </PrimaryAction>
-          </div>
-        </form>
-      ) : (
-        <form className="flex flex-1 flex-col gap-4" onSubmit={submit} noValidate>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-11 font-bold tracking-[1px]">VALUES FROM THE LABEL</legend>
-            <div className="grid grid-cols-2 rounded-8 border border-line bg-surface p-1">
-              {(["g", "ml"] as const).map((basis) => (
-                <button
-                  key={basis}
-                  type="button"
-                  role="radio"
-                  aria-checked={draft.nutritionBasis === basis}
-                  aria-label={`Per 100 ${basis}`}
-                  disabled={save.isPending}
-                  onClick={() => updateBasis(basis)}
-                  className={`h-9 rounded-8 text-12 font-semibold ${
-                    draft.nutritionBasis === basis ? "bg-lime text-bg" : "text-muted"
-                  }`}
-                >
-                  Per 100 {basis}
-                </button>
-              ))}
-            </div>
-            <p className="text-11 leading-relaxed text-muted">
-              Changing the basis keeps every value as entered. No conversion occurs.
+      {mode === "choose" && (
+        <section className="flex flex-1 flex-col gap-4">
+          <div>
+            <p className="text-11 font-semibold text-lime">HOW DO YOU WANT TO START?</p>
+            <p className="mt-2 text-13 leading-relaxed text-muted">
+              Scan a nutrition table locally or enter the same two-step form by hand.
             </p>
-          </fieldset>
-          <p className="text-12 text-muted">
-            Calories, protein, carbohydrates and fat are required.
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {nutritionFields.slice(0, 4).map(([field, label, unit, required]) => (
-              <NutritionField
-                key={field}
-                field={field}
-                label={label}
-                unit={unit}
-                required={required}
-                value={draft[field]}
-                error={errors[field]}
-                disabled={save.isPending}
-                onChange={update}
-              />
-            ))}
-            <h2 className="col-span-2 mt-2 text-11 font-bold tracking-[1px] text-muted">
-              OPTIONAL NUTRIENTS
-            </h2>
-            {nutritionFields.slice(4).map(([field, label, unit, required]) => (
-              <NutritionField
-                key={field}
-                field={field}
-                label={label}
-                unit={unit}
-                required={required}
-                value={draft[field]}
-                error={errors[field]}
-                disabled={save.isPending}
-                onChange={update}
-              />
-            ))}
           </div>
-          <p className="text-11 text-muted">Blank optional values stay unknown, not zero.</p>
-          {save.isError && conflict?.kind === "DUPLICATE_BARCODE" && (
-            <div
-              role="alert"
-              className="flex flex-col gap-3 rounded-10 border border-danger/50 p-3 text-12"
+          <button
+            type="button"
+            onClick={() => {
+              scanAttempted.current = true;
+              setMode("scan");
+            }}
+            className="flex min-h-28 items-center gap-4 rounded-14 border border-lime/50 bg-accent-soft p-4 text-left"
+          >
+            <ScanText size={28} className="shrink-0 text-lime" aria-hidden="true" />
+            <span>
+              <span className="block font-display text-22 font-bold italic">
+                SCAN NUTRITION LABEL
+              </span>
+              <span className="mt-1 block text-11 leading-relaxed text-muted">
+                Automatic Polish and English OCR. You review every value before saving.
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!scanAttempted.current) setBasisConfirmed(true);
+              setMode("manual");
+            }}
+            className="flex min-h-28 items-center gap-4 rounded-14 border border-line bg-surface p-4 text-left"
+          >
+            <PenLine size={28} className="shrink-0 text-lime" aria-hidden="true" />
+            <span>
+              <span className="block font-display text-22 font-bold italic">ENTER MANUALLY</span>
+              <span className="mt-1 block text-11 leading-relaxed text-muted">
+                Use the existing product details and nutrition form.
+              </span>
+            </span>
+          </button>
+          {(draft.name || draft.barcode) && (
+            <p role="status" className="text-11 text-muted">
+              Incoming product name and barcode are kept whichever option you choose.
+            </p>
+          )}
+        </section>
+      )}
+      {mode === "scan" && (
+        <NutritionLabelScanner
+          onManual={() => setMode("manual")}
+          onCapture={(capture) => {
+            const merged = mergeNutritionCapture(draft, capture, touched.current);
+            if (merged.ok) {
+              setDraft(merged.draft);
+              touched.current.add("nutritionBasis");
+              setBasisConfirmed(true);
+              setBasisError(null);
+              const count = countCopiedNutritionValues(draft, merged.draft);
+              setScanNotice({
+                kind: "info",
+                text: `${count} ${count === 1 ? "value" : "values"} copied from the per 100 ${capture.basis} column. Existing entries were kept.`,
+              });
+              setErrors({});
+            } else {
+              setScanNotice({
+                kind: "error",
+                text: `This scan is per 100 ${capture.basis}, but the draft is per 100 ${draft.nutritionBasis}. No values were copied. Clear or resolve the existing nutrition and basis together before scanning again.`,
+              });
+            }
+            setStep(1);
+            setMode("manual");
+          }}
+        />
+      )}
+      {mode === "manual" && (
+        <>
+          <p className="text-11 font-semibold text-lime">
+            STEP {step} OF 2 · {step === 1 ? "PRODUCT DETAILS" : "NUTRITION"}
+          </p>
+          {scanNotice && (
+            <p
+              role={scanNotice.kind === "error" ? "alert" : "status"}
+              className={`rounded-8 border p-3 text-11 ${
+                scanNotice.kind === "error"
+                  ? "border-danger/50 text-danger"
+                  : "border-success-border bg-success-soft"
+              }`}
             >
-              <p className="text-danger">You already have a personal product with this barcode.</p>
-              {conflict.existingProductId && (
+              {scanNotice.text}
+            </p>
+          )}
+          {step === 1 ? (
+            <form className="flex flex-1 flex-col gap-4" onSubmit={nextStep} noValidate>
+              <TextField
+                field="name"
+                label="Product name"
+                value={draft.name}
+                error={errors.name}
+                required
+                disabled={save.isPending}
+                onChange={update}
+              />
+              <TextField
+                field="brand"
+                label="Brand (optional)"
+                value={draft.brand}
+                error={errors.brand}
+                disabled={save.isPending}
+                onChange={update}
+              />
+              <TextField
+                field="barcode"
+                label="Barcode (optional)"
+                value={draft.barcode}
+                error={errors.barcode}
+                inputMode="numeric"
+                disabled={save.isPending}
+                onChange={update}
+                trailing={
+                  <button
+                    type="button"
+                    aria-label="Open barcode scanner"
+                    disabled={save.isPending}
+                    onClick={() => setScanning(true)}
+                    className="flex size-11 shrink-0 items-center justify-center text-lime"
+                  >
+                    <ScanBarcode size={21} aria-hidden="true" />
+                  </button>
+                }
+              />
+              <TextField
+                field="packageQuantity"
+                label="Package quantity (optional)"
+                placeholder="e.g. 1 L or 500 g"
+                value={draft.packageQuantity}
+                error={errors.packageQuantity}
+                disabled={save.isPending}
+                onChange={update}
+              />
+              <TextField
+                field="servingSize"
+                label="Serving size (optional)"
+                placeholder="e.g. 250 ml or 1 slice (30 g)"
+                value={draft.servingSize}
+                error={errors.servingSize}
+                disabled={save.isPending}
+                onChange={update}
+              />
+              <p className="text-11 leading-relaxed text-muted">
+                Product name is required. Add a barcode only when the product has one.
+              </p>
+              <div className="sticky bottom-0 mt-auto bg-bg pt-3 pb-2">
+                <PrimaryAction type="submit" size="compact">
+                  NEXT: NUTRITION
+                </PrimaryAction>
+              </div>
+            </form>
+          ) : (
+            <form className="flex flex-1 flex-col gap-4" onSubmit={submit} noValidate>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-2 text-11 font-bold tracking-[1px]">
+                  VALUES FROM THE LABEL
+                </legend>
+                <div className="grid grid-cols-2 rounded-8 border border-line bg-surface p-1">
+                  {(["g", "ml"] as const).map((basis) => (
+                    <button
+                      key={basis}
+                      type="button"
+                      role="radio"
+                      aria-checked={basisConfirmed && draft.nutritionBasis === basis}
+                      aria-label={`Per 100 ${basis}`}
+                      disabled={save.isPending}
+                      onClick={() => updateBasis(basis)}
+                      className={`h-9 rounded-8 text-12 font-semibold ${
+                        basisConfirmed && draft.nutritionBasis === basis
+                          ? "bg-lime text-bg"
+                          : "text-muted"
+                      }`}
+                    >
+                      Per 100 {basis}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-11 leading-relaxed text-muted">
+                  Changing the basis keeps every value as entered. No conversion occurs.
+                </p>
+                {!basisConfirmed && (
+                  <p className="text-11 text-muted">
+                    The scan did not confirm a basis. Choose one before saving.
+                  </p>
+                )}
+                {basisError && (
+                  <p role="alert" className="text-11 text-danger">
+                    {basisError}
+                  </p>
+                )}
+              </fieldset>
+              <p className="text-12 text-muted">
+                Calories, protein, carbohydrates and fat are required.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {nutritionFields.slice(0, 4).map(([field, label, unit, required]) => (
+                  <NutritionField
+                    key={field}
+                    field={field}
+                    label={label}
+                    unit={unit}
+                    required={required}
+                    value={draft[field]}
+                    error={errors[field]}
+                    disabled={save.isPending}
+                    onChange={update}
+                  />
+                ))}
+                <h2 className="col-span-2 mt-2 text-11 font-bold tracking-[1px] text-muted">
+                  OPTIONAL NUTRIENTS
+                </h2>
+                {nutritionFields.slice(4).map(([field, label, unit, required]) => (
+                  <NutritionField
+                    key={field}
+                    field={field}
+                    label={label}
+                    unit={unit}
+                    required={required}
+                    value={draft[field]}
+                    error={errors[field]}
+                    disabled={save.isPending}
+                    onChange={update}
+                  />
+                ))}
+              </div>
+              <p className="text-11 text-muted">Blank optional values stay unknown, not zero.</p>
+              {save.isError && conflict?.kind === "DUPLICATE_BARCODE" && (
+                <div
+                  role="alert"
+                  className="flex flex-col gap-3 rounded-10 border border-danger/50 p-3 text-12"
+                >
+                  <p className="text-danger">
+                    You already have a personal product with this barcode.
+                  </p>
+                  {conflict.existingProductId && (
+                    <button
+                      type="button"
+                      onClick={() => setExistingProductId(conflict.existingProductId ?? null)}
+                      className="min-h-11 self-start text-lime"
+                    >
+                      View existing product
+                    </button>
+                  )}
+                  <p className="text-muted">
+                    Your draft is unchanged. Correct or remove the barcode to save it separately.
+                  </p>
+                </div>
+              )}
+              {save.isError && conflict?.kind !== "DUPLICATE_BARCODE" && (
+                <div role="alert" className="flex items-start gap-2 text-12 text-danger">
+                  <CircleAlert size={18} className="shrink-0" aria-hidden="true" />
+                  {conflict?.kind === "IDEMPOTENCY_KEY_REUSED"
+                    ? "This save request no longer matches the draft. Change a field and try again."
+                    : "Could not save this product. Your draft is intact. Try again."}
+                </div>
+              )}
+              <div className="sticky bottom-0 mt-auto flex gap-3 bg-bg pt-3 pb-2">
                 <button
                   type="button"
-                  onClick={() => setExistingProductId(conflict.existingProductId ?? null)}
-                  className="min-h-11 self-start text-lime"
+                  onClick={() => setStep(1)}
+                  disabled={save.isPending}
+                  className="h-[50px] min-w-24 rounded-10 border border-line bg-surface text-12 font-semibold"
                 >
-                  View existing product
+                  BACK
                 </button>
-              )}
-              <p className="text-muted">
-                Your draft is unchanged. Correct or remove the barcode to save it separately.
-              </p>
-            </div>
+                <PrimaryAction type="submit" size="compact" disabled={save.isPending}>
+                  {save.isPending ? "SAVING…" : "SAVE PRODUCT"}
+                </PrimaryAction>
+              </div>
+            </form>
           )}
-          {save.isError && conflict?.kind !== "DUPLICATE_BARCODE" && (
-            <div role="alert" className="flex items-start gap-2 text-12 text-danger">
-              <CircleAlert size={18} className="shrink-0" aria-hidden="true" />
-              {conflict?.kind === "IDEMPOTENCY_KEY_REUSED"
-                ? "This save request no longer matches the draft. Change a field and try again."
-                : "Could not save this product. Your draft is intact. Try again."}
-            </div>
-          )}
-          <div className="sticky bottom-0 mt-auto flex gap-3 bg-bg pt-3 pb-2">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              disabled={save.isPending}
-              className="h-[50px] min-w-24 rounded-10 border border-line bg-surface text-12 font-semibold"
-            >
-              BACK
-            </button>
-            <PrimaryAction type="submit" size="compact" disabled={save.isPending}>
-              {save.isPending ? "SAVING…" : "SAVE PRODUCT"}
-            </PrimaryAction>
-          </div>
-        </form>
+        </>
       )}
       {scanning && (
         <BottomSheet

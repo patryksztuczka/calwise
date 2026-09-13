@@ -14,6 +14,13 @@ import {
   type PersonalCreateResult,
 } from "./personal-product-fixtures.ts";
 
+async function openManualEntry(page: Page) {
+  const manual = page.getByRole("button", { name: "ENTER MANUALLY" });
+  const productName = page.getByLabel("Product name");
+  await expect(manual.or(productName)).toBeVisible();
+  if (await manual.isVisible()) await manual.click();
+}
+
 async function fillProductDetails(
   page: Page,
   {
@@ -30,6 +37,7 @@ async function fillProductDetails(
     servingSize?: string;
   },
 ) {
+  await openManualEntry(page);
   await page.getByLabel("Product name").fill(name);
   await page.getByLabel("Brand (optional)").fill(brand);
   await page.getByLabel("Barcode (optional)").fill(barcode);
@@ -79,6 +87,8 @@ test.describe("personal product browser journeys", () => {
     expect(await data(await query(page.request, "foodLog.day", { date: logDate }))).toEqual([]);
 
     await page.getByRole("link", { name: "Create product" }).click();
+    await expect(page.getByRole("button", { name: "SCAN NUTRITION LABEL" })).toBeVisible();
+    await openManualEntry(page);
     await page.getByRole("button", { name: "NEXT: NUTRITION" }).click();
     await expect(page.getByRole("alert")).toHaveText("Enter a product name.");
     const name = `Browser liquid ${crypto.randomUUID()}`;
@@ -175,6 +185,174 @@ test.describe("personal product browser journeys", () => {
     });
   });
 
+  test("scans locally, preserves edits, then reviews and saves without logging a meal", async ({
+    page,
+  }) => {
+    await signUp(page, "browser-nutrition-ocr");
+    const name = `Scanned drink ${crypto.randomUUID()}`;
+    const barcode = `6${Math.floor(1_000_000_000_000 + Math.random() * 8_000_000_000_000)}`;
+    await page.goto(
+      `/create-product?date=${logDate}&meal=snacks&name=${encodeURIComponent(name)}&barcode=${barcode}`,
+    );
+    const posts: string[] = [];
+    page.on("request", (request) => {
+      if (request.method() === "POST") posts.push(request.url());
+    });
+
+    await openManualEntry(page);
+    await expect(page.getByLabel("Product name")).toHaveValue(name);
+    await expect(page.getByLabel("Barcode (optional)")).toHaveValue(barcode);
+    await page.getByLabel("Brand (optional)").fill("Kept brand");
+    await openNutrition(page);
+    await page.getByRole("radio", { name: "Per 100 ml" }).click();
+    await page.getByLabel("Calories").fill("123");
+    await page.getByRole("button", { name: "Back to product details" }).click();
+    await page.getByRole("button", { name: "Back to creation options" }).click();
+
+    await page.getByRole("button", { name: "SCAN NUTRITION LABEL" }).click();
+    await expect(page.getByText("READING CONFIRMED")).toHaveCount(0);
+    await expect(page.getByText("READING CONFIRMED")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Captured basis: per 100 ml")).toBeVisible();
+    expect(posts).toEqual([]);
+    expect(await data(await query(page.request, "foodLog.day", { date: logDate }))).toEqual([]);
+
+    await page.getByRole("button", { name: "REVIEW & EDIT" }).click();
+    await expect(page.getByRole("status")).toContainText("4 values copied");
+    await expect(page.getByLabel("Product name")).toHaveValue(name);
+    await expect(page.getByLabel("Brand (optional)")).toHaveValue("Kept brand");
+    await expect(page.getByLabel("Barcode (optional)")).toHaveValue(barcode);
+    await openNutrition(page);
+    await expect(page.getByRole("radio", { name: "Per 100 ml" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await expect(page.getByLabel("Calories")).toHaveValue("123");
+    await expect(page.getByLabel("Protein")).toHaveValue("0");
+    await expect(page.getByLabel("Carbohydrates")).toHaveValue("9.5");
+    await expect(page.getByLabel("Fat", { exact: true })).toHaveValue("0");
+    expect(posts).toEqual([]);
+
+    await page.getByLabel("Protein").fill("1");
+    await page.getByRole("button", { name: "SAVE PRODUCT" }).click();
+    await expect(page).toHaveURL(new RegExp(`/my-foods\\?date=${logDate}&meal=snacks`));
+    expect(posts).toHaveLength(1);
+    expect(posts[0]).toContain("food.personalCreate");
+    expect(await data(await query(page.request, "foodLog.day", { date: logDate }))).toEqual([]);
+    const products = await collectPages(page.request, { query: name });
+    expect(products).toHaveLength(1);
+    expect(products[0]).toMatchObject({
+      name,
+      brand: "Kept brand",
+      barcode,
+      nutritionBasis: "ml",
+      energyKcal100: 123,
+      protein100: 1,
+      carbohydrates100: 9.5,
+      fat100: 0,
+      sugars100: 9.5,
+    });
+  });
+
+  test("requires an explicit basis after unusable scan OCR before manual save", async ({
+    page,
+    nutritionScanner,
+  }) => {
+    await signUp(page, "browser-ocr-unknown-basis");
+    const name = `Unknown basis ${crypto.randomUUID()}`;
+    await page.goto(`/create-product?date=${logDate}&meal=lunch&name=${encodeURIComponent(name)}`);
+    await nutritionScanner.setReading({
+      canPrefill: false,
+      values: {},
+      issues: [
+        {
+          kind: "missing-basis",
+          message: "No explicit per 100 g or per 100 ml heading was found.",
+        },
+      ],
+    });
+    const posts: string[] = [];
+    page.on("request", (request) => {
+      if (request.method() === "POST") posts.push(request.url());
+    });
+
+    await page.getByRole("button", { name: "SCAN NUTRITION LABEL" }).click();
+    await expect(page.getByRole("status")).toContainText("No explicit per 100 g", {
+      timeout: 10_000,
+    });
+    await page.getByRole("button", { name: "Enter label manually" }).click();
+    await openNutrition(page);
+    await expect(page.getByRole("radio", { name: "Per 100 g" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+    await expect(page.getByRole("radio", { name: "Per 100 ml" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+    await fillRequiredNutrition(page);
+    await page.getByRole("button", { name: "SAVE PRODUCT" }).click();
+    await expect(page.getByRole("alert")).toHaveText(
+      "Choose whether these values are per 100 g or per 100 ml.",
+    );
+    expect(posts).toEqual([]);
+
+    await page.getByRole("radio", { name: "Per 100 g" }).click();
+    await page.getByRole("button", { name: "SAVE PRODUCT" }).click();
+    await expect(page).toHaveURL(new RegExp(`/my-foods\\?date=${logDate}&meal=lunch`));
+    expect(posts).toHaveLength(1);
+  });
+
+  test("keeps a previously chosen basis after an unusable scan", async ({
+    page,
+    nutritionScanner,
+  }) => {
+    await signUp(page, "browser-ocr-prior-basis");
+    await page.goto(`/create-product?date=${logDate}&meal=breakfast`);
+    await fillProductDetails(page, { name: `Prior basis ${crypto.randomUUID()}` });
+    await openNutrition(page);
+    await page.getByRole("radio", { name: "Per 100 ml" }).click();
+    await fillRequiredNutrition(page);
+    await page.getByRole("button", { name: "Back to product details" }).click();
+    await page.getByRole("button", { name: "Back to creation options" }).click();
+    await nutritionScanner.setReading({
+      canPrefill: false,
+      values: {},
+      issues: [
+        {
+          kind: "missing-basis",
+          message: "No explicit per 100 g or per 100 ml heading was found.",
+        },
+      ],
+    });
+    await page.getByRole("button", { name: "SCAN NUTRITION LABEL" }).click();
+    await expect(page.getByRole("status")).toContainText("No explicit per 100 g", {
+      timeout: 10_000,
+    });
+    await page.getByRole("button", { name: "Enter label manually" }).click();
+    await openNutrition(page);
+    await expect(page.getByRole("radio", { name: "Per 100 ml" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await page.getByRole("button", { name: "SAVE PRODUCT" }).click();
+    await expect(page).toHaveURL(new RegExp(`/my-foods\\?date=${logDate}&meal=breakfast`));
+  });
+
+  test("falls back to the preserved manual draft after camera denial", async ({
+    page,
+    nutritionScanner,
+  }) => {
+    await signUp(page, "browser-ocr-denied");
+    const name = `Denied scan ${crypto.randomUUID()}`;
+    await page.goto(`/create-product?date=${logDate}&meal=lunch&name=${encodeURIComponent(name)}`);
+    await nutritionScanner.denyCamera();
+    await page.getByRole("button", { name: "SCAN NUTRITION LABEL" }).click();
+    await expect(page.getByRole("alert")).toContainText("Camera access was denied");
+    await page.getByRole("button", { name: "Enter label manually" }).click();
+    await expect(page.getByLabel("Product name")).toHaveValue(name);
+    expect(await data(await query(page.request, "foodLog.day", { date: logDate }))).toEqual([]);
+  });
+
   test("creates from a barcode no-match without losing barcode, meal, or date", async ({
     page,
     barcodeScanner,
@@ -186,6 +364,7 @@ test.describe("personal product browser journeys", () => {
     await barcodeScanner.capture(barcode);
     await expect(page.getByRole("heading", { name: "PRODUCT NOT FOUND" })).toBeVisible();
     await page.getByRole("link", { name: "CREATE PRODUCT" }).click();
+    await openManualEntry(page);
     await expect(page.getByLabel("Barcode (optional)")).toHaveValue(barcode);
     await expect(page).toHaveURL(new RegExp(`/create-product\\?date=${logDate}&meal=dinner$`));
 
@@ -229,19 +408,28 @@ test.describe("personal product browser journeys", () => {
     await expect(page.getByLabel("Package quantity (optional)")).toHaveValue("500 g");
     await expect(page.getByLabel("Serving size (optional)")).toHaveValue("one scoop");
 
+    await page.getByRole("button", { name: "Back to creation options" }).click();
+    await expect(page.getByLabel("Product name")).toHaveCount(0);
+    await page.getByRole("button", { name: "ENTER MANUALLY" }).click();
+    await expect(page.getByLabel("Product name")).toHaveValue("Draft product");
+    await page.getByRole("button", { name: "Back to creation options" }).click();
     await page.getByRole("button", { name: "Back to My foods" }).click();
     const dialog = page.getByRole("alertdialog", { name: "DISCARD PRODUCT?" });
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", { name: "KEEP EDITING" }).click();
+    await openManualEntry(page);
     await expect(page.getByLabel("Product name")).toHaveValue("Draft product");
+    await page.getByRole("button", { name: "Back to creation options" }).click();
     await page.getByRole("button", { name: "Back to My foods" }).click();
     await dialog.getByRole("button", { name: "Discard changes" }).click();
     await expect(page.getByRole("heading", { name: "ADD FOOD" })).toBeVisible();
 
     await page.goto(`/create-product?date=${logDate}&meal=snacks`);
+    await openManualEntry(page);
     await page.getByLabel("Product name").fill("Reloaded draft");
     page.once("dialog", (nativeDialog) => void nativeDialog.accept());
     await page.reload();
+    await openManualEntry(page);
     await expect(page.getByLabel("Product name")).toHaveValue("");
     await expect(page.getByLabel("Barcode (optional)")).toHaveValue("");
   });

@@ -6,6 +6,8 @@ allowBuilds:
   esbuild: true
   # optional native accelerator for effect's msgpackr dependency
   msgpackr-extract: true
+  # donation-only postinstall; OCR runtime assets are already in the package
+  tesseract.js: false
   workerd: true
 
 catalog:
@@ -27,6 +29,7 @@ catalog:
   react-router: ^8.3.1
   lucide-react: ^1.42.0
   zxing-wasm: ^3.1.3
+  tesseract.js: 7.0.0
   "@types/react": ^19.2.18
   "@types/react-dom": ^19.2.5
   "@vitejs/plugin-react": ^6.1.0
