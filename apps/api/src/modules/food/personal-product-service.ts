@@ -9,6 +9,7 @@ import {
 import { and, asc, desc, eq, gt, like, lt, or, type SQL } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Context, Effect, Layer, Option, Schema } from "effect";
+import type { PersonalProductConflictData } from "./personal-product-conflict.ts";
 
 const Id = Schema.String.check(Schema.isUUID());
 
@@ -45,8 +46,7 @@ export type CreateResult =
   | { readonly kind: "replayed"; readonly product: PersonalProduct }
   | {
       readonly kind: "conflict";
-      readonly conflict: "DUPLICATE_BARCODE" | "IDEMPOTENCY_KEY_REUSED";
-      readonly existingProductId: string;
+      readonly conflict: PersonalProductConflictData;
     };
 
 const BrowseCursorSchema = Schema.Struct({
@@ -227,8 +227,7 @@ export class PersonalProductService extends Context.Service<
             ? ({ kind: "replayed", product: toProduct(replay) } as const)
             : ({
                 kind: "conflict",
-                conflict: "IDEMPOTENCY_KEY_REUSED",
-                existingProductId: replay.id,
+                conflict: { kind: "IDEMPOTENCY_KEY_REUSED", existingProductId: replay.id },
               } as const);
         }
 
@@ -246,8 +245,7 @@ export class PersonalProductService extends Context.Service<
           if (barcodeRows[0])
             return {
               kind: "conflict",
-              conflict: "DUPLICATE_BARCODE",
-              existingProductId: barcodeRows[0].id,
+              conflict: { kind: "DUPLICATE_BARCODE", existingProductId: barcodeRows[0].id },
             } as const;
         }
 

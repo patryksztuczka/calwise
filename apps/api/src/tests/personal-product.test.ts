@@ -1,7 +1,10 @@
 import type { Product } from "@calwise/database/food-schema";
 import type { PersonalProduct } from "@calwise/food-rules/personal-product";
 import { Effect, Layer, Schema } from "effect";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { inferRouterError } from "@trpc/server";
+import { beforeAll, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
+import type { PersonalProductConflictData } from "../modules/food/personal-product-conflict.ts";
+import type { AppRouter } from "../trpc-router.ts";
 import { app } from "../app.ts";
 import { FoodService } from "../modules/food/food-service.ts";
 import {
@@ -153,6 +156,19 @@ beforeEach(() => {
 });
 
 describe("personal product API", () => {
+  it("infers the Food conflict payload in router errors", () => {
+    expectTypeOf<
+      inferRouterError<AppRouter>["data"]["conflict"]
+    >().toEqualTypeOf<PersonalProductConflictData | null>();
+  });
+
+  it("does not attach a conflict to unrelated errors", async () => {
+    const response = await mutate("food.personalCreate", createInput, false);
+    expect(response.status).toBe(401);
+    expect(await response.json()).toMatchObject({
+      error: { data: { code: "UNAUTHORIZED", conflict: null } },
+    });
+  });
   it.each(["food.personalCreate", "food.personalList", "food.personalGet"])(
     "requires authentication for %s",
     async (path) => {
@@ -227,8 +243,7 @@ describe("personal product API", () => {
       create.mockReturnValueOnce(
         Effect.succeed({
           kind: "conflict",
-          conflict: kind,
-          existingProductId: personalProduct.id,
+          conflict: { kind, existingProductId: personalProduct.id },
         }),
       );
       const response = await mutate("food.personalCreate", createInput);

@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { Effect } from "effect";
 import type { AppServices } from "../layers.ts";
 import type { Session } from "../modules/auth/auth-service.ts";
+import { PersonalProductConflictCause } from "../modules/food/personal-product-conflict.ts";
 
 /** Runs an Effect against the Worker's runtime; supplied per request by the Worker entrypoint. */
 export type RunEffect = <A, E>(effect: Effect.Effect<A, E, AppServices>) => Promise<A>;
@@ -12,20 +13,6 @@ export interface TrpcContext {
   readonly session: Session | null;
 }
 
-export interface ConflictData {
-  readonly kind: "DUPLICATE_BARCODE" | "IDEMPOTENCY_KEY_REUSED";
-  readonly existingProductId: string;
-}
-
-class ConflictCause extends Error {
-  readonly conflict: ConflictData;
-
-  constructor(conflict: ConflictData) {
-    super(conflict.kind);
-    this.conflict = conflict;
-  }
-}
-
 const t = initTRPC.context<TrpcContext>().create({
   errorFormatter(options) {
     const response = options.shape;
@@ -34,18 +21,13 @@ const t = initTRPC.context<TrpcContext>().create({
       data: {
         ...response.data,
         conflict:
-          options.error.cause instanceof ConflictCause ? options.error.cause.conflict : null,
+          options.error.cause instanceof PersonalProductConflictCause
+            ? options.error.cause.conflict
+            : null,
       },
     };
   },
 });
-
-export const conflictError = (conflict: ConflictData): TRPCError =>
-  new TRPCError({
-    code: "CONFLICT",
-    message: conflict.kind,
-    cause: new ConflictCause(conflict),
-  });
 
 export const router = t.router;
 export const publicProcedure = t.procedure;

@@ -1,15 +1,10 @@
 import { PersonalProductCreateSchema } from "@calwise/food-rules/personal-product";
 import { TRPCError } from "@trpc/server";
 import { Schema } from "effect";
-import {
-  conflictError,
-  protectedProcedure,
-  publicProcedure,
-  router,
-  runTrpc,
-} from "../../http/trpc.ts";
+import { protectedProcedure, publicProcedure, router, runTrpc } from "../../http/trpc.ts";
 import type { Product } from "@calwise/database/food-schema";
 import { FoodBarcodeInput, FoodSearchInput, FoodService } from "./food-service.ts";
+import { PersonalProductConflictCause } from "./personal-product-conflict.ts";
 import {
   decodePersonalProductCursor,
   foldPersonalProductText,
@@ -60,9 +55,10 @@ export const foodRouter = router({
         PersonalProductService.use((service) => service.create(ctx.session.user.id, input)),
       );
       if (result.kind === "conflict")
-        throw conflictError({
-          kind: result.conflict,
-          existingProductId: result.existingProductId,
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: result.conflict.kind,
+          cause: new PersonalProductConflictCause(result.conflict),
         });
       return { product: result.product, created: result.kind === "created" };
     }),
